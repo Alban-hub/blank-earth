@@ -372,7 +372,7 @@ const STYLE = {
   function createBorderMaterial() {
     return new THREE.LineBasicMaterial({
       color: STYLE.borderColor,
-      transparent: STYLE.borderOpacity < 1,
+      transparent: true,        // always transparent so we can fade dynamically with camera distance
       opacity: STYLE.borderOpacity,
     });
   }
@@ -1624,6 +1624,13 @@ const STYLE = {
     globe.rotation.x = rotX;
     camera.position.set(0, 0, camDist);
     camera.lookAt(0, 0, 0);
+
+    // Distance-based border fade: at extreme zoom-out, thin 1-pixel border lines
+    // alias and flicker as they fall on/off pixel rows during rotation. Fade them
+    // smoothly so the visual contrast at full-globe view doesn't strobe.
+    // Close (≤3R): fully opaque. Far (≥6R): 45% opacity. Linear in between.
+    const distRatio = Math.max(0, Math.min(1, (camDist / R - 3.0) / 3.0));
+    borderMat.opacity = 1.0 - distRatio * 0.55;
 
     // Track whether any visited extrusion grew this frame (so the *final* tick
     // that sets scale=1 still triggers a render, before we go idle).
