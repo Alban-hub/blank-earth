@@ -242,6 +242,7 @@
   .card-climate {
     background: var(--c-sage-bg);
     color: var(--c-sage-ink);
+    overflow: visible;             /* let hover tooltips escape the card edge */
   }
   .climate-icons {
     display: grid;
@@ -250,17 +251,29 @@
     margin-top: 12px;
   }
   .climate-icon {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1.18;
     border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    padding: 5px 2px 4px;
     background: rgba(255,255,255,0.32);
     transition: background 200ms;
   }
-  .climate-icon svg { width: 70%; height: 70%; display: block; }
-  .climate-icon[data-on="0"] { opacity: 0.34; filter: grayscale(0.5); }
-  .climate-icon[data-on="1"] {
-    background: rgba(255,255,255,0.6);
+  .climate-icon .climate-art { width: 64%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+  .climate-icon .climate-art svg { width: 100%; height: 100%; display: block; }
+  .climate-icon .climate-name {
+    font-family: var(--sans);
+    font-size: 8.5px; letter-spacing: 0.05em;
+    text-transform: uppercase; font-weight: 700;
+    color: var(--c-sage-ink); opacity: 0.55;
+    text-align: center; line-height: 1;
   }
+  .climate-icon[data-on="0"] { opacity: 0.42; filter: grayscale(0.45); }
+  .climate-icon[data-on="1"] {
+    background: rgba(255,255,255,0.65);
+  }
+  .climate-icon[data-on="1"] .climate-name { opacity: 0.92; }
 
   /* EXTREMES (most + least populous) */
   .extremes {
@@ -324,7 +337,7 @@
     border-radius: 12px;
     padding: 10px 8px 8px;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    position: relative; overflow: hidden;
+    position: relative;            /* overflow: visible so the hover tooltip can escape */
     transition: transform 200ms ease, background 300ms, box-shadow 200ms;
     cursor: pointer;
     border: 1px solid transparent;
@@ -445,26 +458,25 @@
   .ledger { margin-top: 28px; }
   .ledger ol {
     list-style: none; margin: 0; padding: 0;
-    counter-reset: visit;
     background: var(--paper-2);
     border-radius: 14px;
     overflow: hidden;
   }
   .ledger li {
     display: grid;
-    grid-template-columns: 36px 12px 1fr auto;
+    grid-template-columns: 44px 12px 1fr auto;
     gap: 12px; align-items: center;
     padding: 13px 16px;
     border-bottom: 1px solid var(--hair);
-    counter-increment: visit;
   }
   .ledger li:last-child { border-bottom: none; }
-  .ledger li::before {
-    content: counter(visit, decimal-leading-zero);
+  .ledger .ord {
     font-family: var(--serif);
-    font-size: 13px; color: var(--muted);
+    font-size: 14px; color: var(--muted);
     font-variant-numeric: tabular-nums;
     font-weight: 500;
+    text-align: right;
+    padding-right: 2px;
   }
   .ledger .cdot { width: 9px; height: 9px; border-radius: 50%; }
   .ledger .name {
@@ -477,6 +489,105 @@
     font-size: 11px; letter-spacing: 0.04em;
     color: var(--muted); font-weight: 500;
   }
+  .ledger-foot {
+    margin-top: 10px;
+    font-family: var(--sans);
+    font-size: 11px; color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.04em;
+    font-style: italic;
+  }
+  .ledger-foot:empty { display: none; }
+
+  /* ─── HOVER TOOLTIP (desktop only — never fires on touch) ─── */
+  @media (hover: hover) and (pointer: fine) {
+    [data-tip] { position: relative; }
+    [data-tip]::after,
+    [data-tip]::before {
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 160ms ease;
+    }
+    [data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(28,24,56,0.96);
+      color: #FCFCFA;
+      padding: 7px 11px;
+      border-radius: 6px;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.45;
+      letter-spacing: 0;
+      text-transform: none;
+      text-align: center;
+      width: max-content;
+      max-width: 220px;
+      white-space: normal;
+      z-index: 100;
+      box-shadow: 0 6px 16px -6px rgba(0,0,0,0.35);
+    }
+    [data-tip]::before {
+      content: '';
+      position: absolute;
+      bottom: calc(100% + 2px);
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: rgba(28,24,56,0.96);
+      z-index: 101;
+    }
+    [data-tip]:hover::after,
+    [data-tip]:hover::before {
+      opacity: 1;
+      transition-delay: 220ms;
+    }
+    /* keep the tip from clipping at the card edges */
+    .climate-icon[data-tip]:first-child::after { left: 0; transform: translateX(0); }
+    .climate-icon[data-tip]:first-child::before { left: 16px; transform: translateX(0); }
+    .climate-icon[data-tip]:last-child::after { left: auto; right: 0; transform: translateX(0); }
+    .climate-icon[data-tip]:last-child::before { left: auto; right: 16px; transform: translateX(0); }
+  }
+
+  /* PNG export footer — only shown while a capture is in progress */
+  .export-footer {
+    display: none;
+    margin-top: 24px; padding-top: 18px;
+    border-top: 1px solid var(--hair);
+    font-family: var(--serif);
+    font-size: 13px;
+    color: var(--muted);
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .export-footer .ef-mark { color: var(--ink); font-weight: 500; }
+  .export-footer .ef-host { letter-spacing: 0.06em; }
+  body.exporting .export-footer { display: flex; }
+  body.exporting #view-all,
+  body.exporting #badge-detail,
+  body.exporting .topbar,
+  body.exporting .scroll-fade,
+  body.exporting .globe-bg { display: none !important; }
+  body.exporting .stage { padding-top: 18px; }
+  body.exporting .sheet { box-shadow: none; }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: var(--ink); color: var(--paper);
+    padding: 10px 18px; border-radius: 999px;
+    font-family: var(--sans); font-size: 13px;
+    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
+    opacity: 0; pointer-events: none; z-index: 100;
+    transition: opacity 200ms ease, transform 280ms cubic-bezier(.2,.7,.2,1);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .iconbtn.busy { opacity: 0.55; pointer-events: none; }
 
   .reveal {
     opacity: 0; transform: translateY(14px);
@@ -511,7 +622,7 @@
   <div class="topbar-inner">
     <a href="/" class="iconbtn" aria-label="Back to globe">×</a>
     <div class="topbar-title">Your Atlas</div>
-    <button class="iconbtn" aria-label="Share" id="top-share">↑</button>
+    <button class="iconbtn" aria-label="Save atlas as image" id="top-share" title="Save atlas as image">↑</button>
   </div>
 </div>
 
@@ -531,7 +642,7 @@
         <div class="hero-text">
           <div class="card-lab" style="opacity:.66">Countries marked</div>
           <div class="hero-num"><span data-count="0" id="hero-num">0</span><span class="of" id="hero-of"> / 195</span></div>
-          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <strong id="hero-cap-cont">0</strong> continents</div>
+          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <span id="hero-cap-cont-line"><strong>0</strong> continents</span></div>
         </div>
         <div class="hero-shape">
           <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -576,7 +687,7 @@
           <div class="col-meta"><strong id="stat-most-pop">—</strong></div>
         </div>
         <div class="col">
-          <div class="col-lab">Smallest</div>
+          <div class="col-lab">Least populous</div>
           <div class="col-name" id="stat-least">—</div>
           <div class="col-meta"><strong id="stat-least-pop">—</strong></div>
         </div>
@@ -605,9 +716,18 @@
     <section class="ledger reveal">
       <div class="section-h">
         <h2>Recent visits</h2>
+        <span class="sub" id="visits-count">—</span>
       </div>
       <ol id="visits"></ol>
+      <div class="ledger-foot" id="visits-foot"></div>
     </section>
+
+    <!-- Hidden during normal viewing; shown only during PNG export so the saved
+         image carries a discreet attribution. -->
+    <div class="export-footer" id="export-footer" aria-hidden="true">
+      <span class="ef-mark">A blank earth</span>
+      <span class="ef-host">blank-earth.pages.dev</span>
+    </div>
 
   </main>
 </div>
@@ -676,6 +796,14 @@ function climateZone(lat) {
 const CLIMATE_ORDER = ['Tropical','Subtropical','Temperate','Subarctic','Polar'];
 const CLIMATE_ART = { Tropical:'palm-circle', Subtropical:'cactus-sun', Temperate:'leaf-quad', Subarctic:'pine-row', Polar:'iceberg' };
 const CLIMATE_INK = '#2D3E1F';   /* sage ink — used for climate icons */
+/* short hover description: latitude band that defines each climate */
+const CLIMATE_RANGE = {
+  Tropical:    'Tropical · 0° to 23.5° latitude',
+  Subtropical: 'Subtropical · 23.5° to 35°',
+  Temperate:   'Temperate · 35° to 55°',
+  Subarctic:   'Subarctic · 55° to 66.5°',
+  Polar:       'Polar · above 66.5°',
+};
 
 const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 function animate({duration, onFrame, onDone, ease = easeOutCubic}) {
@@ -840,7 +968,7 @@ const BADGES = [
   { id:'h-E', group:'Hemispheres', axis:'hemi', t:'E', name:'Easterner',  palette:'butter',  art:'hemi-E', meta:'eastern hemi' },
   { id:'h-W', group:'Hemispheres', axis:'hemi', t:'W', name:'Westerner',  palette:'rose',    art:'hemi-W', meta:'western hemi' },
 
-  { id:'clim-tropical',    group:'Climate', axis:'climate', t:'Tropical',    name:'Equator Crosser', palette:'sage',       art:'palm-circle', meta:'tropical zone' },
+  { id:'clim-tropical',    group:'Climate', axis:'climate', t:'Tropical',    name:'In the Tropics',  palette:'sage',       art:'palm-circle', meta:'tropical zone' },
   { id:'clim-subtropical', group:'Climate', axis:'climate', t:'Subtropical', name:'Sun Belt',        palette:'butter',     art:'cactus-sun',  meta:'subtropical zone' },
   { id:'clim-temperate',   group:'Climate', axis:'climate', t:'Temperate',   name:'Four Seasons',    palette:'terracotta', art:'leaf-quad',   meta:'temperate zone' },
   { id:'clim-subarctic',   group:'Climate', axis:'climate', t:'Subarctic',   name:'Pine Latitudes',  palette:'sky',        art:'pine-row',    meta:'subarctic zone' },
@@ -1007,13 +1135,15 @@ function paint() {
   grid._anims.push(scheduleCount(document.getElementById('hero-num'), count));
   const heroPctEl = document.getElementById('hero-cap-pct');
   heroPctEl.textContent = earthRatio.toFixed(2) + '%';
-  document.getElementById('hero-cap-cont').textContent = continentsTouched.size;
+  const contN = continentsTouched.size;
+  document.getElementById('hero-cap-cont-line').innerHTML =
+    `<strong>${contN}</strong> ${contN === 1 ? 'continent' : 'continents'}`;
 
   /* people */
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
   document.getElementById('stat-pop-pct').textContent = (popRatio*100).toFixed(1) + '%';
 
-  /* climate — 5 mini icons */
+  /* climate — 5 mini icons with always-visible label and hover tooltip */
   grid._anims.push(scheduleCount(document.getElementById('stat-clim'), climates.size));
   const clEl = document.getElementById('climate-icons');
   clEl.innerHTML = '';
@@ -1022,8 +1152,13 @@ function paint() {
     const wrap = document.createElement('div');
     wrap.className = 'climate-icon';
     wrap.dataset.on = on;
-    wrap.title = zone;
-    wrap.innerHTML = badgeArt(CLIMATE_ART[zone], CLIMATE_INK);
+    wrap.setAttribute('data-tip', on === '1'
+      ? `${CLIMATE_RANGE[zone]} · marked`
+      : `${CLIMATE_RANGE[zone]} · not yet marked`);
+    wrap.innerHTML = `
+      <div class="climate-art">${badgeArt(CLIMATE_ART[zone], CLIMATE_INK)}</div>
+      <div class="climate-name">${zone}</div>
+    `;
     clEl.appendChild(wrap);
   });
 
@@ -1035,11 +1170,17 @@ function paint() {
     ? `across <strong>${continentsTouched.size}</strong> ${continentsTouched.size===1?'continent':'continents'} · avg <strong>${fmtArea(avg)} km²</strong> per country`
     : `mark a country to begin`;
 
-  /* extremes */
+  /* extremes — when the user has only marked one country, "most populous" and
+     "least populous" would point at the same row; show a gentle prompt instead */
   document.getElementById('stat-most').textContent  = most ? most[2] : '—';
   document.getElementById('stat-most-pop').textContent = most ? `${fmtPop(most[3])} people` : '—';
-  document.getElementById('stat-least').textContent = least ? least[2] : '—';
-  document.getElementById('stat-least-pop').textContent = least ? `${fmtPop(least[3])} people` : '—';
+  if (count > 1 && least) {
+    document.getElementById('stat-least').textContent = least[2];
+    document.getElementById('stat-least-pop').textContent = `${fmtPop(least[3])} people`;
+  } else {
+    document.getElementById('stat-least').textContent = '—';
+    document.getElementById('stat-least-pop').textContent = count === 1 ? 'mark another country' : '—';
+  }
 
   /* ── BADGES ── */
   const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, coastalCount, known };
@@ -1074,6 +1215,9 @@ function paint() {
       div.style.setProperty('--badge-bg', bg);
       div.style.setProperty('--badge-ink', ink);
     }
+    /* hover tooltip: badge name + how to unlock (or unlocked confirmation) */
+    const tipBody = unlocked ? 'Unlocked.' : howToCopy(b, ctx);
+    div.setAttribute('data-tip', `${b.name} — ${tipBody}`);
     div.innerHTML = `
       <div class="badge-art">${badgeArt(b.art, unlocked ? ink : '#9893a0')}</div>
       <div class="badge-name">${b.name}</div>
@@ -1084,18 +1228,36 @@ function paint() {
   });
   document.getElementById('badges-progress').textContent = `${unlockedCount} of ${BADGES.length} unlocked`;
 
-  /* RECENT VISITS */
+  /* RECENT VISITS — newest first; each row shows the country's true ordinal
+     in the user's atlas (so the most recent of 25 reads "25", not "01"). */
   const list = document.getElementById('visits');
+  const visitsCountEl = document.getElementById('visits-count');
+  const visitsFootEl  = document.getElementById('visits-foot');
   list.innerHTML = '';
+  const SHOW = 8;
   const reversed = [...known].reverse();
-  reversed.slice(0, 8).forEach((iso) => {
+  const shown = reversed.slice(0, SHOW);
+  shown.forEach((iso, i) => {
+    const ordinal = count - i;   // most recent gets the total count
     const v = COUNTRIES[iso];
     const li = document.createElement('li');
-    li.innerHTML = `<span class="cdot" style="background:${continentColor(v[0])}"></span><span class="name">${v[2]}</span><span class="cont">${continentName(v[0])}</span>`;
+    li.innerHTML = `
+      <span class="ord">${ordinal}</span>
+      <span class="cdot" style="background:${continentColor(v[0])}"></span>
+      <span class="name">${v[2]}</span>
+      <span class="cont">${continentName(v[0])}</span>
+    `;
     list.appendChild(li);
   });
   if (!reversed.length) {
     list.innerHTML = `<li style="grid-template-columns: 1fr; color:var(--muted); padding:18px 16px; border-bottom:none;">No countries marked yet — open the globe to begin.</li>`;
+    if (visitsCountEl) visitsCountEl.textContent = '';
+    if (visitsFootEl)  visitsFootEl.textContent  = '';
+  } else {
+    if (visitsCountEl) visitsCountEl.textContent = `${count} marked`;
+    if (visitsFootEl)  visitsFootEl.textContent  = count > SHOW
+      ? `Showing the latest ${SHOW} of ${count}.`
+      : '';
   }
 
   setupRevealObserver();
@@ -1138,13 +1300,122 @@ document.addEventListener('click', (e) => {
   document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
 });
 
-/* share */
-document.getElementById('top-share').addEventListener('click', async () => {
+/* ─── EXPORT AS PNG ───
+   Lazy-loads html2canvas only when the user clicks save (saves ~150KB on first
+   page load), captures the .sheet element at 2× scale, and either invokes the
+   native share sheet (mobile, with the file as a payload) or downloads the
+   PNG directly (desktop / no native share). */
+let _h2cPromise = null;
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (_h2cPromise) return _h2cPromise;
+  _h2cPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => resolve(window.html2canvas);
+    s.onerror = () => reject(new Error('Could not load image-export library.'));
+    document.head.appendChild(s);
+  });
+  return _h2cPromise;
+}
+
+function showToast(msg, durationMs = 2000) {
+  let t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.className = 'toast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  // force reflow so the transition applies
+  void t.offsetHeight;
+  t.classList.add('show');
+  clearTimeout(t._hideT);
+  t._hideT = setTimeout(() => t.classList.remove('show'), durationMs);
+}
+
+function defaultFilename() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `your-atlas-${yyyy}-${mm}-${dd}.png`;
+}
+
+async function exportAtlas() {
+  const btn = document.getElementById('top-share');
+  if (btn.classList.contains('busy')) return;
+  btn.classList.add('busy');
+
+  // Snapshot UI state we'll temporarily mutate, restore in finally
+  const wall = document.getElementById('badge-wall');
+  const wallWasExpanded = wall.classList.contains('expanded');
+  const detailWasOpen = document.getElementById('badge-detail').classList.contains('open');
+
   try {
-    if (navigator.share) await navigator.share({ title: 'Your Atlas — Blank Earth', url: location.href });
-    else await navigator.clipboard.writeText(location.href);
-  } catch {}
-});
+    const html2canvas = await loadHtml2Canvas();
+
+    // Prepare the sheet for capture: expand all badges, hide chrome via .exporting class
+    wall.classList.add('expanded');
+    document.getElementById('badge-detail').classList.remove('open');
+    document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
+    document.body.classList.add('exporting');
+
+    // Wait two frames for layout to settle (CSS .exporting rules + wall expansion)
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const sheet = document.querySelector('.sheet');
+    const canvas = await html2canvas(sheet, {
+      backgroundColor: '#FCFCFA',
+      scale: Math.min(2, window.devicePixelRatio || 1.5),
+      useCORS: true,
+      logging: false,
+      // skip the iframe globe — it's hidden during export anyway, but be explicit
+      ignoreElements: el => el.tagName === 'IFRAME',
+    });
+
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    if (!blob) throw new Error('Could not encode image.');
+
+    const filename = defaultFilename();
+    const file = new File([blob], filename, { type: 'image/png' });
+
+    // Try native share with the file (mobile-first)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Your Atlas — Blank Earth' });
+        showToast('Shared');
+        return;
+      } catch (err) {
+        // user cancelled; fall through to download as a fallback
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+
+    // Fallback: trigger a download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Saved to your downloads');
+  } catch (err) {
+    console.error('Atlas export failed:', err);
+    showToast('Export failed — please try again', 2800);
+  } finally {
+    // Restore UI state
+    if (!wallWasExpanded) wall.classList.remove('expanded');
+    document.body.classList.remove('exporting');
+    btn.classList.remove('busy');
+  }
+}
+
+document.getElementById('top-share').addEventListener('click', exportAtlas);
 
 paint();
 </script>
