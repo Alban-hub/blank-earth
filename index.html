@@ -7,7 +7,7 @@
 <style>
 :root {
   --paper:#FCFCFA; --ink:#1c1838; --line:#D8D5CC; --hair:#ECEAE2;
-  --muted:#6b6985; --warm:#FAF6E8; --orange:#E08644;
+  --muted:#6b6985; --warm:#FAF6E8; --accent:#4488E0;
   --serif:"Iowan Old Style","Palatino","Cambria","Times New Roman",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",system-ui,sans-serif;
 }
@@ -37,7 +37,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-fo
 .visited-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px dashed var(--hair)}
 .visited-list .row:last-child{border-bottom:none}
 .visited-list .row .name{font-style:italic;cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.visited-list .row .name:hover{color:var(--orange)}
+.visited-list .row .name:hover{color:var(--accent)}
 .visited-list .row button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:6px 8px;line-height:1;min-width:28px;min-height:28px}
 .visited-list .row button:hover{color:var(--ink)}
 .visited-list .empty{color:var(--muted);font-style:italic;padding:6px 0;font-size:12px}
@@ -129,11 +129,11 @@ const STYLE = {
   borderOffset:         0.10,        // height above country tile to avoid z-fight
 
   // --- visited countries ----------------------------------------------------
-  visitedColor:         0xC97B3D,    // deeper terracotta — better contrast vs water
+  visitedColor:         0x3D7BC9,    // cobalt blue — better contrast vs water
   visitedExtrusionPct:  0.014,       // max height as fraction of globe radius
   visitedRoughness:     0.55,
   visitedMetalness:     0.05,
-  visitedEmissive:      0x3A1500,    // warmer base (offsets absence of bloom halo)
+  visitedEmissive:      0x001A3A,    // cooler base (offsets absence of bloom halo)
   visitedEmissiveIntensity: 0.18,
   visitedOutlineColor:  0x1c1838,
   visitedOutlineOffset: 0.06,
