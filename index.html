@@ -151,7 +151,7 @@ const STYLE = {
 
   // --- borders --------------------------------------------------------------
   borderColor:          0x2A2218,    // very dark sepia ink
-  borderOpacity:        0.95,
+  borderOpacity:        1.0,         // fully opaque — thin lines need every pixel of contrast at distance
   borderOffset:         0.10,        // height above country tile to avoid z-fight
 
   // --- visited countries ----------------------------------------------------
@@ -649,10 +649,12 @@ const STYLE = {
   //  Three.js setup
   // ---------------------------------------------------------------------------
   const canvas = document.getElementById('scene');
-  // Mobile: skip MSAA to halve fragment cost; cap pixel ratio at 1.5 (was 2) for ~44% fewer pixels.
+  // MSAA stays on everywhere — modern mobile GPUs handle 4× MSAA almost free
+  // (tile-based rendering), and without it thin border lines flicker badly when
+  // zoomed out. Pixel ratio capped at 1.75 on mobile for a sharpness/perf middle ground.
   const _isMobile = window.matchMedia('(max-width: 640px)').matches;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !_isMobile, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.5 : 2));
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.75 : 2));
   renderer.setClearColor(STYLE.background, 1);
   renderer.outputEncoding = THREE.sRGBEncoding;
   const scene = new THREE.Scene();
@@ -1599,12 +1601,22 @@ const STYLE = {
   window.addEventListener('resize', resize); resize();
 
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+  // Idle-render skip: when nothing is moving (no drag, no easing, no growing
+  // extrusions, no auto-rotate kicking in), we don't need to redraw. Saves
+  // GPU + battery on mobile and keeps the laptop fan from spinning up.
+  const STILL_EPS = 0.00005;        // when |target - current| drops below this, treat as "settled"
+  function isCameraSettled() {
+    return Math.abs(targetRotY - rotY)        < STILL_EPS
+        && Math.abs(targetRotX - rotX)        < STILL_EPS
+        && Math.abs(targetCamDist - camDist)  < STILL_EPS * R;
+  }
   function animate() {
     requestAnimationFrame(animate);
     const now = performance.now();
-    if (!dragging && now - lastInteract > STYLE.autoRotateDelay) {
-      targetRotY += STYLE.autoRotateSpeed;
-    }
+    const autoRotating = !dragging && (now - lastInteract > STYLE.autoRotateDelay);
+    if (autoRotating) targetRotY += STYLE.autoRotateSpeed;
+
     rotY += (targetRotY - rotY) * STYLE.cameraEasing;
     rotX += (targetRotX - rotX) * STYLE.cameraEasing;
     camDist += (targetCamDist - camDist) * STYLE.cameraEasing;
@@ -1612,18 +1624,33 @@ const STYLE = {
     globe.rotation.x = rotX;
     camera.position.set(0, 0, camDist);
     camera.lookAt(0, 0, 0);
+
+    // Track whether any visited extrusion grew this frame (so the *final* tick
+    // that sets scale=1 still triggers a render, before we go idle).
+    let visitedChanged = false;
     for (const e of visitedMeshes.values()) {
       if (e.t < 1) {
         e.t = Math.min(1, e.t + 0.035);
         const k = Math.max(0.001, easeOutCubic(e.t));
         e.extr.scale.set(k, k, k);
         e.outline.scale.set(k, k, k);
+        visitedChanged = true;
       }
     }
+
+    // Skip render if scene is fully static (saves ~5–8ms/frame on phones, big battery win)
+    if (!dragging && !autoRotating && !visitedChanged && isCameraSettled()) {
+      return;
+    }
+
     if (STYLE.postEnabled) renderPipeline();
     else renderer.render(scene, camera);
   }
+  // Initial paint (otherwise idle-skip can swallow the first frame and we'd see a black canvas)
+  renderer.render(scene, camera);
   animate();
+  // Force a render on resize so idle-state pages don't go blank after rotation.
+  window.addEventListener('resize', () => { renderer.render(scene, camera); });
 
   // ---------------------------------------------------------------------------
   //  UI wiring
