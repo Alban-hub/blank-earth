@@ -18,10 +18,10 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 #scene:active{cursor:grabbing}
 .ui{position:fixed;top:0;left:0;right:0;z-index:5;padding:24px 28px;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
 .ui > * {pointer-events:auto}
-.brand{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1.1;margin:0}
-.brand small{display:block;font-style:italic;font-size:12px;color:var(--muted);margin-top:4px;font-weight:400}
-.stats{font-family:var(--serif);font-size:13px;color:var(--muted);text-align:right;line-height:1.5}
-.stats .num{font-size:24px;color:var(--ink);font-weight:500;display:block;line-height:1}
+.brand{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1.1;margin:0;color:rgba(252,252,250,0.94);text-shadow:0 1px 3px rgba(0,0,0,0.35)}
+.brand small{display:block;font-style:italic;font-size:12px;color:rgba(252,252,250,0.55);margin-top:4px;font-weight:400}
+.stats{font-family:var(--serif);font-size:13px;color:rgba(252,252,250,0.6);text-align:right;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.35)}
+.stats .num{font-size:24px;color:rgba(252,252,250,0.96);font-weight:500;display:block;line-height:1}
 .panel{position:fixed;left:28px;bottom:28px;z-index:5;background:rgba(252,252,250,0.92);backdrop-filter:blur(6px);border:0.5px solid var(--hair);padding:14px 16px;width:280px;font-size:13px}
 .panel .label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .search-row{display:flex;gap:6px}
@@ -33,6 +33,9 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .btn:hover{background:var(--ink);color:var(--paper)}
 .btn.subtle{border-color:var(--line);color:var(--muted)}
 .btn.subtle:hover{background:var(--hair);color:var(--ink)}
+.visited-toggle{display:none;width:100%;background:none;border:0;border-top:0.5px dashed var(--hair);padding:10px 0 8px;margin-top:12px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;font-style:italic}
+.visited-toggle .chev{transition:transform 0.2s;font-style:normal;color:var(--muted);font-size:11px}
+.panel.expanded .visited-toggle .chev{transform:rotate(180deg)}
 .visited-list{margin-top:14px;max-height:32vh;overflow:auto;font-family:var(--serif);font-size:13px}
 .visited-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px dashed var(--hair)}
 .visited-list .row:last-child{border-bottom:none}
@@ -47,7 +50,20 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .tip strong{color:var(--ink);font-weight:500;font-style:normal;font-family:var(--sans);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:4px}
 .hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
 .hover-label.show{opacity:1}
-@media (max-width:640px){.panel{left:14px;right:14px;bottom:14px;width:auto}.tip{display:none}.ui{padding:14px}}
+@media (max-width:640px){
+  .panel{left:14px;right:14px;bottom:14px;width:auto}
+  .tip{display:none}
+  .ui{padding:14px}
+  .brand small{display:none}
+  .brand{font-size:19px}
+  .stats{font-size:11px}
+  .stats .num{font-size:22px}
+  .stat-prefix{display:none}
+  .panel .label{display:none}
+  .visited-toggle{display:flex}
+  .panel:not(.expanded) .visited-list{display:none}
+  .panel:not(.expanded) .actions{display:none}
+}
 .atlas-link{display:block;margin-top:12px;padding:12px 4px 4px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em;min-height:44px;display:flex;align-items:center;justify-content:flex-end}
 .atlas-link:hover,.atlas-link:active{color:var(--accent)}
 html.embed-mode .ui,html.embed-mode .panel,html.embed-mode .tip,html.embed-mode .hover-label{display:none!important}
@@ -59,11 +75,11 @@ html.embed-mode body{pointer-events:none}
 
 <div class="ui">
   <div>
-    <h1 class="brand">A blank earth<small>type a country, or click one on the globe</small></h1>
+    <h1 class="brand">A blank earth<small>type, or click one on the globe</small></h1>
   </div>
   <div class="stats">
     <span class="num" id="count">0</span>
-    <span>places visited</span>
+    <span><span class="stat-prefix">places </span>visited</span>
   </div>
 </div>
 
@@ -80,6 +96,10 @@ html.embed-mode body{pointer-events:none}
     <datalist id="countries"></datalist>
     <button class="btn" id="add">add</button>
   </div>
+  <button class="visited-toggle" id="visited-toggle" type="button" aria-expanded="false" aria-controls="list">
+    <span><span id="visited-count-inline">0</span> visited</span>
+    <span class="chev" aria-hidden="true">▾</span>
+  </button>
   <div class="visited-list" id="list"></div>
   <div class="actions">
     <button class="btn subtle" id="export">export</button>
@@ -629,8 +649,10 @@ const STYLE = {
   //  Three.js setup
   // ---------------------------------------------------------------------------
   const canvas = document.getElementById('scene');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Mobile: skip MSAA to halve fragment cost; cap pixel ratio at 1.5 (was 2) for ~44% fewer pixels.
+  const _isMobile = window.matchMedia('(max-width: 640px)').matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !_isMobile, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.5 : 2));
   renderer.setClearColor(STYLE.background, 1);
   renderer.outputEncoding = THREE.sRGBEncoding;
   const scene = new THREE.Scene();
@@ -646,6 +668,8 @@ const STYLE = {
     STYLE.maxZoomMult     = 7.0;       // allow more zoom-out room
     STYLE.dragSensitivityX = 0.0026;   // touch-tuned (was 0.0040)
     STYLE.dragSensitivityY = 0.0019;   // touch-tuned (was 0.0028)
+    STYLE.cameraEasing    = 0.22;      // snappier follow on mobile (was 0.13) — finger lag → less mushy
+    STYLE.autoRotateDelay = 4500;      // wait longer before auto-rotate kicks in on touch
   }
   function fovForViewport() {
     return window.matchMedia('(max-width: 640px)').matches ? 46 : 38;
@@ -1626,8 +1650,20 @@ const STYLE = {
   addBtn.onclick = tryAdd;
   search.addEventListener('keydown', e => { if (e.key === 'Enter') tryAdd(); });
 
+  // Mobile-only: collapsible visited list + actions, to keep the panel compact.
+  const visitedToggle = document.getElementById('visited-toggle');
+  if (visitedToggle) {
+    visitedToggle.addEventListener('click', () => {
+      const panel = document.querySelector('.panel');
+      const expanded = panel.classList.toggle('expanded');
+      visitedToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+  }
+
   function updateUI() {
     document.getElementById('count').textContent = visited.size;
+    const inline = document.getElementById('visited-count-inline');
+    if (inline) inline.textContent = visited.size;
     const list = document.getElementById('list');
     list.innerHTML = '';
     if (!visited.size) {
