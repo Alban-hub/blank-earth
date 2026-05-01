@@ -48,8 +48,8 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
 .hover-label.show{opacity:1}
 @media (max-width:640px){.panel{left:14px;right:14px;bottom:14px;width:auto}.tip{display:none}.ui{padding:14px}}
-.atlas-link{display:block;margin-top:12px;padding-top:12px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em}
-.atlas-link:hover{color:var(--accent)}
+.atlas-link{display:block;margin-top:12px;padding:12px 4px 4px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em;min-height:44px;display:flex;align-items:center;justify-content:flex-end}
+.atlas-link:hover,.atlas-link:active{color:var(--accent)}
 html.embed-mode .ui,html.embed-mode .panel,html.embed-mode .tip,html.embed-mode .hover-label{display:none!important}
 html.embed-mode body{pointer-events:none}
 </style>
@@ -636,7 +636,21 @@ const STYLE = {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(STYLE.background);
 
-  const camera = new THREE.PerspectiveCamera(38, 1, 0.5, 4000);
+  // --- responsive camera tuning for small viewports ----------------------
+  // On phones, the original zoom is too tight (the globe fills the screen
+  // and looks like a flat map). Detect mobile and ease it out + widen FOV.
+  const IS_MOBILE = window.matchMedia('(max-width: 640px)').matches;
+  if (IS_MOBILE) {
+    STYLE.initialZoomMult = 3.6;       // was 2.7 — pull camera back
+    STYLE.minZoomMult     = 1.15;      // don't let users zoom inside the planet
+    STYLE.maxZoomMult     = 7.0;       // allow more zoom-out room
+    STYLE.dragSensitivityX = 0.0026;   // touch-tuned (was 0.0040)
+    STYLE.dragSensitivityY = 0.0019;   // touch-tuned (was 0.0028)
+  }
+  function fovForViewport() {
+    return window.matchMedia('(max-width: 640px)').matches ? 46 : 38;
+  }
+  const camera = new THREE.PerspectiveCamera(fovForViewport(), 1, 0.5, 4000);
   let camDist = R * STYLE.initialZoomMult, targetCamDist = camDist;
 
   scene.add(new THREE.AmbientLight(0xffffff, STYLE.ambientIntensity));
@@ -1446,46 +1460,100 @@ const STYLE = {
     return hits.length ? hits[0].object.userData : null;
   }
 
+  // --- multi-touch + mouse pointer handling -------------------------------
+  // Tracks all active pointers so we can handle:
+  //   1 pointer  → drag-to-rotate
+  //   2 pointers → pinch-to-zoom (fingers spread out = zoom in; pinch = zoom out)
+  const activePointers = new Map();   // id → {x, y}
+  let pinchStartDist = 0;             // pixel distance between two fingers when pinch began
+  let pinchStartCamDist = 0;          // camera distance snapshot when pinch began
+
   canvas.addEventListener('pointerdown', e => {
-    dragging = true; dragMoved = false;
-    canvas.setPointerCapture(e.pointerId);
-    dx0 = lx = e.clientX; dy0 = ly = e.clientY;
+    activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (activePointers.size === 1) {
+      dragging = true; dragMoved = false;
+      canvas.setPointerCapture(e.pointerId);
+      dx0 = lx = e.clientX; dy0 = ly = e.clientY;
+    } else if (activePointers.size === 2) {
+      // Switching from drag → pinch. Stop rotation drag and snapshot state.
+      dragging = false;
+      const pts = [...activePointers.values()];
+      pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      pinchStartCamDist = targetCamDist;
+      hoverLabel.classList.remove('show');
+    }
     lastInteract = performance.now();
   });
-  canvas.addEventListener('pointerup', e => {
-    if (dragging && !dragMoved) {
+
+  function endPointer(e) {
+    // Only counts as a tap if exactly one pointer was active and it didn't move.
+    if (activePointers.size === 1 && dragging && !dragMoved) {
       const hit = pickCountry(e.clientX, e.clientY);
       if (hit) {
         if (visited.has(hit.id)) removeCountry(hit.id);
         else addCountry(byId.get(hit.id));
       }
     }
-    dragging = false;
+    activePointers.delete(e.pointerId);
+    if (activePointers.size === 1) {
+      // 2-finger pinch → 1-finger drag: seamlessly resume rotating with remaining finger
+      const [remId, rem] = [...activePointers.entries()][0];
+      dragging = true;
+      dragMoved = true;   // already an in-flight gesture, not a tap
+      dx0 = lx = rem.x; dy0 = ly = rem.y;
+      try { canvas.setPointerCapture(remId); } catch {}
+    } else if (activePointers.size === 0) {
+      dragging = false;
+    }
     lastInteract = performance.now();
-  });
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
   canvas.addEventListener('pointermove', e => {
+    if (activePointers.has(e.pointerId)) {
+      activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    }
+
+    // ── 2-finger pinch zoom (mobile) ──
+    if (activePointers.size === 2) {
+      const pts = [...activePointers.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      const scale = pinchStartDist / dist;   // fingers spread → scale<1 → camDist shrinks → zoom in
+      targetCamDist = Math.max(R * STYLE.minZoomMult,
+                       Math.min(R * STYLE.maxZoomMult, pinchStartCamDist * scale));
+      lastInteract = performance.now();
+      return;
+    }
+
+    // ── 1-pointer drag-to-rotate ──
     if (dragging) {
+      const isTouch = e.pointerType === 'touch';
+      const tapThresh = isTouch ? 10 : 4;   // touch needs more tolerance for "tap, not drag"
       const dx = e.clientX - lx, dy = e.clientY - ly;
       lx = e.clientX; ly = e.clientY;
-      if (Math.hypot(e.clientX - dx0, e.clientY - dy0) > 4) dragMoved = true;
+      if (Math.hypot(e.clientX - dx0, e.clientY - dy0) > tapThresh) dragMoved = true;
       const z = camDist / R;
       targetRotY += dx * STYLE.dragSensitivityX * z;
       targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit,
                     targetRotX + dy * STYLE.dragSensitivityY * z));
       lastInteract = performance.now();
       hoverLabel.classList.remove('show');
+      return;
+    }
+
+    // ── hover (mouse only — touch has no concept of hover) ──
+    if (e.pointerType === 'touch') return;
+    const hit = pickCountry(e.clientX, e.clientY);
+    if (hit) {
+      hoverLabel.textContent = hit.name + (visited.has(hit.id) ? ' · click to remove' : ' · click to add');
+      hoverLabel.style.left = e.clientX + 'px';
+      hoverLabel.style.top = e.clientY + 'px';
+      hoverLabel.classList.add('show');
+      canvas.style.cursor = 'pointer';
     } else {
-      const hit = pickCountry(e.clientX, e.clientY);
-      if (hit) {
-        hoverLabel.textContent = hit.name + (visited.has(hit.id) ? ' · click to remove' : ' · click to add');
-        hoverLabel.style.left = e.clientX + 'px';
-        hoverLabel.style.top = e.clientY + 'px';
-        hoverLabel.classList.add('show');
-        canvas.style.cursor = 'pointer';
-      } else {
-        hoverLabel.classList.remove('show');
-        canvas.style.cursor = 'grab';
-      }
+      hoverLabel.classList.remove('show');
+      canvas.style.cursor = 'grab';
     }
   });
   canvas.addEventListener('pointerleave', () => { hoverLabel.classList.remove('show'); });
@@ -1501,6 +1569,7 @@ const STYLE = {
     const w = window.innerWidth, h = window.innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    camera.fov = fovForViewport();   // wider FOV on phones, narrower on desktop — handles rotation too
     camera.updateProjectionMatrix();
   }
   window.addEventListener('resize', resize); resize();
