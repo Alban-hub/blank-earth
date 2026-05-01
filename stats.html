@@ -246,52 +246,56 @@
     opacity: 0.85;
   }
 
-  /* CLIMATE — card with 5 mini-icons */
+  /* CLIMATE — full-width card with 5 mini-icons */
   .card-climate {
+    grid-column: span 2;           /* full width — 5 labels need the room */
     background: var(--c-sage-bg);
     color: var(--c-sage-ink);
     overflow: visible;             /* let hover tooltips escape the card edge */
   }
   .climate-icons {
-    /* minmax(0, 1fr) lets columns shrink below content min-width — without it,
-       a long word like "SUBTROPICAL" forces the whole row past the card edge. */
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 5px;
-    margin-top: 12px;
+    gap: 8px;
+    margin-top: 14px;
   }
   .climate-icon {
-    min-width: 0;                  /* required for minmax(0,1fr) to work in grid */
-    border-radius: 8px;
+    min-width: 0;
+    border-radius: 10px;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    gap: 4px;
-    padding: 7px 2px 6px;
-    min-height: 78px;              /* keep the 5 icons at the same height even when one label wraps */
+    align-items: center; justify-content: center;
+    gap: 6px;
+    padding: 12px 6px 10px;
     background: rgba(255,255,255,0.32);
     transition: background 200ms;
   }
   .climate-icon .climate-art {
-    width: 62%; aspect-ratio: 1 / 1;
+    width: 48px; height: 48px;
     display: flex; align-items: center; justify-content: center;
   }
   .climate-icon .climate-art svg { width: 100%; height: 100%; display: block; }
   .climate-icon .climate-name {
     font-family: var(--sans);
-    font-size: 7.5px;              /* small enough that 9-letter labels fit on one line */
-    letter-spacing: 0.02em;
+    font-size: 10px;
+    letter-spacing: 0.06em;
     text-transform: uppercase; font-weight: 700;
     color: var(--c-sage-ink); opacity: 0.55;
-    text-align: center; line-height: 1.1;
+    text-align: center; line-height: 1;
     width: 100%;
-    word-break: break-word;        /* "SUBTROPICAL" wraps gracefully if column is narrow */
-    hyphens: auto;
+    white-space: nowrap;           /* labels fit on one line at full card width */
   }
   .climate-icon[data-on="0"] { opacity: 0.42; filter: grayscale(0.45); }
   .climate-icon[data-on="1"] {
     background: rgba(255,255,255,0.65);
   }
   .climate-icon[data-on="1"] .climate-name { opacity: 0.92; }
+  @media (max-width: 480px) {
+    /* on phones the card is narrower again — drop label size + allow wrap */
+    .climate-icons { gap: 5px; }
+    .climate-icon { padding: 8px 3px 7px; gap: 4px; }
+    .climate-icon .climate-art { width: 32px; height: 32px; }
+    .climate-icon .climate-name { font-size: 8px; letter-spacing: 0.02em; white-space: normal; }
+  }
 
   /* EXTREMES (most + least populous) */
   .extremes {
@@ -355,7 +359,7 @@
     border-radius: 12px;
     padding: 10px 8px 8px;
     display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    position: relative;            /* overflow: visible so the hover tooltip can escape */
+    position: relative; overflow: hidden;
     transition: transform 200ms ease, background 300ms, box-shadow 200ms;
     cursor: pointer;
     border: 1px solid transparent;
@@ -397,6 +401,104 @@
   }
   .badge.unlocked .badge-name { color: var(--badge-ink, var(--ink)); }
   .badge.unlocked .badge-meta { color: var(--badge-ink, var(--ink)); opacity: 0.75; }
+
+  /* ─── EXPANDED BADGE — in-place reveal of explanation text ─── */
+  .badge.expanded {
+    grid-column: span 2;             /* JS sets grid-column-start so we never overflow */
+    grid-row: span 2;
+    aspect-ratio: auto;
+    min-height: 220px;
+    padding: 16px 18px 18px;
+    cursor: default;
+    z-index: 5;
+    overflow: visible;
+    box-shadow: 0 8px 22px -10px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.06);
+    /* a column layout when expanded — left-aligned content, top-down */
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+  .badge.expanded .badge-art {
+    width: 52px; height: 52px;
+    align-self: flex-start;
+  }
+  .badge.expanded .badge-art svg { width: 100%; height: 100%; }
+  .badge.expanded .badge-name {
+    font-size: 19px;
+    text-align: left;
+    letter-spacing: -0.005em;
+    margin-top: 6px;
+    line-height: 1.15;
+  }
+  .badge.expanded .badge-meta {
+    text-align: left;
+    font-size: 9px;
+    margin-top: 0;
+  }
+  .badge .badge-inline {
+    display: none;
+  }
+  .badge.expanded .badge-inline {
+    display: block;
+    margin-top: 10px;
+    font-family: var(--sans);
+    text-align: left;
+  }
+  .badge.expanded .bd-pill {
+    display: inline-block;
+    font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .badge.expanded .bd-pill.unlocked {
+    background: rgba(255,255,255,0.7);
+    color: var(--badge-ink, var(--ink));
+  }
+  .badge.expanded .bd-pill.locked {
+    background: rgba(0,0,0,0.06);
+    color: var(--muted);
+  }
+  .badge.expanded .bd-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--badge-ink, var(--ink-2));
+    opacity: 0.92;
+  }
+  .badge.expanded.locked .bd-text { color: var(--ink-2); opacity: 0.95; }
+  .badge.expanded .bd-prog {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--badge-ink, var(--muted));
+    opacity: 0.68;
+    font-variant-numeric: tabular-nums;
+  }
+  .badge.expanded .bd-prog strong { font-weight: 700; opacity: 1; }
+  .badge .badge-close { display: none; }
+  .badge.expanded .badge-close {
+    display: flex;
+    position: absolute;
+    top: 10px; right: 12px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    align-items: center; justify-content: center;
+    font-size: 16px; line-height: 1;
+    cursor: pointer;
+    border: none;
+    color: var(--badge-ink, var(--ink));
+    font-family: inherit;
+    padding: 0;
+  }
+  .badge.expanded .badge-close:hover { background: rgba(0,0,0,0.14); }
+  @media (max-width: 480px) {
+    .badge.expanded { min-height: 180px; padding: 14px 14px 16px; }
+    .badge.expanded .badge-name { font-size: 16px; }
+    .badge.expanded .badge-art { width: 42px; height: 42px; }
+    .badge.expanded .bd-text { font-size: 11.5px; }
+  }
 
   /* badge details panel */
   .badge-detail {
@@ -682,7 +784,16 @@
         </div>
       </div>
 
-      <!-- CLIMATE ZONES with 5 mini-icons -->
+      <!-- COASTLINES — paired with People to fill the row when Climate goes full-width -->
+      <div class="card sky">
+        <div class="card-lab">Coastlines</div>
+        <div>
+          <div class="card-num"><span data-count="0" id="stat-coast">0</span><span class="of">/<span id="stat-coast-of">—</span></span></div>
+          <div class="card-foot">coastal countries marked</div>
+        </div>
+      </div>
+
+      <!-- CLIMATE ZONES with 5 mini-icons (full-width) -->
       <div class="card card-climate">
         <div class="card-lab">Climate zones</div>
         <div>
@@ -723,13 +834,6 @@
         <span class="sub" id="badges-progress">— / —</span>
       </div>
       <div class="badge-wall" id="badge-wall"></div>
-      <div class="badge-detail" id="badge-detail" aria-live="polite">
-        <div class="bd-lab">Badge</div>
-        <div class="bd-name" id="bd-name">—</div>
-        <span class="bd-status" id="bd-status">—</span>
-        <div class="bd-how" id="bd-how">—</div>
-        <div class="bd-progress" id="bd-progress"></div>
-      </div>
       <button class="view-all" id="view-all" type="button">View all badges</button>
     </section>
 
@@ -821,7 +925,7 @@ function climateZone(lat) {
    polar zone in addition to whatever their centroid climate is. */
 const POLAR_TERRITORY = new Set(['NOR','RUS','CAN','ISL','FIN','SWE','USA']);
 const CLIMATE_ORDER = ['Tropical','Subtropical','Temperate','Subarctic','Polar'];
-const CLIMATE_ART = { Tropical:'palm-circle', Subtropical:'cactus-sun', Temperate:'leaf-quad', Subarctic:'pine-row', Polar:'iceberg' };
+const CLIMATE_ART = { Tropical:'tropical-sun', Subtropical:'cactus-sun', Temperate:'leaf-quad', Subarctic:'pine-row', Polar:'iceberg' };
 const CLIMATE_INK = '#2D3E1F';   /* sage ink — used for climate icons */
 /* short hover description: latitude band that defines each climate */
 const CLIMATE_RANGE = {
@@ -1053,6 +1157,16 @@ function badgeArt(kind, ink) {
     case 'hemi-E': return hemiBadge(stroke, 'right');
     case 'hemi-W': return hemiBadge(stroke, 'left');
     case 'palm-circle': return `<svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22" stroke-dasharray="2 3"/><path d="M32 50 C30 42 30 34 32 24"/><path d="M32 24 C24 22 18 24 14 28"/><path d="M32 24 C40 22 46 24 50 28"/><path d="M32 24 C30 18 32 12 36 10"/><circle cx="30" cy="26" r="1.5" fill="${stroke}" stroke="none"/><circle cx="34" cy="26" r="1.5" fill="${stroke}" stroke="none"/></svg>`;
+    case 'tropical-sun': {
+      // a clean filled sun with 8 short rays — universal symbol for tropical heat
+      const rays = Array.from({length:8}).map((_,i)=>{
+        const a = i*Math.PI/4;
+        const x1=32+Math.cos(a)*15, y1=32+Math.sin(a)*15;
+        const x2=32+Math.cos(a)*23, y2=32+Math.sin(a)*23;
+        return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}"/>`;
+      }).join('');
+      return `<svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="2.2" stroke-linecap="round"><circle cx="32" cy="32" r="9" fill="${stroke}" stroke="none"/>${rays}</svg>`;
+    }
     case 'cactus-sun': return `<svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="44" cy="20" r="6"/><path d="M40 14 L36 10 M48 14 L52 10 M50 20 L56 20 M46 27 L48 32" stroke-width="1.2"/><path d="M28 50 L28 26 C28 22 32 22 32 26 L32 50 Z"/><path d="M20 36 C20 32 24 32 24 36 L24 44 L28 44"/><path d="M40 32 C40 28 36 28 36 32 L36 38 L32 38"/><path d="M22 50 L38 50" stroke-dasharray="2 2"/></svg>`;
     case 'leaf-quad': return `<svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22" stroke-dasharray="2 3"/><path d="M32 32 L32 14 M32 14 C30 16 30 18 32 20"/><path d="M32 32 L48 32 C46 34 44 34 42 32"/><path d="M32 32 C36 36 38 42 36 50 C32 46 30 38 32 32" fill="${stroke}" stroke="none"/><path d="M32 32 L16 30 C18 30 20 28 22 28 L18 26"/><circle cx="32" cy="32" r="2" fill="${stroke}" stroke="none"/></svg>`;
     case 'pine-row': return `<svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 50 L20 30 L24 50 Z"/><path d="M28 50 L34 18 L40 50 Z"/><path d="M44 50 L48 36 L52 50 Z"/><path d="M10 50 L54 50"/><text x="34" y="14" text-anchor="middle" font-size="8" font-family="serif" font-weight="600" fill="${stroke}" stroke="none">★</text></svg>`;
@@ -1173,6 +1287,10 @@ function paint() {
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
   document.getElementById('stat-pop-pct').textContent = (popRatio*100).toFixed(1) + '%';
 
+  /* coastlines */
+  grid._anims.push(scheduleCount(document.getElementById('stat-coast'), coastalCount));
+  document.getElementById('stat-coast-of').textContent = totalCoastal;
+
   /* climate — 5 mini icons with always-visible label and hover tooltip */
   grid._anims.push(scheduleCount(document.getElementById('stat-clim'), climates.size));
   const clEl = document.getElementById('climate-icons');
@@ -1291,22 +1409,65 @@ function paint() {
   setupRevealObserver();
 }
 
-/* badge details panel */
+/* In-place badge expansion: clicking a badge grows it to a 2×2 area in the
+   wall and reveals the explanation text inside. Clicking it again, the ×, or
+   anywhere outside the wall collapses it. The old separate detail panel below
+   the wall is no longer used. */
+function collapseBadge(divEl) {
+  if (!divEl.classList.contains('expanded')) return;
+  divEl.classList.remove('expanded');
+  divEl.style.gridColumn = '';
+  divEl.style.gridRow = '';
+  divEl.querySelectorAll('.badge-inline, .badge-close').forEach(el => el.remove());
+}
+
 function selectBadge(b, unlocked, ctx, divEl) {
-  document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
-  divEl.classList.add('selected');
+  // toggle: if this badge is already expanded, collapse and return
+  if (divEl.classList.contains('expanded')) {
+    collapseBadge(divEl);
+    return;
+  }
+  // collapse any other open badge first
+  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
 
-  const panel = document.getElementById('badge-detail');
-  panel.classList.add('open');
-  document.getElementById('bd-name').textContent = b.name;
-  const status = document.getElementById('bd-status');
-  status.textContent = unlocked ? 'Unlocked' : 'Locked';
-  status.className = 'bd-status ' + (unlocked ? 'unlocked' : 'locked');
-  document.getElementById('bd-how').textContent = howToCopy(b);
-  document.getElementById('bd-progress').innerHTML = progressCopy(b, ctx);
+  // figure out grid placement: avoid spilling past the right edge of the wall
+  const wall = document.getElementById('badge-wall');
+  const cols = window.matchMedia('(max-width: 480px)').matches ? 3 : 4;
+  // index among visible badges (display:none ones still count in grid; collapsed wall hides 13+)
+  const allBadges = Array.from(wall.children);
+  const idx = allBadges.indexOf(divEl);
+  const col = (idx % cols) + 1;
+  const startCol = col === cols ? cols - 1 : col;   // shift left if we're at the right edge
+  divEl.style.gridColumn = `${startCol} / span 2`;
 
-  // scroll panel into view comfortably
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // inject inline detail content
+  const statusKey = unlocked ? 'unlocked' : 'locked';
+  const statusLabel = unlocked ? 'Unlocked' : 'Locked';
+  const detail = document.createElement('div');
+  detail.className = 'badge-inline';
+  detail.innerHTML = `
+    <span class="bd-pill ${statusKey}">${statusLabel}</span>
+    <div class="bd-text">${howToCopy(b, ctx)}</div>
+    <div class="bd-prog">${progressCopy(b, ctx)}</div>
+  `;
+  divEl.appendChild(detail);
+
+  // close button
+  const close = document.createElement('button');
+  close.className = 'badge-close';
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close badge details');
+  close.textContent = '×';
+  close.addEventListener('click', (e) => {
+    e.stopPropagation();
+    collapseBadge(divEl);
+  });
+  divEl.appendChild(close);
+
+  divEl.classList.add('expanded');
+
+  // give the user a chance to see it if they're scrolled past
+  requestAnimationFrame(() => divEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
 
 /* view-all toggle */
@@ -1319,13 +1480,11 @@ document.getElementById('view-all').addEventListener('click', () => {
     : `View all ${BADGES.length} badges`;
 });
 
-/* close detail panel when clicking outside the wall */
+/* collapse any expanded badge when the user clicks outside the wall */
 document.addEventListener('click', (e) => {
-  if (e.target.closest('#badge-wall')) return;
-  if (e.target.closest('#badge-detail')) return;
-  if (e.target.closest('#view-all')) return;
-  document.getElementById('badge-detail').classList.remove('open');
-  document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
+  if (e.target.closest('.badge')) return;        // badge clicks are handled by selectBadge
+  if (e.target.closest('#view-all')) return;     // toggling "view all" shouldn't collapse
+  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
 });
 
 /* ─── EXPORT AS PNG ───
@@ -1374,8 +1533,8 @@ async function captureSheet() {
   const wallWasExpanded = wall.classList.contains('expanded');
   try {
     wall.classList.add('expanded');
-    document.getElementById('badge-detail').classList.remove('open');
-    document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
+    // collapse any in-place expanded badge before snapshot — restored by paint() on next reveal
+    document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
     document.body.classList.add('exporting');
     // wait for layout to settle before snapshotting
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
