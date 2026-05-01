@@ -79,6 +79,14 @@
     color: #FCFCFA; display: flex; align-items: center; justify-content: center;
     text-decoration: none; font-size: 18px; cursor: pointer; font-family: inherit;
   }
+  .iconbtn-text {
+    width: auto; padding: 0 14px;
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .iconbtn:disabled, .iconbtn.busy { opacity: 0.55; cursor: progress; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
   .topbar-title {
     font-family: var(--serif);
     font-size: 17px; font-weight: 500;
@@ -245,29 +253,39 @@
     overflow: visible;             /* let hover tooltips escape the card edge */
   }
   .climate-icons {
+    /* minmax(0, 1fr) lets columns shrink below content min-width — without it,
+       a long word like "SUBTROPICAL" forces the whole row past the card edge. */
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
     margin-top: 12px;
   }
   .climate-icon {
-    aspect-ratio: 1 / 1.18;
+    min-width: 0;                  /* required for minmax(0,1fr) to work in grid */
     border-radius: 8px;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 3px;
-    padding: 5px 2px 4px;
+    align-items: center; justify-content: flex-start;
+    gap: 4px;
+    padding: 7px 2px 6px;
+    min-height: 78px;              /* keep the 5 icons at the same height even when one label wraps */
     background: rgba(255,255,255,0.32);
     transition: background 200ms;
   }
-  .climate-icon .climate-art { width: 64%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
+  .climate-icon .climate-art {
+    width: 62%; aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+  }
   .climate-icon .climate-art svg { width: 100%; height: 100%; display: block; }
   .climate-icon .climate-name {
     font-family: var(--sans);
-    font-size: 8.5px; letter-spacing: 0.05em;
+    font-size: 7.5px;              /* small enough that 9-letter labels fit on one line */
+    letter-spacing: 0.02em;
     text-transform: uppercase; font-weight: 700;
     color: var(--c-sage-ink); opacity: 0.55;
-    text-align: center; line-height: 1;
+    text-align: center; line-height: 1.1;
+    width: 100%;
+    word-break: break-word;        /* "SUBTROPICAL" wraps gracefully if column is narrow */
+    hyphens: auto;
   }
   .climate-icon[data-on="0"] { opacity: 0.42; filter: grayscale(0.45); }
   .climate-icon[data-on="1"] {
@@ -622,7 +640,10 @@
   <div class="topbar-inner">
     <a href="/" class="iconbtn" aria-label="Back to globe">×</a>
     <div class="topbar-title">Your Atlas</div>
-    <button class="iconbtn" aria-label="Save atlas as image" id="top-share" title="Save atlas as image">↑</button>
+    <div class="topbar-actions">
+      <button class="iconbtn iconbtn-text" aria-label="Save the atlas as PDF" id="top-pdf" title="Save as PDF">PDF</button>
+      <button class="iconbtn" aria-label="Save atlas as image" id="top-share" title="Save atlas as image">↑</button>
+    </div>
   </div>
 </div>
 
@@ -793,6 +814,12 @@ function climateZone(lat) {
   if (a < 66.5) return 'Subarctic';
   return 'Polar';
 }
+/* No country in the dataset has a centroid lat ≥ 66.5°, so the Polar zone
+   would never trigger from latitude alone. These countries all hold land
+   above the Arctic Circle (Norway/Svalbard, Russia, Canada, Iceland, Finland,
+   Sweden, USA/Alaska) — visiting any of them is treated as touching the
+   polar zone in addition to whatever their centroid climate is. */
+const POLAR_TERRITORY = new Set(['NOR','RUS','CAN','ISL','FIN','SWE','USA']);
 const CLIMATE_ORDER = ['Tropical','Subtropical','Temperate','Subarctic','Polar'];
 const CLIMATE_ART = { Tropical:'palm-circle', Subtropical:'cactus-sun', Temperate:'leaf-quad', Subarctic:'pine-row', Polar:'iceberg' };
 const CLIMATE_INK = '#2D3E1F';   /* sage ink — used for climate icons */
@@ -1112,7 +1139,10 @@ function paint() {
   });
 
   const climates = new Set();
-  known.forEach(iso => climates.add(climateZone(COUNTRIES[iso][4])));
+  known.forEach(iso => {
+    climates.add(climateZone(COUNTRIES[iso][4]));
+    if (POLAR_TERRITORY.has(iso)) climates.add('Polar');  // see POLAR_TERRITORY note
+  });
 
   const coastalCount = known.filter(iso => !LANDLOCKED.has(iso)).length;
   const totalCoastal = TOTAL_UN - LANDLOCKED.size;
@@ -1215,9 +1245,7 @@ function paint() {
       div.style.setProperty('--badge-bg', bg);
       div.style.setProperty('--badge-ink', ink);
     }
-    /* hover tooltip: badge name + how to unlock (or unlocked confirmation) */
-    const tipBody = unlocked ? 'Unlocked.' : howToCopy(b, ctx);
-    div.setAttribute('data-tip', `${b.name} — ${tipBody}`);
+    /* no hover tooltip on badges — click reveals the detail panel below the wall */
     div.innerHTML = `
       <div class="badge-art">${badgeArt(b.art, unlocked ? ink : '#9893a0')}</div>
       <div class="badge-name">${b.name}</div>
@@ -1320,6 +1348,51 @@ function loadHtml2Canvas() {
   return _h2cPromise;
 }
 
+let _jspdfPromise = null;
+function loadJsPDF() {
+  if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve(window.jspdf.jsPDF);
+  if (_jspdfPromise) return _jspdfPromise;
+  _jspdfPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.crossOrigin = 'anonymous';
+    s.onload = () => {
+      if (window.jspdf && window.jspdf.jsPDF) resolve(window.jspdf.jsPDF);
+      else reject(new Error('jsPDF loaded but not exposed.'));
+    };
+    s.onerror = () => reject(new Error('Could not load PDF-export library.'));
+    document.head.appendChild(s);
+  });
+  return _jspdfPromise;
+}
+
+/* Shared capture: prepare the sheet, snapshot it with html2canvas, then
+   restore everything. Used by both PNG and PDF export paths. */
+async function captureSheet() {
+  const html2canvas = await loadHtml2Canvas();
+  const wall   = document.getElementById('badge-wall');
+  const wallWasExpanded = wall.classList.contains('expanded');
+  try {
+    wall.classList.add('expanded');
+    document.getElementById('badge-detail').classList.remove('open');
+    document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
+    document.body.classList.add('exporting');
+    // wait for layout to settle before snapshotting
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const sheet = document.querySelector('.sheet');
+    return await html2canvas(sheet, {
+      backgroundColor: '#FCFCFA',
+      scale: Math.min(2, window.devicePixelRatio || 1.5),
+      useCORS: true,
+      logging: false,
+      ignoreElements: el => el.tagName === 'IFRAME',
+    });
+  } finally {
+    if (!wallWasExpanded) wall.classList.remove('expanded');
+    document.body.classList.remove('exporting');
+  }
+}
+
 function showToast(msg, durationMs = 2000) {
   let t = document.getElementById('toast');
   if (!t) {
@@ -1336,50 +1409,24 @@ function showToast(msg, durationMs = 2000) {
   t._hideT = setTimeout(() => t.classList.remove('show'), durationMs);
 }
 
-function defaultFilename() {
+function defaultFilename(ext = 'png') {
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  return `your-atlas-${yyyy}-${mm}-${dd}.png`;
+  return `your-atlas-${yyyy}-${mm}-${dd}.${ext}`;
 }
 
 async function exportAtlas() {
   const btn = document.getElementById('top-share');
   if (btn.classList.contains('busy')) return;
   btn.classList.add('busy');
-
-  // Snapshot UI state we'll temporarily mutate, restore in finally
-  const wall = document.getElementById('badge-wall');
-  const wallWasExpanded = wall.classList.contains('expanded');
-  const detailWasOpen = document.getElementById('badge-detail').classList.contains('open');
-
   try {
-    const html2canvas = await loadHtml2Canvas();
-
-    // Prepare the sheet for capture: expand all badges, hide chrome via .exporting class
-    wall.classList.add('expanded');
-    document.getElementById('badge-detail').classList.remove('open');
-    document.querySelectorAll('.badge.selected').forEach(el => el.classList.remove('selected'));
-    document.body.classList.add('exporting');
-
-    // Wait two frames for layout to settle (CSS .exporting rules + wall expansion)
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-    const sheet = document.querySelector('.sheet');
-    const canvas = await html2canvas(sheet, {
-      backgroundColor: '#FCFCFA',
-      scale: Math.min(2, window.devicePixelRatio || 1.5),
-      useCORS: true,
-      logging: false,
-      // skip the iframe globe — it's hidden during export anyway, but be explicit
-      ignoreElements: el => el.tagName === 'IFRAME',
-    });
-
+    const canvas = await captureSheet();
     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
     if (!blob) throw new Error('Could not encode image.');
 
-    const filename = defaultFilename();
+    const filename = defaultFilename('png');
     const file = new File([blob], filename, { type: 'image/png' });
 
     // Try native share with the file (mobile-first)
@@ -1389,7 +1436,6 @@ async function exportAtlas() {
         showToast('Shared');
         return;
       } catch (err) {
-        // user cancelled; fall through to download as a fallback
         if (err && err.name === 'AbortError') return;
       }
     }
@@ -1397,25 +1443,62 @@ async function exportAtlas() {
     // Fallback: trigger a download
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast('Saved to your downloads');
   } catch (err) {
-    console.error('Atlas export failed:', err);
+    console.error('Atlas PNG export failed:', err);
     showToast('Export failed — please try again', 2800);
   } finally {
-    // Restore UI state
-    if (!wallWasExpanded) wall.classList.remove('expanded');
-    document.body.classList.remove('exporting');
+    btn.classList.remove('busy');
+  }
+}
+
+/* PDF export — same capture as PNG, then jsPDF wraps the canvas as a single
+   page sized to match the sheet's actual dimensions (so colors, fonts, layout
+   come through 1:1). The page becomes a custom-format PDF, basically a
+   print-ready poster of the user's atlas. */
+async function exportAtlasPDF() {
+  const btn = document.getElementById('top-pdf');
+  if (btn.classList.contains('busy')) return;
+  btn.classList.add('busy');
+  try {
+    const [canvas, jsPDF] = await Promise.all([captureSheet(), loadJsPDF()]);
+
+    // Convert the captured canvas to JPEG (smaller PDF than PNG; quality 0.92 is plenty).
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+    // Page sized to the canvas at 72 DPI — preserves the sheet's real proportions.
+    // canvas dimensions are in device pixels (at the capture scale); convert to pt.
+    const pxToPt = 72 / 96;
+    const wPt = canvas.width  * pxToPt / (Math.min(2, window.devicePixelRatio || 1.5));
+    const hPt = canvas.height * pxToPt / (Math.min(2, window.devicePixelRatio || 1.5));
+    const orientation = wPt > hPt ? 'l' : 'p';
+
+    const pdf = new jsPDF({ orientation, unit: 'pt', format: [wPt, hPt], compress: true });
+    pdf.addImage(dataUrl, 'JPEG', 0, 0, wPt, hPt, undefined, 'FAST');
+
+    pdf.setProperties({
+      title:    'Your Atlas — Blank Earth',
+      subject:  'Personal atlas of visited countries',
+      creator:  'Blank Earth (niceearth.pages.dev)',
+      author:   'Blank Earth',
+      keywords: 'atlas, travel, countries',
+    });
+
+    pdf.save(defaultFilename('pdf'));
+    showToast('PDF saved to your downloads');
+  } catch (err) {
+    console.error('Atlas PDF export failed:', err);
+    showToast('PDF export failed — please try again', 2800);
+  } finally {
     btn.classList.remove('busy');
   }
 }
 
 document.getElementById('top-share').addEventListener('click', exportAtlas);
+document.getElementById('top-pdf').addEventListener('click', exportAtlasPDF);
 
 paint();
 </script>
