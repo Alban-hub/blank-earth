@@ -48,9 +48,14 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
 .hover-label.show{opacity:1}
 @media (max-width:640px){.panel{left:14px;right:14px;bottom:14px;width:auto}.tip{display:none}.ui{padding:14px}}
+.atlas-link{display:block;margin-top:12px;padding-top:12px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em}
+.atlas-link:hover{color:var(--accent)}
+html.embed-mode .ui,html.embed-mode .panel,html.embed-mode .tip,html.embed-mode .hover-label{display:none!important}
+html.embed-mode body{pointer-events:none}
 </style>
 </head>
 <body>
+<script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode')</script>
 
 <div class="ui">
   <div>
@@ -82,6 +87,7 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
     <input type="file" id="file" accept="application/json" hidden>
     <button class="btn subtle" id="reset">reset</button>
   </div>
+  <a class="atlas-link" href="stats.html">view atlas →</a>
 </div>
 
 <canvas id="scene" aria-label="Interactive globe — drag to rotate, scroll to zoom, click a country to mark it visited"></canvas>

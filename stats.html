@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Your Atlas — Blank Earth</title>
+<style>
+  :root {
+    --space:  #0F1530;
+    --ink:    #1c1838;
+    --paper:  #FCFCFA;
+    --hair:   #ECEAE2;
+    --line:   #D8D5CC;
+    --muted:  #6b6985;
+    --warm:   #FAF6E8;
+    --accent: #4488E0;
+
+    --card-deep:  #1B2356;
+    --card-deep-2:#2B3782;
+    --card-blue:  #DCE8F8;
+    --card-warm:  #F2EBD8;
+    --card-red:   #4A1F2C;
+    --card-red-2: #7A2D3F;
+
+    --sans:  -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", system-ui, sans-serif;
+    --serif: "Iowan Old Style", "Palatino", "Cambria", "Times New Roman", serif;
+
+    --radius-card: 22px;
+    --radius-pill: 999px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--space);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    min-height: 100vh;
+  }
+
+  /* live globe in the background — same scene as the main page, just no UI */
+  .globe-bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border: 0;
+    z-index: 0;
+    pointer-events: none;   /* let scrolling/clicking pass through to cards */
+  }
+
+  /* soft dark gradient fades the globe into the cards as you scroll */
+  .scroll-fade {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 50vh;
+    background: linear-gradient(to bottom, transparent 0%, rgba(15,21,48,0.4) 60%, var(--space) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .stage {
+    position: relative;
+    z-index: 2;
+    max-width: 480px;
+    margin: 0 auto;
+    /* push the sheet down so the globe shows above the fold */
+    padding-top: 42vh;
+  }
+
+  /* topbar floats over the globe, no background, white text */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 4;
+    padding: 22px 22px 14px;
+    color: #fff;
+    pointer-events: none;
+  }
+  .topbar > * { pointer-events: auto; }
+  .topbar-inner {
+    max-width: 480px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .iconbtn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(15,21,48,0.55);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; font-size: 18px; cursor: pointer; font-family: inherit;
+  }
+  .topbar-title {
+    font-family: var(--serif); font-style: italic;
+    font-size: 17px; font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+
+  /* the sheet — paper-cream cards rising up over the globe */
+  .sheet {
+    background: var(--paper);
+    border-top-left-radius: 26px;
+    border-top-right-radius: 26px;
+    padding: 22px 18px 60px;
+    color: var(--ink);
+    min-height: 80vh;
+    box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.4);
+  }
+
+  .sheet-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 4px 14px;
+  }
+  .sheet-title {
+    font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--ink);
+  }
+  .plate {
+    font-family: var(--serif); font-style: italic;
+    font-size: 13px; color: var(--muted);
+  }
+  .sheet-share {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--hair); border: 0;
+    color: var(--ink); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px;
+  }
+
+  /* HERO PASSPORT */
+  .passport {
+    position: relative;
+    background: linear-gradient(160deg, var(--card-deep) 0%, var(--card-deep-2) 100%);
+    color: #fff;
+    border-radius: var(--radius-card);
+    padding: 22px 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -12px rgba(15,21,48,0.5);
+  }
+  .passport::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 30% 40%, rgba(255,255,255,0.05), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 70% 65%, rgba(255,255,255,0.04), transparent 60%);
+  }
+  .passport-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 18px; position: relative;
+  }
+  .passport-eyebrow {
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .passport-eyebrow .em {
+    font-family: var(--serif); font-style: italic;
+    font-weight: 400; letter-spacing: 0; text-transform: none;
+    margin-left: 8px; opacity: 0.7;
+  }
+  .passport-sub {
+    margin-top: 4px;
+    font-size: 11px; color: rgba(255,255,255,0.55);
+    letter-spacing: 0.18em;
+  }
+  .passport-sub .dot { opacity: 0.5; margin: 0 6px; }
+  .passport-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 16px 18px; margin-top: 6px; position: relative;
+  }
+  .pg .label {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: rgba(220,232,248,0.72); margin-bottom: 4px; font-weight: 600;
+  }
+  .pg .value {
+    font-size: 30px; font-weight: 800;
+    letter-spacing: -0.02em; line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+  .pg .value .unit {
+    font-size: 18px; font-weight: 600;
+    color: rgba(220,232,248,0.55); margin-left: 2px;
+  }
+  .pg .sub { font-size: 12px; color: rgba(220,232,248,0.7); margin-top: 2px; }
+
+  /* common card */
+  .card {
+    border-radius: var(--radius-card);
+    padding: 20px; margin-top: 14px;
+    position: relative; overflow: hidden;
+  }
+  .card-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; margin-bottom: 6px;
+  }
+  .card-title {
+    font-size: 16px; font-weight: 700;
+    letter-spacing: -0.005em; color: var(--ink);
+  }
+  .share-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    color: var(--ink); padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 12px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+  }
+
+  /* COUNTRIES + chart */
+  .card-countries .big-num {
+    font-size: 84px; font-weight: 800;
+    letter-spacing: -0.04em; line-height: 0.95;
+    color: var(--ink); margin-top: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-countries .stack {
+    margin-top: 10px;
+    display: flex; flex-direction: column; gap: 2px;
+    font-size: 16px; font-weight: 500;
+  }
+  .card-countries .stack .row { color: var(--muted); }
+  .card-countries .stack .row b { font-weight: 800; margin-right: 4px; color: var(--ink); }
+
+  .chart-tabs {
+    display: flex; gap: 8px; align-items: center;
+    margin: 14px 0 6px;
+    font-size: 13px; font-weight: 700; color: var(--muted);
+  }
+  .chart-tabs .lab {
+    color: var(--ink); font-weight: 800;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    font-size: 11px; margin-right: auto;
+  }
+  .chart-tabs button {
+    background: none; border: none; color: inherit; font: inherit;
+    padding: 5px 10px; border-radius: var(--radius-pill); cursor: pointer;
+  }
+  .chart-tabs button.active { background: var(--ink); color: var(--paper); }
+  .chart {
+    margin-top: 14px;
+    display: grid; grid-template-columns: 26px 1fr;
+    gap: 6px; align-items: stretch;
+  }
+  .chart-y {
+    display: flex; flex-direction: column-reverse;
+    justify-content: space-between; align-items: flex-end;
+    padding-right: 8px;
+    font-size: 11px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-cols {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 8px; align-items: end;
+    height: 200px; position: relative;
+  }
+  .chart-cols::before, .chart-cols::after {
+    content: ""; position: absolute; left: 0; right: 0;
+    border-top: 1px solid var(--hair);
+  }
+  .chart-cols::before { top: 33%; }
+  .chart-cols::after  { top: 66%; }
+  .chart-col {
+    display: flex; flex-direction: column;
+    justify-content: end; align-items: center;
+    height: 100%; position: relative; z-index: 1;
+  }
+  .chart-bar {
+    width: 100%;
+    background: var(--accent);
+    border-radius: 6px 6px 2px 2px;
+    height: 0;
+    transition: height 900ms cubic-bezier(.2,.7,.2,1);
+    min-height: 0;
+  }
+  .chart-x {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 8px; margin: 8px 0 0 32px;
+    font-size: 12px; color: var(--muted);
+    font-weight: 600; text-align: center;
+  }
+
+  /* % world's land */
+  .card-land { background: var(--card-warm); }
+  .card-land .row {
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 18px; align-items: center; margin-top: 10px;
+  }
+  .card-land .stat {
+    font-family: var(--serif); font-style: italic;
+    font-size: 56px; font-weight: 400;
+    letter-spacing: -0.02em; color: var(--ink);
+    line-height: 0.95; font-variant-numeric: tabular-nums;
+  }
+  .card-land .stat .pct {
+    font-size: 28px; vertical-align: 14px;
+    color: var(--muted); margin-left: 2px;
+  }
+  .card-land .substat { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .land-square {
+    width: 120px; height: 120px;
+    background: rgba(28,24,56,0.08);
+    position: relative; border-radius: 4px; overflow: hidden;
+  }
+  .land-square .inner {
+    position: absolute; left: 0; bottom: 0;
+    background: var(--accent);
+    width: 0; height: 0;
+    transition: width 1100ms cubic-bezier(.2,.7,.2,1), height 1100ms cubic-bezier(.2,.7,.2,1);
+  }
+  .land-square .pct-glyph {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic;
+    font-size: 30px; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    z-index: 2; text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  }
+
+  /* around-the-world ratios */
+  .card-around { background: var(--card-blue); }
+  .card-around .lead {
+    font-size: 38px; font-weight: 800;
+    letter-spacing: -0.025em; color: var(--ink); margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-around .lead .unit {
+    font-size: 22px; font-weight: 600; color: var(--muted);
+  }
+  .card-around .lead-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .card-around .lead-row { color: var(--ink); font-size: 13px; margin-top: 2px; }
+  .ratios { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .ratio {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.65);
+    border-radius: 999px; padding: 6px;
+    position: relative; overflow: hidden;
+  }
+  .ratio-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff;
+    z-index: 2; position: relative;
+  }
+  .ratio-icon.earth { background: linear-gradient(135deg, #2868b5, #4488E0 60%, #b5d8ff); }
+  .ratio-icon.un    { background: linear-gradient(135deg, #1B2356, #4488E0); }
+  .ratio-icon.cont  { background: linear-gradient(135deg, #4F6F52, #9DBA9F); }
+  .ratio-fill {
+    position: absolute;
+    left: 6px; top: 6px; bottom: 6px;
+    background: var(--accent);
+    border-radius: 999px;
+    width: 38px;
+    transition: width 1100ms cubic-bezier(.2,.7,.2,1);
+    z-index: 1;
+  }
+  .ratio-label {
+    margin-left: auto; margin-right: 16px;
+    font-size: 14px; font-weight: 700;
+    color: var(--ink); z-index: 2; position: relative;
+    font-variant-numeric: tabular-nums;
+  }
+  .ratio-label .x { font-weight: 800; }
+
+  /* what's left */
+  .card-left {
+    background: linear-gradient(160deg, var(--card-red) 0%, var(--card-red-2) 100%);
+    color: #fff;
+  }
+  .card-left .card-title { color: #fff; }
+  .card-left .share-pill {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.12); color: #fff;
+  }
+  .card-left .big-num {
+    font-size: 60px; font-weight: 800;
+    letter-spacing: -0.03em; line-height: 1; margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-left .label-line { font-size: 16px; font-weight: 600; margin-top: 6px; }
+  .card-left .sub-line {
+    font-size: 13px; color: rgba(255,255,255,0.62);
+    margin-top: 4px; font-style: italic; font-family: var(--serif);
+  }
+
+  /* rarest */
+  .card-rare { background: var(--card-warm); }
+  .card-rare .country-name {
+    font-size: 38px; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--ink); margin-top: 4px;
+  }
+  .card-rare .country-name .em {
+    font-family: var(--serif); font-style: italic;
+    font-weight: 400; color: var(--muted);
+    font-size: 22px; margin-left: 8px; letter-spacing: 0;
+  }
+  .card-rare .meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* curator footnote */
+  .card-foot { background: var(--paper); border: 1px solid var(--hair); }
+  .card-foot .body {
+    font-family: var(--serif); font-style: italic;
+    font-size: 16px; color: var(--ink);
+    line-height: 1.5; margin-top: 6px;
+    text-wrap: pretty;
+  }
+  .card-foot .body em { font-style: italic; color: var(--accent); font-weight: 600; }
+  .card-foot .attr {
+    margin-top: 12px;
+    font-family: var(--sans); font-style: normal;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* past visits */
+  .section-h {
+    margin: 28px 4px 8px;
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.015em; color: var(--ink);
+  }
+  .visits {
+    margin-top: 4px; border-radius: var(--radius-card);
+    overflow: hidden; background: var(--paper);
+  }
+  .visit {
+    display: grid; grid-template-columns: 36px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--hair);
+    font-size: 15px;
+  }
+  .visit:last-child { border-bottom: none; }
+  .visit .seq {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--card-blue); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .visit .name { font-weight: 600; color: var(--ink); }
+  .visit .meta { color: var(--muted); font-size: 13px; }
+
+  /* entrance animation */
+  .reveal {
+    opacity: 0; transform: translateY(14px);
+    transition: opacity 600ms ease, transform 600ms cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .chart-bar, .land-square .inner, .ratio-fill { transition: none; }
+  }
+
+  @media (min-width: 720px) { .stage { max-width: 520px; } }
+</style>
+</head>
+<body>
+
+<!-- live globe behind everything (loads /index.html in embed mode = no UI) -->
+<iframe class="globe-bg" src="/?embed=1" title="Globe background" aria-hidden="true"></iframe>
+<div class="scroll-fade" aria-hidden="true"></div>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="/" class="iconbtn" aria-label="Back to globe">×</a>
+    <div class="topbar-title">Your Atlas</div>
+    <button class="iconbtn" aria-label="Share" id="top-share">↑</button>
+  </div>
+</div>
+
+<div class="stage">
+  <main class="sheet">
+    <div class="sheet-header">
+      <div>
+        <div class="sheet-title">Passport</div>
+        <div class="plate">Plate I — A Personal Reckoning</div>
+      </div>
+      <button class="sheet-share" aria-label="Share">↑</button>
+    </div>
+
+    <!-- HERO PASSPORT -->
+    <section class="passport reveal">
+      <div class="passport-head">
+        <div>
+          <div class="passport-eyebrow">All-time atlas <span class="em">a personal reckoning</span></div>
+          <div class="passport-sub">PASSPORT <span class="dot">•</span> ATLAS <span class="dot">•</span> ATLANTE</div>
+        </div>
+      </div>
+      <div class="passport-grid">
+        <div class="pg">
+          <div class="label">Countries</div>
+          <div class="value" data-count="0" id="pp-countries">0</div>
+          <div class="sub" id="pp-countries-sub">— continents</div>
+        </div>
+        <div class="pg">
+          <div class="label">Land covered</div>
+          <div class="value"><span data-count="0" data-fmt="comma" id="pp-land">0</span> <span class="unit">km²</span></div>
+          <div class="sub" id="pp-land-sub">—% of inhabited land</div>
+        </div>
+        <div class="pg">
+          <div class="label">Continents</div>
+          <div class="value" data-count="0" id="pp-cont">0</div>
+        </div>
+        <div class="pg">
+          <div class="label">UN states</div>
+          <div class="value"><span data-count="0" data-fmt="pct1" id="pp-un">0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COUNTRIES + chart -->
+    <section class="card card-countries reveal">
+      <div class="card-head">
+        <div class="card-title">Countries</div>
+      </div>
+      <div class="big-num" data-count="0" id="cc-num">0</div>
+      <div class="stack">
+        <div class="row"><b data-count="0" id="cc-eu">0</b> European</div>
+        <div class="row"><b data-count="0" id="cc-as">0</b> Asian</div>
+        <div class="row"><b data-count="0" id="cc-other">0</b> elsewhere</div>
+      </div>
+      <div id="chart">
+        <div class="chart-tabs">
+          <span class="lab">Per</span>
+          <button data-v="continent" class="active">Continent</button>
+        </div>
+        <div class="chart">
+          <div class="chart-y" id="chart-y"></div>
+          <div class="chart-cols" id="chart-cols"></div>
+        </div>
+        <div class="chart-x" id="chart-x"></div>
+      </div>
+    </section>
+
+    <!-- % WORLD'S LAND -->
+    <section class="card card-land reveal" id="card-land">
+      <div class="card-head">
+        <div class="card-title">Of the world's land</div>
+      </div>
+      <div class="row">
+        <div>
+          <div class="stat"><span data-count="0" data-fmt="pct1" id="land-stat">0</span></div>
+          <div class="substat" id="land-sub">— km² · measured against inhabited land</div>
+        </div>
+        <div class="land-square">
+          <div class="inner" id="land-inner"></div>
+          <div class="pct-glyph" data-count="0" data-fmt="pct1" id="land-glyph">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AROUND THE WORLD -->
+    <section class="card card-around reveal" id="card-around">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Land covered</div>
+          <div class="lead"><span data-count="0" data-fmt="comma" id="around-km">0</span> <span class="unit">km²</span></div>
+          <div class="lead-sub" id="around-mi">—</div>
+          <div class="lead-row">Average country: <span data-count="0" data-fmt="comma" id="around-avg">0</span> km²</div>
+        </div>
+      </div>
+      <div class="ratios">
+        <div class="ratio">
+          <div class="ratio-fill" id="ratio-earth-fill"></div>
+          <div class="ratio-icon earth">◐</div>
+          <div class="ratio-label"><span class="x" data-count="0" data-fmt="pct1" id="ratio-earth">0</span> Of Earth's Land</div>
+        </div>
+        <div class="ratio">
+          <div class="ratio-fill" id="ratio-un-fill"></div>
+          <div class="ratio-icon un">★</div>
+          <div class="ratio-label"><span class="x" data-count="0" data-fmt="pct1" id="ratio-un">0</span> UN Member States</div>
+        </div>
+        <div class="ratio">
+          <div class="ratio-fill" id="ratio-cont-fill"></div>
+          <div class="ratio-icon cont">◇</div>
+          <div class="ratio-label"><span class="x" id="ratio-cont">0/7</span> Continents Touched</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT'S LEFT -->
+    <section class="card card-left reveal">
+      <div class="card-head">
+        <div class="card-title">Still to see</div>
+      </div>
+      <div class="big-num" data-count="0" id="left-num">0</div>
+      <div class="label-line" id="left-label">countries unmarked</div>
+      <div class="sub-line" id="left-sub">— of total inhabited land remains</div>
+    </section>
+
+    <!-- RAREST -->
+    <section class="card card-rare reveal" id="card-rare">
+      <div class="card-head">
+        <div class="card-title">Rarest in your atlas</div>
+      </div>
+      <div class="country-name" id="rare-name">—</div>
+      <div class="meta" id="rare-meta">— · — km²</div>
+    </section>
+
+    <!-- CURATOR FOOTNOTE -->
+    <section class="card card-foot reveal" id="card-foot">
+      <div class="card-head">
+        <div class="card-title" style="font-family:var(--serif); font-style:italic; font-weight:400;">A note from the curator</div>
+      </div>
+      <div class="body" id="foot-body">—</div>
+      <div class="attr">¶ smallest unvisited</div>
+    </section>
+
+    <h2 class="section-h">Recent visits</h2>
+    <div class="visits" id="visits"></div>
+  </main>
+</div>
+
+<script>
+const CONTINENT_ORDER = [
+  ['EU','Eur'],['AS','Asia'],['AF','Afr'],
+  ['NA','N.Am'],['SA','S.Am'],['OC','Oce'],['AN','Ant']
+];
+const COUNTRIES = {
+  ALB:['EU',28748,'Albania'],AND:['EU',468,'Andorra'],AUT:['EU',83879,'Austria'],BLR:['EU',207600,'Belarus'],BEL:['EU',30528,'Belgium'],BIH:['EU',51209,'Bosnia & Herzegovina'],BGR:['EU',110879,'Bulgaria'],HRV:['EU',56594,'Croatia'],CYP:['EU',9251,'Cyprus'],CZE:['EU',78867,'Czechia'],DNK:['EU',43094,'Denmark'],EST:['EU',45227,'Estonia'],FIN:['EU',338424,'Finland'],FRA:['EU',551695,'France'],DEU:['EU',357114,'Germany'],GRC:['EU',131957,'Greece'],HUN:['EU',93028,'Hungary'],ISL:['EU',103000,'Iceland'],IRL:['EU',70273,'Ireland'],ITA:['EU',301336,'Italy'],XKX:['EU',10887,'Kosovo'],LVA:['EU',64559,'Latvia'],LIE:['EU',160,'Liechtenstein'],LTU:['EU',65300,'Lithuania'],LUX:['EU',2586,'Luxembourg'],MLT:['EU',316,'Malta'],MDA:['EU',33846,'Moldova'],MCO:['EU',2,'Monaco'],MNE:['EU',13812,'Montenegro'],NLD:['EU',41850,'Netherlands'],MKD:['EU',25713,'North Macedonia'],NOR:['EU',323802,'Norway'],POL:['EU',312696,'Poland'],PRT:['EU',92090,'Portugal'],ROU:['EU',238397,'Romania'],RUS:['EU',17098246,'Russia'],SMR:['EU',61,'San Marino'],SRB:['EU',77474,'Serbia'],SVK:['EU',49035,'Slovakia'],SVN:['EU',20273,'Slovenia'],ESP:['EU',505992,'Spain'],SWE:['EU',450295,'Sweden'],CHE:['EU',41285,'Switzerland'],UKR:['EU',603628,'Ukraine'],GBR:['EU',242495,'United Kingdom'],VAT:['EU',0.49,'Vatican City'],
+  AFG:['AS',652230,'Afghanistan'],ARM:['AS',29743,'Armenia'],AZE:['AS',86600,'Azerbaijan'],BHR:['AS',778,'Bahrain'],BGD:['AS',147570,'Bangladesh'],BTN:['AS',38394,'Bhutan'],BRN:['AS',5765,'Brunei'],KHM:['AS',181035,'Cambodia'],CHN:['AS',9596961,'China'],GEO:['AS',69700,'Georgia'],IND:['AS',3287263,'India'],IDN:['AS',1904569,'Indonesia'],IRN:['AS',1648195,'Iran'],IRQ:['AS',438317,'Iraq'],ISR:['AS',20770,'Israel'],JPN:['AS',377975,'Japan'],JOR:['AS',89342,'Jordan'],KAZ:['AS',2724900,'Kazakhstan'],KWT:['AS',17818,'Kuwait'],KGZ:['AS',199951,'Kyrgyzstan'],LAO:['AS',236800,'Laos'],LBN:['AS',10452,'Lebanon'],MYS:['AS',330803,'Malaysia'],MDV:['AS',300,'Maldives'],MNG:['AS',1564110,'Mongolia'],MMR:['AS',676578,'Myanmar'],NPL:['AS',147181,'Nepal'],PRK:['AS',120538,'North Korea'],OMN:['AS',309500,'Oman'],PAK:['AS',881913,'Pakistan'],PSE:['AS',6020,'Palestine'],PHL:['AS',300000,'Philippines'],QAT:['AS',11586,'Qatar'],SAU:['AS',2149690,'Saudi Arabia'],SGP:['AS',728,'Singapore'],KOR:['AS',100210,'South Korea'],LKA:['AS',65610,'Sri Lanka'],SYR:['AS',185180,'Syria'],TWN:['AS',36193,'Taiwan'],TJK:['AS',143100,'Tajikistan'],THA:['AS',513120,'Thailand'],TLS:['AS',14874,'Timor-Leste'],TUR:['AS',783562,'Turkey'],TKM:['AS',488100,'Turkmenistan'],ARE:['AS',83600,'UAE'],UZB:['AS',447400,'Uzbekistan'],VNM:['AS',331212,'Vietnam'],YEM:['AS',527968,'Yemen'],
+  DZA:['AF',2381741,'Algeria'],AGO:['AF',1246700,'Angola'],BEN:['AF',114763,'Benin'],BWA:['AF',581730,'Botswana'],BFA:['AF',272967,'Burkina Faso'],BDI:['AF',27834,'Burundi'],CPV:['AF',4033,'Cabo Verde'],CMR:['AF',475442,'Cameroon'],CAF:['AF',622984,'Central African Republic'],TCD:['AF',1284000,'Chad'],COM:['AF',1862,'Comoros'],COG:['AF',342000,'Congo'],COD:['AF',2344858,'DR Congo'],CIV:['AF',322463,'Côte d’Ivoire'],DJI:['AF',23200,'Djibouti'],EGY:['AF',1001450,'Egypt'],GNQ:['AF',28051,'Equatorial Guinea'],ERI:['AF',117600,'Eritrea'],SWZ:['AF',17364,'Eswatini'],ETH:['AF',1104300,'Ethiopia'],GAB:['AF',267668,'Gabon'],GMB:['AF',11295,'Gambia'],GHA:['AF',238533,'Ghana'],GIN:['AF',245857,'Guinea'],GNB:['AF',36125,'Guinea-Bissau'],KEN:['AF',580367,'Kenya'],LSO:['AF',30355,'Lesotho'],LBR:['AF',111369,'Liberia'],LBY:['AF',1759540,'Libya'],MDG:['AF',587041,'Madagascar'],MWI:['AF',118484,'Malawi'],MLI:['AF',1240192,'Mali'],MRT:['AF',1030700,'Mauritania'],MUS:['AF',2040,'Mauritius'],MAR:['AF',446550,'Morocco'],MOZ:['AF',801590,'Mozambique'],NAM:['AF',825615,'Namibia'],NER:['AF',1267000,'Niger'],NGA:['AF',923768,'Nigeria'],RWA:['AF',26338,'Rwanda'],STP:['AF',964,'São Tomé & Príncipe'],SEN:['AF',196722,'Senegal'],SYC:['AF',459,'Seychelles'],SLE:['AF',71740,'Sierra Leone'],SOM:['AF',637657,'Somalia'],ZAF:['AF',1221037,'South Africa'],SSD:['AF',619745,'South Sudan'],SDN:['AF',1861484,'Sudan'],TZA:['AF',945087,'Tanzania'],TGO:['AF',56785,'Togo'],TUN:['AF',163610,'Tunisia'],UGA:['AF',241038,'Uganda'],ZMB:['AF',752612,'Zambia'],ZWE:['AF',390757,'Zimbabwe'],
+  ATG:['NA',442,'Antigua & Barbuda'],BHS:['NA',13943,'Bahamas'],BRB:['NA',430,'Barbados'],BLZ:['NA',22966,'Belize'],CAN:['NA',9984670,'Canada'],CRI:['NA',51100,'Costa Rica'],CUB:['NA',109884,'Cuba'],DMA:['NA',751,'Dominica'],DOM:['NA',48671,'Dominican Republic'],SLV:['NA',21041,'El Salvador'],GRD:['NA',344,'Grenada'],GTM:['NA',108889,'Guatemala'],HTI:['NA',27750,'Haiti'],HND:['NA',112492,'Honduras'],JAM:['NA',10991,'Jamaica'],MEX:['NA',1964375,'Mexico'],NIC:['NA',130373,'Nicaragua'],PAN:['NA',75417,'Panama'],KNA:['NA',261,'St. Kitts & Nevis'],LCA:['NA',616,'Saint Lucia'],VCT:['NA',389,'St. Vincent'],TTO:['NA',5130,'Trinidad & Tobago'],USA:['NA',9833517,'United States'],
+  ARG:['SA',2780400,'Argentina'],BOL:['SA',1098581,'Bolivia'],BRA:['SA',8515767,'Brazil'],CHL:['SA',756102,'Chile'],COL:['SA',1141748,'Colombia'],ECU:['SA',283561,'Ecuador'],GUY:['SA',214969,'Guyana'],PRY:['SA',406752,'Paraguay'],PER:['SA',1285216,'Peru'],SUR:['SA',163820,'Suriname'],URY:['SA',176215,'Uruguay'],VEN:['SA',912050,'Venezuela'],
+  AUS:['OC',7692024,'Australia'],FJI:['OC',18272,'Fiji'],KIR:['OC',811,'Kiribati'],MHL:['OC',181,'Marshall Islands'],FSM:['OC',702,'Micronesia'],NRU:['OC',21,'Nauru'],NZL:['OC',270467,'New Zealand'],PLW:['OC',459,'Palau'],PNG:['OC',462840,'Papua New Guinea'],WSM:['OC',2842,'Samoa'],SLB:['OC',28896,'Solomon Islands'],TON:['OC',747,'Tonga'],TUV:['OC',26,'Tuvalu'],VUT:['OC',12189,'Vanuatu']
+};
+const TOTAL_LAND = Object.values(COUNTRIES).filter(([c]) => c !== 'AN').reduce((s,[,a]) => s+a, 0);
+const TOTAL_UN = 195;
+const DEMO_VISITS = ['FRA','ESP','PRT','ITA','GRC','MAR','TUN','EGY','TUR','GEO','JPN','THA','VNM','IDN','IND','LKA','MEX','USA','CAN','CRI','BRA','ARG','CHL','PER','ISL','NOR','GBR'];
+
+function readVisits() {
+  try {
+    const raw = localStorage.getItem('blank-earth/v1/visits');
+    if (raw === null) return null;
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(s => typeof s === 'string') : null;
+  } catch { return null; }
+}
+
+/* ─── animation engine ─── */
+const easings = { outCubic: t => 1 - Math.pow(1 - t, 3) };
+function animate({duration, onFrame, onDone, ease = easings.outCubic}) {
+  const t0 = performance.now();
+  let raf = 0;
+  function tick(now) {
+    const t = Math.min(1, (now - t0) / duration);
+    onFrame(ease(t), t);
+    if (t < 1) raf = requestAnimationFrame(tick);
+    else if (onDone) onDone();
+  }
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}
+function fmtComma(n) { return Math.round(n).toLocaleString(); }
+function fmtPct1(n)  { return n.toFixed(1) + '%'; }
+
+function scheduleCount(el, target, fmt = 'plain') {
+  const start = parseFloat(el.dataset.count) || 0;
+  const apply = (v) => {
+    el.textContent = fmt === 'comma' ? fmtComma(v) : fmt === 'pct1' ? fmtPct1(v) : Math.round(v);
+    el.dataset.count = v;
+  };
+  return () => animate({
+    duration: 1100,
+    onFrame: t => apply(start + (target - start) * t),
+    onDone: () => apply(target),
+  });
+}
+
+function setupRevealObserver() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        en.target.classList.add('in');
+        const fns = en.target._anims || [];
+        fns.forEach(fn => fn());
+        en.target._anims = [];
+        obs.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+}
+
+function continentName(code) {
+  const map = {EU:'Europe',AS:'Asia',AF:'Africa',NA:'N. America',SA:'S. America',OC:'Oceania',AN:'Antarctica'};
+  return map[code] || code;
+}
+
+/* ─── paint ─── */
+function paint() {
+  const stored = readVisits();
+  let known;
+  if (stored && stored.length > 0) known = stored.filter((v,i) => COUNTRIES[v] && stored.indexOf(v)===i);
+  else if (stored && stored.length === 0) known = [];
+  else known = DEMO_VISITS.slice();
+
+  const count = known.length;
+  const visitedArea = known.reduce((s,c) => s + (COUNTRIES[c][1]||0), 0);
+  const continentsTouched = new Set(known.map(c => COUNTRIES[c][0]));
+  const conByCount = {};
+  known.forEach(c => { const k = COUNTRIES[c][0]; conByCount[k] = (conByCount[k]||0)+1; });
+  const fmt = n => Math.round(n).toLocaleString();
+  const earthRatio = visitedArea / TOTAL_LAND;
+
+  document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('in'); el._anims = []; });
+
+  /* PASSPORT */
+  const passport = document.querySelector('.passport');
+  passport._anims.push(scheduleCount(document.getElementById('pp-countries'), count));
+  passport._anims.push(scheduleCount(document.getElementById('pp-land'), visitedArea, 'comma'));
+  passport._anims.push(scheduleCount(document.getElementById('pp-cont'), continentsTouched.size));
+  passport._anims.push(scheduleCount(document.getElementById('pp-un'), (count/TOTAL_UN)*100, 'pct1'));
+  document.getElementById('pp-countries-sub').textContent =
+    count === 0 ? 'open the globe to begin' : `${continentsTouched.size} continent${continentsTouched.size===1?'':'s'} touched`;
+  document.getElementById('pp-land-sub').textContent = `${(earthRatio*100).toFixed(1)}% of inhabited land`;
+
+  /* COUNTRIES */
+  const ccCard = document.querySelector('.card-countries');
+  const eu = conByCount.EU || 0, as = conByCount.AS || 0;
+  const other = count - eu - as;
+  ccCard._anims.push(scheduleCount(document.getElementById('cc-num'), count));
+  ccCard._anims.push(scheduleCount(document.getElementById('cc-eu'), eu));
+  ccCard._anims.push(scheduleCount(document.getElementById('cc-as'), as));
+  ccCard._anims.push(scheduleCount(document.getElementById('cc-other'), other));
+
+  /* CHART */
+  const cols = document.getElementById('chart-cols');
+  const xax  = document.getElementById('chart-x');
+  const yax  = document.getElementById('chart-y');
+  cols.innerHTML = ''; xax.innerHTML = '';
+  const continents = CONTINENT_ORDER.filter(([c]) => c !== 'AN');
+  const max = Math.max(1, ...continents.map(([c]) => conByCount[c] || 0));
+  const tick = Math.max(1, Math.ceil(max/3));
+  const yMax = tick * 3;
+  yax.innerHTML = `<span>0</span><span>${tick}</span><span>${tick*2}</span><span>${yMax}</span>`;
+  const barEls = [];
+  continents.forEach(([code, label]) => {
+    const v = conByCount[code] || 0;
+    const h = (v / yMax) * 100;
+    const col = document.createElement('div');
+    col.className = 'chart-col';
+    const bar = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.dataset.target = h;
+    col.appendChild(bar);
+    cols.appendChild(col);
+    barEls.push(bar);
+    const x = document.createElement('div'); x.textContent = label; xax.appendChild(x);
+  });
+  ccCard._anims.push(() => {
+    barEls.forEach((bar, i) => {
+      const targetH = parseFloat(bar.dataset.target) || 0;
+      setTimeout(() => { bar.style.height = targetH + '%'; }, i * 80);
+    });
+  });
+
+  /* % WORLD'S LAND */
+  const landCard = document.getElementById('card-land');
+  landCard._anims.push(scheduleCount(document.getElementById('land-stat'), earthRatio*100, 'pct1'));
+  landCard._anims.push(scheduleCount(document.getElementById('land-glyph'), earthRatio*100, 'pct1'));
+  document.getElementById('land-sub').textContent = `${fmt(visitedArea)} km² · measured against inhabited land`;
+  const sideRatio = Math.sqrt(Math.min(1, earthRatio));
+  const inner = document.getElementById('land-inner');
+  inner.style.width = '0'; inner.style.height = '0';
+  landCard._anims.push(() => {
+    requestAnimationFrame(() => {
+      inner.style.width  = (sideRatio * 100) + '%';
+      inner.style.height = (sideRatio * 100) + '%';
+    });
+  });
+
+  /* AROUND THE WORLD */
+  const aroundCard = document.getElementById('card-around');
+  aroundCard._anims.push(scheduleCount(document.getElementById('around-km'), visitedArea, 'comma'));
+  aroundCard._anims.push(scheduleCount(document.getElementById('around-avg'), count ? visitedArea/count : 0, 'comma'));
+  document.getElementById('around-mi').textContent = `${fmt(visitedArea*0.386)} mi² inhabited surface`;
+  aroundCard._anims.push(scheduleCount(document.getElementById('ratio-earth'), earthRatio*100, 'pct1'));
+  aroundCard._anims.push(scheduleCount(document.getElementById('ratio-un'), (count/TOTAL_UN)*100, 'pct1'));
+  document.getElementById('ratio-cont').textContent = `${continentsTouched.size}/7`;
+  ['ratio-earth-fill','ratio-un-fill','ratio-cont-fill'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.style.width = '38px';
+    const ratio = i === 0 ? earthRatio : i === 1 ? count/TOTAL_UN : continentsTouched.size/7;
+    aroundCard._anims.push(() => {
+      setTimeout(() => {
+        const w = Math.max(0, Math.min(1, ratio)) * 100;
+        el.style.width = w < 5 ? '38px' : `calc(${w}% - 12px)`;
+      }, 200 + i * 120);
+    });
+  });
+
+  /* WHAT'S LEFT */
+  const leftCard = document.querySelector('.card-left');
+  const leftCount = TOTAL_UN - count;
+  leftCard._anims.push(scheduleCount(document.getElementById('left-num'), leftCount));
+  document.getElementById('left-label').textContent = leftCount === 1 ? 'country unmarked' : 'countries unmarked';
+  document.getElementById('left-sub').textContent = `${(100 - earthRatio*100).toFixed(1)}% of inhabited land remains`;
+
+  /* RAREST */
+  const visitedSorted = known.map(iso => [iso, ...COUNTRIES[iso]]).sort((a,b) => a[2]-b[2]);
+  if (visitedSorted.length) {
+    const [, , area, name] = visitedSorted[0];
+    document.getElementById('rare-name').textContent = name;
+    document.getElementById('rare-meta').textContent = `${continentName(visitedSorted[0][1])} · ${area<1?'<1':fmt(area)} km²`;
+  } else {
+    document.getElementById('rare-name').textContent = '—';
+    document.getElementById('rare-meta').textContent = 'mark a country to see its rarity';
+  }
+
+  /* CURATOR FOOTNOTE */
+  const unvisited = Object.entries(COUNTRIES)
+    .filter(([iso, v]) => v[0] !== 'AN' && !known.includes(iso))
+    .sort((a,b) => a[1][1] - b[1][1]);
+  const fb = document.getElementById('foot-body');
+  if (unvisited.length) {
+    const [, [, area, name]] = unvisited[0];
+    const areaTxt = area < 1 ? 'less than a square kilometre' : `${fmt(area)} square kilometre${Math.round(area)===1?'':'s'}`;
+    fb.innerHTML = `Of all the countries you have not yet seen, the smallest is <em>${name}</em> — ${areaTxt}, awaiting an entry in your atlas.`;
+  } else {
+    fb.textContent = 'The atlas is complete.';
+  }
+
+  /* RECENT VISITS */
+  const list = document.getElementById('visits');
+  list.innerHTML = '';
+  const reversed = [...known].reverse();
+  reversed.slice(0, 8).forEach((iso, idx) => {
+    const v = COUNTRIES[iso];
+    const li = document.createElement('div');
+    li.className = 'visit';
+    li.innerHTML = `<div class="seq">${reversed.length - idx}</div>
+      <div><div class="name">${v[2]}</div><div class="meta">${continentName(v[0])} · ${fmt(v[1])} km²</div></div>
+      <div class="meta">${iso}</div>`;
+    list.appendChild(li);
+  });
+  if (!reversed.length) list.innerHTML = `<div style="padding:24px 4px; color:var(--muted); font-size:14px;">No countries marked yet — open the globe to begin.</div>`;
+
+  setupRevealObserver();
+}
+
+/* basic share button — copies current URL to clipboard */
+document.getElementById('top-share').addEventListener('click', async () => {
+  try {
+    if (navigator.share) { await navigator.share({ title: 'Your Atlas — Blank Earth', url: location.href }); }
+    else { await navigator.clipboard.writeText(location.href); }
+  } catch {}
+});
+
+paint();
+</script>
+</body>
+</html>
