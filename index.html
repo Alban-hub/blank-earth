@@ -197,8 +197,8 @@ const STYLE = {
   minZoomMult:          1.025,
   maxZoomMult:          5.5,
   tiltLimitDeg:         55,
-  dragSensitivityX:     0.0040,
-  dragSensitivityY:     0.0028,
+  dragSensitivityX:     0.0024,
+  dragSensitivityY:     0.0017,
   zoomSensitivity:      0.0014,
   cameraEasing:         0.13,
   autoRotateSpeed:      -0.0006,
@@ -668,8 +668,8 @@ const STYLE = {
     STYLE.initialZoomMult = 3.6;       // was 2.7 — pull camera back
     STYLE.minZoomMult     = 1.15;      // don't let users zoom inside the planet
     STYLE.maxZoomMult     = 7.0;       // allow more zoom-out room
-    STYLE.dragSensitivityX = 0.0026;   // touch-tuned (was 0.0040)
-    STYLE.dragSensitivityY = 0.0019;   // touch-tuned (was 0.0028)
+    STYLE.dragSensitivityX = 0.0016;   // touch-tuned, calmer for finger drags
+    STYLE.dragSensitivityY = 0.0011;   // touch-tuned, calmer for finger drags
     STYLE.cameraEasing    = 0.22;      // snappier follow on mobile (was 0.13) — finger lag → less mushy
     STYLE.autoRotateDelay = 4500;      // wait longer before auto-rotate kicks in on touch
   }
@@ -1598,7 +1598,9 @@ const STYLE = {
     camera.fov = fovForViewport();   // wider FOV on phones, narrower on desktop — handles rotation too
     camera.updateProjectionMatrix();
   }
-  window.addEventListener('resize', resize); resize();
+  // Resize handler also forces a render — idle-skip would otherwise blank the canvas after a viewport change.
+  window.addEventListener('resize', () => { resize(); renderer.render(scene, camera); });
+  resize();
 
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
@@ -1655,8 +1657,6 @@ const STYLE = {
   // Initial paint (otherwise idle-skip can swallow the first frame and we'd see a black canvas)
   renderer.render(scene, camera);
   animate();
-  // Force a render on resize so idle-state pages don't go blank after rotation.
-  window.addEventListener('resize', () => { renderer.render(scene, camera); });
 
   // ---------------------------------------------------------------------------
   //  UI wiring
