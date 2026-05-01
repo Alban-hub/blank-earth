@@ -6,27 +6,30 @@
 <title>Your Atlas — Blank Earth</title>
 <style>
   :root {
-    --space:  #0F1530;
-    --ink:    #1c1838;
-    --paper:  #FCFCFA;
-    --hair:   #ECEAE2;
-    --line:   #D8D5CC;
-    --muted:  #6b6985;
-    --warm:   #FAF6E8;
-    --accent: #4488E0;
+    /* page background uses the same dark navy as the globe page */
+    --space:    #0F1530;
+    --space-2:  #0a0e22;
 
-    --card-deep:  #1B2356;
-    --card-deep-2:#2B3782;
-    --card-blue:  #DCE8F8;
-    --card-warm:  #F2EBD8;
-    --card-red:   #4A1F2C;
-    --card-red-2: #7A2D3F;
+    /* sheet — lightened from beige cream toward off-white */
+    --paper:    #FCFCFA;
+    --paper-2:  #F2F0EB;
+    --hair:     #E2DCCD;
+    --ink:      #1c1838;
+    --ink-2:    #6b6985;
+    --muted:    #9893a0;
+
+    /* card pastels (each soft fill — text uses the matching --ink) */
+    --c-terracotta-bg:  #E9C9B6;  --c-terracotta-ink:  #5A2E1A;
+    --c-blue-bg:        #BFD0DD;  --c-blue-ink:        #1F3B55;
+    --c-sage-bg:        #C7D2B8;  --c-sage-ink:        #2D3E1F;
+    --c-butter-bg:      #ECDFA7;  --c-butter-ink:      #4A3C0E;
+    --c-plum-bg:        #C9B4C2;  --c-plum-ink:        #3C1F38;
+    --c-rose-bg:        #E2BAB6;  --c-rose-ink:        #561F22;
+    --c-sky-bg:         #C6D8E2;  --c-sky-ink:         #1B3A4F;
+    --c-bone-bg:        #DCD3BB;  --c-bone-ink:        #2A2410;
 
     --sans:  -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", system-ui, sans-serif;
     --serif: "Iowan Old Style", "Palatino", "Cambria", "Times New Roman", serif;
-
-    --radius-card: 22px;
-    --radius-pill: 999px;
   }
 
   * { box-sizing: border-box; }
@@ -38,410 +41,398 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     min-height: 100vh;
+    font-style: normal;
   }
+  em, i, cite, address { font-style: normal; }
 
-  /* live globe in the background — same scene as the main page, just no UI */
+  /* live globe behind, dimmed */
   .globe-bg {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    border: 0;
-    z-index: 0;
-    pointer-events: none;   /* let scrolling/clicking pass through to cards */
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    border: 0; z-index: 0; pointer-events: none;
+    opacity: 0.7;
   }
-
-  /* soft dark gradient fades the globe into the cards as you scroll */
   .scroll-fade {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
+    position: fixed; left: 0; right: 0; bottom: 0;
     height: 50vh;
-    background: linear-gradient(to bottom, transparent 0%, rgba(15,21,48,0.4) 60%, var(--space) 100%);
-    pointer-events: none;
-    z-index: 1;
+    background: linear-gradient(to bottom, transparent 0%, rgba(15,21,48,0.55) 60%, var(--space-2) 100%);
+    pointer-events: none; z-index: 1;
   }
 
   .stage {
-    position: relative;
-    z-index: 2;
-    max-width: 480px;
-    margin: 0 auto;
-    /* push the sheet down so the globe shows above the fold */
-    padding-top: 42vh;
+    position: relative; z-index: 2;
+    max-width: 540px; margin: 0 auto;
+    padding-top: 36vh;
   }
 
-  /* topbar floats over the globe, no background, white text */
+  /* topbar */
   .topbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 4;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 4;
     padding: 22px 22px 14px;
-    color: #fff;
-    pointer-events: none;
+    color: #FCFCFA; pointer-events: none;
   }
   .topbar > * { pointer-events: auto; }
   .topbar-inner {
-    max-width: 480px; margin: 0 auto;
+    max-width: 540px; margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
   }
   .iconbtn {
     width: 38px; height: 38px; border-radius: 50%;
     background: rgba(15,21,48,0.55);
-    border: 1px solid rgba(255,255,255,0.14);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    color: #fff; display: flex; align-items: center; justify-content: center;
+    border: 1px solid rgba(252,252,250,0.18);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    color: #FCFCFA; display: flex; align-items: center; justify-content: center;
     text-decoration: none; font-size: 18px; cursor: pointer; font-family: inherit;
   }
   .topbar-title {
-    font-family: var(--serif); font-style: italic;
+    font-family: var(--serif);
     font-size: 17px; font-weight: 500;
+    letter-spacing: 0.01em;
     text-shadow: 0 1px 2px rgba(0,0,0,0.4);
   }
 
-  /* the sheet — paper-cream cards rising up over the globe */
+  /* sheet */
   .sheet {
     background: var(--paper);
-    border-top-left-radius: 26px;
-    border-top-right-radius: 26px;
-    padding: 22px 18px 60px;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 26px 22px 96px;
     color: var(--ink);
     min-height: 80vh;
-    box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.4);
+    box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.45);
   }
 
-  .sheet-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 4px 4px 14px;
+  /* frontispiece */
+  .frontispiece {
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--hair);
+    margin-bottom: 22px;
   }
-  .sheet-title {
-    font-size: 30px; font-weight: 800;
-    letter-spacing: -0.02em; color: var(--ink);
-  }
-  .plate {
-    font-family: var(--serif); font-style: italic;
-    font-size: 13px; color: var(--muted);
-  }
-  .sheet-share {
-    width: 38px; height: 38px; border-radius: 50%;
-    background: var(--hair); border: 0;
-    color: var(--ink); display: flex; align-items: center; justify-content: center;
-    cursor: pointer; font-size: 16px;
-  }
-
-  /* HERO PASSPORT */
-  .passport {
-    position: relative;
-    background: linear-gradient(160deg, var(--card-deep) 0%, var(--card-deep-2) 100%);
-    color: #fff;
-    border-radius: var(--radius-card);
-    padding: 22px 20px;
-    overflow: hidden;
-    box-shadow: 0 12px 30px -12px rgba(15,21,48,0.5);
-  }
-  .passport::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none;
-    background:
-      radial-gradient(ellipse 70% 50% at 30% 40%, rgba(255,255,255,0.05), transparent 60%),
-      radial-gradient(ellipse 50% 35% at 70% 65%, rgba(255,255,255,0.04), transparent 60%);
-  }
-  .passport-head {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    margin-bottom: 18px; position: relative;
-  }
-  .passport-eyebrow {
-    font-size: 13px; font-weight: 700;
-    letter-spacing: 0.16em; text-transform: uppercase;
-  }
-  .passport-eyebrow .em {
-    font-family: var(--serif); font-style: italic;
-    font-weight: 400; letter-spacing: 0; text-transform: none;
-    margin-left: 8px; opacity: 0.7;
-  }
-  .passport-sub {
-    margin-top: 4px;
-    font-size: 11px; color: rgba(255,255,255,0.55);
-    letter-spacing: 0.18em;
-  }
-  .passport-sub .dot { opacity: 0.5; margin: 0 6px; }
-  .passport-grid {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 16px 18px; margin-top: 6px; position: relative;
-  }
-  .pg .label {
-    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-    color: rgba(220,232,248,0.72); margin-bottom: 4px; font-weight: 600;
-  }
-  .pg .value {
-    font-size: 30px; font-weight: 800;
-    letter-spacing: -0.02em; line-height: 1.05;
-    font-variant-numeric: tabular-nums;
-  }
-  .pg .value .unit {
-    font-size: 18px; font-weight: 600;
-    color: rgba(220,232,248,0.55); margin-left: 2px;
-  }
-  .pg .sub { font-size: 12px; color: rgba(220,232,248,0.7); margin-top: 2px; }
-
-  /* common card */
-  .card {
-    border-radius: var(--radius-card);
-    padding: 20px; margin-top: 14px;
-    position: relative; overflow: hidden;
-  }
-  .card-head {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 12px; margin-bottom: 6px;
-  }
-  .card-title {
-    font-size: 16px; font-weight: 700;
-    letter-spacing: -0.005em; color: var(--ink);
-  }
-  .share-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--paper);
-    border: 1px solid var(--hair);
-    color: var(--ink); padding: 6px 12px;
-    border-radius: var(--radius-pill);
-    font-size: 12px; font-weight: 600;
-    text-decoration: none; cursor: pointer;
-  }
-
-  /* COUNTRIES + chart */
-  .card-countries .big-num {
-    font-size: 84px; font-weight: 800;
-    letter-spacing: -0.04em; line-height: 0.95;
-    color: var(--ink); margin-top: 2px;
-    font-variant-numeric: tabular-nums;
-  }
-  .card-countries .stack {
-    margin-top: 10px;
-    display: flex; flex-direction: column; gap: 2px;
-    font-size: 16px; font-weight: 500;
-  }
-  .card-countries .stack .row { color: var(--muted); }
-  .card-countries .stack .row b { font-weight: 800; margin-right: 4px; color: var(--ink); }
-
-  .chart-tabs {
-    display: flex; gap: 8px; align-items: center;
-    margin: 14px 0 6px;
-    font-size: 13px; font-weight: 700; color: var(--muted);
-  }
-  .chart-tabs .lab {
-    color: var(--ink); font-weight: 800;
-    letter-spacing: 0.16em; text-transform: uppercase;
-    font-size: 11px; margin-right: auto;
-  }
-  .chart-tabs button {
-    background: none; border: none; color: inherit; font: inherit;
-    padding: 5px 10px; border-radius: var(--radius-pill); cursor: pointer;
-  }
-  .chart-tabs button.active { background: var(--ink); color: var(--paper); }
-  .chart {
-    margin-top: 14px;
-    display: grid; grid-template-columns: 26px 1fr;
-    gap: 6px; align-items: stretch;
-  }
-  .chart-y {
-    display: flex; flex-direction: column-reverse;
-    justify-content: space-between; align-items: flex-end;
-    padding-right: 8px;
+  .frontispiece .ord {
+    font-family: var(--sans);
     font-size: 11px; color: var(--muted);
-    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    font-weight: 600;
   }
-  .chart-cols {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    gap: 8px; align-items: end;
-    height: 200px; position: relative;
+  .frontispiece h1 {
+    margin: 8px 0 0; padding: 0;
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 42px; line-height: 1.02;
+    color: var(--ink); letter-spacing: -0.015em;
   }
-  .chart-cols::before, .chart-cols::after {
-    content: ""; position: absolute; left: 0; right: 0;
-    border-top: 1px solid var(--hair);
-  }
-  .chart-cols::before { top: 33%; }
-  .chart-cols::after  { top: 66%; }
-  .chart-col {
-    display: flex; flex-direction: column;
-    justify-content: end; align-items: center;
-    height: 100%; position: relative; z-index: 1;
-  }
-  .chart-bar {
-    width: 100%;
-    background: var(--accent);
-    border-radius: 6px 6px 2px 2px;
-    height: 0;
-    transition: height 900ms cubic-bezier(.2,.7,.2,1);
-    min-height: 0;
-  }
-  .chart-x {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    gap: 8px; margin: 8px 0 0 32px;
-    font-size: 12px; color: var(--muted);
-    font-weight: 600; text-align: center;
-  }
-
-  /* % world's land */
-  .card-land { background: var(--card-warm); }
-  .card-land .row {
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 18px; align-items: center; margin-top: 10px;
-  }
-  .card-land .stat {
-    font-family: var(--serif); font-style: italic;
-    font-size: 56px; font-weight: 400;
-    letter-spacing: -0.02em; color: var(--ink);
-    line-height: 0.95; font-variant-numeric: tabular-nums;
-  }
-  .card-land .stat .pct {
-    font-size: 28px; vertical-align: 14px;
-    color: var(--muted); margin-left: 2px;
-  }
-  .card-land .substat { font-size: 13px; color: var(--muted); margin-top: 6px; }
-  .land-square {
-    width: 120px; height: 120px;
-    background: rgba(28,24,56,0.08);
-    position: relative; border-radius: 4px; overflow: hidden;
-  }
-  .land-square .inner {
-    position: absolute; left: 0; bottom: 0;
-    background: var(--accent);
-    width: 0; height: 0;
-    transition: width 1100ms cubic-bezier(.2,.7,.2,1), height 1100ms cubic-bezier(.2,.7,.2,1);
-  }
-  .land-square .pct-glyph {
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--serif); font-style: italic;
-    font-size: 30px; color: var(--ink);
-    font-variant-numeric: tabular-nums;
-    z-index: 2; text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-  }
-
-  /* around-the-world ratios */
-  .card-around { background: var(--card-blue); }
-  .card-around .lead {
-    font-size: 38px; font-weight: 800;
-    letter-spacing: -0.025em; color: var(--ink); margin-top: 4px;
-    font-variant-numeric: tabular-nums;
-  }
-  .card-around .lead .unit {
-    font-size: 22px; font-weight: 600; color: var(--muted);
-  }
-  .card-around .lead-sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
-  .card-around .lead-row { color: var(--ink); font-size: 13px; margin-top: 2px; }
-  .ratios { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
-  .ratio {
-    display: flex; align-items: center; gap: 10px;
-    background: rgba(255,255,255,0.65);
-    border-radius: 999px; padding: 6px;
-    position: relative; overflow: hidden;
-  }
-  .ratio-icon {
-    width: 38px; height: 38px; border-radius: 50%;
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; color: #fff;
-    z-index: 2; position: relative;
-  }
-  .ratio-icon.earth { background: linear-gradient(135deg, #2868b5, #4488E0 60%, #b5d8ff); }
-  .ratio-icon.un    { background: linear-gradient(135deg, #1B2356, #4488E0); }
-  .ratio-icon.cont  { background: linear-gradient(135deg, #4F6F52, #9DBA9F); }
-  .ratio-fill {
-    position: absolute;
-    left: 6px; top: 6px; bottom: 6px;
-    background: var(--accent);
-    border-radius: 999px;
-    width: 38px;
-    transition: width 1100ms cubic-bezier(.2,.7,.2,1);
-    z-index: 1;
-  }
-  .ratio-label {
-    margin-left: auto; margin-right: 16px;
-    font-size: 14px; font-weight: 700;
-    color: var(--ink); z-index: 2; position: relative;
-    font-variant-numeric: tabular-nums;
-  }
-  .ratio-label .x { font-weight: 800; }
-
-  /* what's left */
-  .card-left {
-    background: linear-gradient(160deg, var(--card-red) 0%, var(--card-red-2) 100%);
-    color: #fff;
-  }
-  .card-left .card-title { color: #fff; }
-  .card-left .share-pill {
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.12); color: #fff;
-  }
-  .card-left .big-num {
-    font-size: 60px; font-weight: 800;
-    letter-spacing: -0.03em; line-height: 1; margin-top: 4px;
-    font-variant-numeric: tabular-nums;
-  }
-  .card-left .label-line { font-size: 16px; font-weight: 600; margin-top: 6px; }
-  .card-left .sub-line {
-    font-size: 13px; color: rgba(255,255,255,0.62);
-    margin-top: 4px; font-style: italic; font-family: var(--serif);
-  }
-
-  /* rarest */
-  .card-rare { background: var(--card-warm); }
-  .card-rare .country-name {
-    font-size: 38px; font-weight: 800;
-    letter-spacing: -0.02em; color: var(--ink); margin-top: 4px;
-  }
-  .card-rare .country-name .em {
-    font-family: var(--serif); font-style: italic;
-    font-weight: 400; color: var(--muted);
-    font-size: 22px; margin-left: 8px; letter-spacing: 0;
-  }
-  .card-rare .meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-  /* curator footnote */
-  .card-foot { background: var(--paper); border: 1px solid var(--hair); }
-  .card-foot .body {
-    font-family: var(--serif); font-style: italic;
-    font-size: 16px; color: var(--ink);
-    line-height: 1.5; margin-top: 6px;
+  .frontispiece .sub {
+    margin-top: 10px;
+    font-size: 13px; color: var(--ink-2);
+    line-height: 1.5; max-width: 36ch;
     text-wrap: pretty;
   }
-  .card-foot .body em { font-style: italic; color: var(--accent); font-weight: 600; }
-  .card-foot .attr {
-    margin-top: 12px;
-    font-family: var(--sans); font-style: normal;
-    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
-    color: var(--muted);
-  }
 
-  /* past visits */
-  .section-h {
-    margin: 28px 4px 8px;
-    font-size: 22px; font-weight: 800;
-    letter-spacing: -0.015em; color: var(--ink);
+  /* card grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 36px;
   }
-  .visits {
-    margin-top: 4px; border-radius: var(--radius-card);
-    overflow: hidden; background: var(--paper);
+  .grid .span-2 { grid-column: span 2; }
+
+  .card {
+    border-radius: 18px;
+    padding: 18px 18px 16px;
+    color: var(--card-ink, var(--ink));
+    background: var(--card-bg, var(--paper-2));
+    position: relative;
+    overflow: hidden;
+    min-height: 132px;
+    display: flex; flex-direction: column; justify-content: space-between;
   }
-  .visit {
-    display: grid; grid-template-columns: 36px 1fr auto;
-    gap: 12px; align-items: center;
-    padding: 14px 4px;
-    border-bottom: 1px solid var(--hair);
-    font-size: 15px;
+  .card-lab {
+    font-family: var(--sans);
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 600;
+    opacity: 0.66;
   }
-  .visit:last-child { border-bottom: none; }
-  .visit .seq {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: var(--card-blue); color: var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 800;
+  .card-num {
+    font-family: var(--serif);
+    font-weight: 500; font-style: normal;
+    font-size: 56px; line-height: 0.95;
+    letter-spacing: -0.025em;
+    font-variant-numeric: tabular-nums;
+    margin-top: 14px;
+  }
+  .card-num .unit {
+    font-family: var(--sans);
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 0; margin-left: 4px; opacity: 0.7;
+  }
+  .card-num .of {
+    font-family: var(--serif);
+    font-size: 28px; opacity: 0.45; margin-left: 2px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .card-foot {
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 12px; line-height: 1.4;
+    opacity: 0.78;
+    text-wrap: pretty;
+  }
+  .card-foot strong { font-weight: 600; }
+
+  .card.terracotta  { --card-bg: var(--c-terracotta-bg);  --card-ink: var(--c-terracotta-ink); }
+  .card.blue        { --card-bg: var(--c-blue-bg);        --card-ink: var(--c-blue-ink); }
+  .card.sage        { --card-bg: var(--c-sage-bg);        --card-ink: var(--c-sage-ink); }
+  .card.butter      { --card-bg: var(--c-butter-bg);      --card-ink: var(--c-butter-ink); }
+  .card.plum        { --card-bg: var(--c-plum-bg);        --card-ink: var(--c-plum-ink); }
+  .card.rose        { --card-bg: var(--c-rose-bg);        --card-ink: var(--c-rose-ink); }
+  .card.sky         { --card-bg: var(--c-sky-bg);         --card-ink: var(--c-sky-ink); }
+  .card.bone        { --card-bg: var(--c-bone-bg);        --card-ink: var(--c-bone-ink); }
+
+  /* HERO card — country count */
+  .hero {
+    grid-column: span 2;
+    background: var(--c-bone-bg);
+    color: var(--c-bone-ink);
+    border-radius: 20px;
+    padding: 22px 22px 20px;
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .hero .splatter {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .hero .splatter .dot {
+    position: absolute; border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%,-50%) scale(0.4);
+    transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+    will-change: opacity, transform;
+  }
+  .hero .splatter .dot.appear {
+    opacity: var(--op, 0.18);
+    transform: translate(-50%,-50%) scale(1);
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .hero-num {
+    font-family: var(--serif);
+    font-size: 124px; line-height: 0.85;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-bone-ink);
+  }
+  .hero-cap {
+    margin-top: 8px;
+    font-family: var(--sans);
+    font-size: 14px; line-height: 1.45;
+    color: var(--c-bone-ink); opacity: 0.8;
+    max-width: 26ch;
+  }
+  .hero-cap strong { font-weight: 600; opacity: 1; }
+
+  /* extremes pair card — combines most + least populous in one span-2 card */
+  .extremes {
+    grid-column: span 2;
+    background: var(--c-plum-bg);
+    color: var(--c-plum-ink);
+    border-radius: 18px;
+    padding: 18px 20px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    min-height: 110px;
+  }
+  .extremes .col { display: flex; flex-direction: column; gap: 4px; }
+  .extremes .col + .col { border-left: 1px solid rgba(60,31,56,0.18); padding-left: 18px; }
+  .extremes .col-lab {
+    font-family: var(--sans);
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 600;
+    opacity: 0.7;
+  }
+  .extremes .col-name {
+    font-family: var(--serif);
+    font-size: 24px; line-height: 1.05;
+    font-weight: 500; letter-spacing: -0.01em;
+    margin-top: 4px;
+  }
+  .extremes .col-meta {
+    font-family: var(--sans);
+    font-size: 12px; opacity: 0.75; line-height: 1.35;
+    margin-top: 4px;
+  }
+  .extremes .col-meta strong { font-weight: 600; }
+
+  /* SHAPE OF YOUR ATLAS — wide card */
+  .shape-card {
+    --card-bg: var(--c-blue-bg);
+    --card-ink: var(--c-blue-ink);
+    background: var(--card-bg);
+    color: var(--card-ink);
+    grid-column: span 2;
+    border-radius: 18px;
+    padding: 20px 20px 22px;
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 18px;
+    align-items: center;
+    min-height: 180px;
+  }
+  .shape-card .pct {
+    font-family: var(--serif);
+    font-size: 64px; line-height: 0.95;
+    letter-spacing: -0.03em; font-weight: 500;
     font-variant-numeric: tabular-nums;
   }
-  .visit .name { font-weight: 600; color: var(--ink); }
-  .visit .meta { color: var(--muted); font-size: 13px; }
+  .shape-card .pct .sym {
+    font-size: 28px; opacity: 0.55;
+    vertical-align: 14px; margin-left: 2px;
+    font-weight: 500;
+  }
+  .shape-card .body {
+    font-family: var(--sans); font-size: 13px;
+    line-height: 1.45; opacity: 0.82;
+    margin-top: 6px; max-width: 26ch;
+  }
+  .shape-figure {
+    aspect-ratio: 1 / 1; width: 100%;
+    background: rgba(255,255,255,0.35);
+    border-radius: 14px;
+    position: relative; overflow: hidden;
+  }
+  .shape-figure svg { display: block; width: 100%; height: 100%; }
+  .shape-figure .visited {
+    fill: var(--c-blue-ink);
+    transform-origin: 50% 50%;
+    transform: scale(0);
+    transition: transform 1300ms cubic-bezier(.2,.7,.2,1);
+  }
+  .shape-figure.in .visited { transform: scale(1); }
 
-  /* entrance animation */
+  /* === BADGES === */
+  .badges { margin: 28px 0 36px; }
+  .section-h {
+    margin: 0 0 14px;
+    display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+  }
+  .section-h h2 {
+    margin: 0; padding: 0;
+    font-family: var(--serif);
+    font-size: 22px; font-weight: 500;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .section-h .sub {
+    font-family: var(--sans);
+    font-size: 12px; color: var(--muted);
+    font-weight: 500;
+  }
+  .badge-wall {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .badge {
+    aspect-ratio: 1 / 1.12;
+    background: var(--paper-2);
+    border-radius: 12px;
+    padding: 10px 8px 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+    transition: transform 300ms ease, background 300ms;
+  }
+  .badge .badge-art {
+    width: 100%; aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .badge .badge-art svg { display: block; width: 88%; height: 88%; }
+  .badge .badge-name {
+    font-family: var(--serif);
+    font-size: 11px; font-weight: 500;
+    line-height: 1.15; text-align: center;
+    color: var(--ink);
+    margin-top: 4px;
+    letter-spacing: 0.01em;
+  }
+  .badge .badge-meta {
+    font-family: var(--sans);
+    font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; font-weight: 600;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .badge.locked {
+    background: rgba(214, 208, 195, 0.45);
+  }
+  .badge.locked .badge-art { opacity: 0.32; filter: grayscale(0.7); }
+  .badge.locked .badge-name { color: var(--muted); }
+  .badge.locked .badge-meta { color: var(--muted); opacity: 0.7; }
+  .badge.unlocked {
+    background: var(--badge-bg, var(--c-butter-bg));
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .badge.unlocked .badge-name { color: var(--badge-ink, var(--ink)); }
+  .badge.unlocked .badge-meta { color: var(--badge-ink, var(--ink)); opacity: 0.75; }
+
+  /* default state: collapsed (only show first 12 badges); class toggle reveals the rest */
+  .badge-wall:not(.expanded) > .badge:nth-child(n+13) { display: none; }
+
+  .view-all {
+    margin: 14px 0 0;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--hair);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-family: var(--serif);
+    font-size: 13px; color: var(--ink);
+    cursor: pointer;
+    transition: background 200ms, border-color 200ms;
+  }
+  .view-all:hover, .view-all:active { background: var(--paper-2); border-color: var(--ink); }
+
+  /* RECENT VISITS */
+  .ledger { margin-top: 28px; }
+  .ledger ol {
+    list-style: none; margin: 0; padding: 0;
+    counter-reset: visit;
+    background: var(--paper-2);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ledger li {
+    display: grid;
+    grid-template-columns: 36px 12px 1fr auto;
+    gap: 12px; align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--hair);
+    counter-increment: visit;
+  }
+  .ledger li:last-child { border-bottom: none; }
+  .ledger li::before {
+    content: counter(visit, decimal-leading-zero);
+    font-family: var(--serif);
+    font-size: 13px; color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+  .ledger .cdot { width: 9px; height: 9px; border-radius: 50%; }
+  .ledger .name {
+    font-family: var(--serif);
+    font-size: 16px; color: var(--ink);
+    font-weight: 500;
+  }
+  .ledger .cont {
+    font-family: var(--sans);
+    font-size: 11px; letter-spacing: 0.04em;
+    color: var(--muted); font-weight: 500;
+  }
+
+  /* reveal */
   .reveal {
     opacity: 0; transform: translateY(14px);
     transition: opacity 600ms ease, transform 600ms cubic-bezier(.2,.7,.2,1);
@@ -449,15 +440,26 @@
   .reveal.in { opacity: 1; transform: translateY(0); }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
-    .chart-bar, .land-square .inner, .ratio-fill { transition: none; }
+    .hero .splatter .dot, .shape-figure .visited { transition: none; }
   }
 
-  @media (min-width: 720px) { .stage { max-width: 520px; } }
+  @media (max-width: 480px) {
+    .sheet { padding: 22px 18px 80px; }
+    .stage { padding-top: 32vh; }
+    .frontispiece h1 { font-size: 34px; }
+    .hero-num { font-size: 92px; }
+    .shape-card { grid-template-columns: 1fr; }
+    .shape-figure { max-width: 200px; justify-self: end; }
+    .badge-wall { grid-template-columns: repeat(3, 1fr); }
+    .badge-wall:not(.expanded) > .badge:nth-child(n+10) { display: none; } /* show 9 on mobile, 3 rows */
+    .card-num { font-size: 48px; }
+    .extremes { grid-template-columns: 1fr; gap: 14px; }
+    .extremes .col + .col { border-left: 0; border-top: 1px solid rgba(60,31,56,0.18); padding-left: 0; padding-top: 14px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- live globe behind everything (loads /index.html in embed mode = no UI) -->
 <iframe class="globe-bg" src="/?embed=1" title="Globe background" aria-hidden="true"></iframe>
 <div class="scroll-fade" aria-hidden="true"></div>
 
@@ -471,163 +473,145 @@
 
 <div class="stage">
   <main class="sheet">
-    <div class="sheet-header">
-      <div>
-        <div class="sheet-title">Passport</div>
-        <div class="plate">Plate I — A Personal Reckoning</div>
-      </div>
-      <button class="sheet-share" aria-label="Share">↑</button>
-    </div>
 
-    <!-- HERO PASSPORT -->
-    <section class="passport reveal">
-      <div class="passport-head">
+    <header class="frontispiece">
+      <div class="ord">A personal reckoning</div>
+      <h1 id="front-h">Your atlas, so far.</h1>
+      <p class="sub">Every country you've marked, the shape of your discovery, and what's still ahead.</p>
+    </header>
+
+    <section class="grid reveal" id="grid-stats">
+
+      <!-- HERO: country count -->
+      <div class="hero">
+        <div class="splatter" id="splatter"></div>
+        <div class="hero-inner">
+          <div class="card-lab" style="opacity:.66">Countries marked</div>
+        </div>
+        <div class="hero-inner">
+          <div class="hero-num" data-count="0" id="hero-num">0</div>
+          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <strong id="hero-cap-cont">0</strong> continents</div>
+        </div>
+      </div>
+
+      <!-- POPULATION -->
+      <div class="card terracotta">
+        <div class="card-lab">People</div>
         <div>
-          <div class="passport-eyebrow">All-time atlas <span class="em">a personal reckoning</span></div>
-          <div class="passport-sub">PASSPORT <span class="dot">•</span> ATLAS <span class="dot">•</span> ATLANTE</div>
+          <div class="card-num"><span data-count="0" data-fmt="pop" id="stat-pop">0</span></div>
+          <div class="card-foot">share <strong id="stat-pop-pct">—%</strong> of the world's population</div>
         </div>
       </div>
-      <div class="passport-grid">
-        <div class="pg">
-          <div class="label">Countries</div>
-          <div class="value" data-count="0" id="pp-countries">0</div>
-          <div class="sub" id="pp-countries-sub">— continents</div>
-        </div>
-        <div class="pg">
-          <div class="label">Land covered</div>
-          <div class="value"><span data-count="0" data-fmt="comma" id="pp-land">0</span> <span class="unit">km²</span></div>
-          <div class="sub" id="pp-land-sub">—% of inhabited land</div>
-        </div>
-        <div class="pg">
-          <div class="label">Continents</div>
-          <div class="value" data-count="0" id="pp-cont">0</div>
-        </div>
-        <div class="pg">
-          <div class="label">UN states</div>
-          <div class="value"><span data-count="0" data-fmt="pct1" id="pp-un">0</span></div>
-        </div>
-      </div>
-    </section>
 
-    <!-- COUNTRIES + chart -->
-    <section class="card card-countries reveal">
-      <div class="card-head">
-        <div class="card-title">Countries</div>
-      </div>
-      <div class="big-num" data-count="0" id="cc-num">0</div>
-      <div class="stack">
-        <div class="row"><b data-count="0" id="cc-eu">0</b> European</div>
-        <div class="row"><b data-count="0" id="cc-as">0</b> Asian</div>
-        <div class="row"><b data-count="0" id="cc-other">0</b> elsewhere</div>
-      </div>
-      <div id="chart">
-        <div class="chart-tabs">
-          <span class="lab">Per</span>
-          <button data-v="continent" class="active">Continent</button>
-        </div>
-        <div class="chart">
-          <div class="chart-y" id="chart-y"></div>
-          <div class="chart-cols" id="chart-cols"></div>
-        </div>
-        <div class="chart-x" id="chart-x"></div>
-      </div>
-    </section>
-
-    <!-- % WORLD'S LAND -->
-    <section class="card card-land reveal" id="card-land">
-      <div class="card-head">
-        <div class="card-title">Of the world's land</div>
-      </div>
-      <div class="row">
+      <!-- CLIMATE ZONES -->
+      <div class="card sage">
+        <div class="card-lab">Climate zones</div>
         <div>
-          <div class="stat"><span data-count="0" data-fmt="pct1" id="land-stat">0</span></div>
-          <div class="substat" id="land-sub">— km² · measured against inhabited land</div>
-        </div>
-        <div class="land-square">
-          <div class="inner" id="land-inner"></div>
-          <div class="pct-glyph" data-count="0" data-fmt="pct1" id="land-glyph">0%</div>
+          <div class="card-num"><span data-count="0" id="stat-clim">0</span><span class="of">/5</span></div>
+          <div class="card-foot" id="stat-clim-list">—</div>
         </div>
       </div>
-    </section>
 
-    <!-- AROUND THE WORLD -->
-    <section class="card card-around reveal" id="card-around">
-      <div class="card-head">
+      <!-- LAND COVERED -->
+      <div class="card butter">
+        <div class="card-lab">Land covered</div>
         <div>
-          <div class="card-title">Land covered</div>
-          <div class="lead"><span data-count="0" data-fmt="comma" id="around-km">0</span> <span class="unit">km²</span></div>
-          <div class="lead-sub" id="around-mi">—</div>
-          <div class="lead-row">Average country: <span data-count="0" data-fmt="comma" id="around-avg">0</span> km²</div>
+          <div class="card-num"><span data-count="0" data-fmt="comma" id="stat-km">0</span><span class="unit">km²</span></div>
+          <div class="card-foot"><strong id="stat-km-pct">—%</strong> of inhabited land</div>
         </div>
       </div>
-      <div class="ratios">
-        <div class="ratio">
-          <div class="ratio-fill" id="ratio-earth-fill"></div>
-          <div class="ratio-icon earth">◐</div>
-          <div class="ratio-label"><span class="x" data-count="0" data-fmt="pct1" id="ratio-earth">0</span> Of Earth's Land</div>
-        </div>
-        <div class="ratio">
-          <div class="ratio-fill" id="ratio-un-fill"></div>
-          <div class="ratio-icon un">★</div>
-          <div class="ratio-label"><span class="x" data-count="0" data-fmt="pct1" id="ratio-un">0</span> UN Member States</div>
-        </div>
-        <div class="ratio">
-          <div class="ratio-fill" id="ratio-cont-fill"></div>
-          <div class="ratio-icon cont">◇</div>
-          <div class="ratio-label"><span class="x" id="ratio-cont">0/7</span> Continents Touched</div>
+
+      <!-- COASTLINES -->
+      <div class="card sky">
+        <div class="card-lab">Coastlines</div>
+        <div>
+          <div class="card-num"><span data-count="0" id="stat-coast">0</span></div>
+          <div class="card-foot"><strong id="stat-coast-of">—</strong> coastal countries marked</div>
         </div>
       </div>
-    </section>
 
-    <!-- WHAT'S LEFT -->
-    <section class="card card-left reveal">
-      <div class="card-head">
-        <div class="card-title">Still to see</div>
+      <!-- EXTREMES (most + least populous) -->
+      <div class="extremes">
+        <div class="col">
+          <div class="col-lab">Most populous</div>
+          <div class="col-name" id="stat-most">—</div>
+          <div class="col-meta"><strong id="stat-most-pop">—</strong></div>
+        </div>
+        <div class="col">
+          <div class="col-lab">Smallest</div>
+          <div class="col-name" id="stat-least">—</div>
+          <div class="col-meta"><strong id="stat-least-pop">—</strong></div>
+        </div>
       </div>
-      <div class="big-num" data-count="0" id="left-num">0</div>
-      <div class="label-line" id="left-label">countries unmarked</div>
-      <div class="sub-line" id="left-sub">— of total inhabited land remains</div>
-    </section>
 
-    <!-- RAREST -->
-    <section class="card card-rare reveal" id="card-rare">
-      <div class="card-head">
-        <div class="card-title">Rarest in your atlas</div>
+      <!-- SHAPE OF YOUR ATLAS — proportional area -->
+      <div class="shape-card">
+        <div>
+          <div class="card-lab" style="opacity:.7">Shape of your atlas</div>
+          <div class="pct"><span data-count="0" data-fmt="pct2" id="shape-pct">0</span><span class="sym">%</span></div>
+          <div class="body">of inhabited land — <strong id="shape-km">—</strong> km², drawn here as a single proportional shape.</div>
+        </div>
+        <div class="shape-figure" id="shape-figure">
+          <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+            <path id="shape-poly" class="visited" d="M100,40 C150,60 160,140 100,160 C40,140 50,60 100,40 Z"/>
+          </svg>
+        </div>
       </div>
-      <div class="country-name" id="rare-name">—</div>
-      <div class="meta" id="rare-meta">— · — km²</div>
+
     </section>
 
-    <!-- CURATOR FOOTNOTE -->
-    <section class="card card-foot reveal" id="card-foot">
-      <div class="card-head">
-        <div class="card-title" style="font-family:var(--serif); font-style:italic; font-weight:400;">A note from the curator</div>
+    <!-- BADGES -->
+    <section class="badges reveal" id="badges-section">
+      <div class="section-h">
+        <h2>Badges</h2>
+        <span class="sub" id="badges-progress">— / —</span>
       </div>
-      <div class="body" id="foot-body">—</div>
-      <div class="attr">¶ smallest unvisited</div>
+      <div class="badge-wall" id="badge-wall"></div>
+      <button class="view-all" id="view-all" type="button">View all badges</button>
     </section>
 
-    <h2 class="section-h">Recent visits</h2>
-    <div class="visits" id="visits"></div>
+    <!-- LEDGER -->
+    <section class="ledger reveal">
+      <div class="section-h">
+        <h2>Recent visits</h2>
+      </div>
+      <ol id="visits"></ol>
+    </section>
+
   </main>
 </div>
 
 <script>
-const CONTINENT_ORDER = [
-  ['EU','Eur'],['AS','Asia'],['AF','Afr'],
-  ['NA','N.Am'],['SA','S.Am'],['OC','Oce'],['AN','Ant']
-];
+/* COUNTRIES: ISO3 -> [continent, area_km2, name, population_M, lat, lng] */
 const COUNTRIES = {
-  ALB:['EU',28748,'Albania'],AND:['EU',468,'Andorra'],AUT:['EU',83879,'Austria'],BLR:['EU',207600,'Belarus'],BEL:['EU',30528,'Belgium'],BIH:['EU',51209,'Bosnia & Herzegovina'],BGR:['EU',110879,'Bulgaria'],HRV:['EU',56594,'Croatia'],CYP:['EU',9251,'Cyprus'],CZE:['EU',78867,'Czechia'],DNK:['EU',43094,'Denmark'],EST:['EU',45227,'Estonia'],FIN:['EU',338424,'Finland'],FRA:['EU',551695,'France'],DEU:['EU',357114,'Germany'],GRC:['EU',131957,'Greece'],HUN:['EU',93028,'Hungary'],ISL:['EU',103000,'Iceland'],IRL:['EU',70273,'Ireland'],ITA:['EU',301336,'Italy'],XKX:['EU',10887,'Kosovo'],LVA:['EU',64559,'Latvia'],LIE:['EU',160,'Liechtenstein'],LTU:['EU',65300,'Lithuania'],LUX:['EU',2586,'Luxembourg'],MLT:['EU',316,'Malta'],MDA:['EU',33846,'Moldova'],MCO:['EU',2,'Monaco'],MNE:['EU',13812,'Montenegro'],NLD:['EU',41850,'Netherlands'],MKD:['EU',25713,'North Macedonia'],NOR:['EU',323802,'Norway'],POL:['EU',312696,'Poland'],PRT:['EU',92090,'Portugal'],ROU:['EU',238397,'Romania'],RUS:['EU',17098246,'Russia'],SMR:['EU',61,'San Marino'],SRB:['EU',77474,'Serbia'],SVK:['EU',49035,'Slovakia'],SVN:['EU',20273,'Slovenia'],ESP:['EU',505992,'Spain'],SWE:['EU',450295,'Sweden'],CHE:['EU',41285,'Switzerland'],UKR:['EU',603628,'Ukraine'],GBR:['EU',242495,'United Kingdom'],VAT:['EU',0.49,'Vatican City'],
-  AFG:['AS',652230,'Afghanistan'],ARM:['AS',29743,'Armenia'],AZE:['AS',86600,'Azerbaijan'],BHR:['AS',778,'Bahrain'],BGD:['AS',147570,'Bangladesh'],BTN:['AS',38394,'Bhutan'],BRN:['AS',5765,'Brunei'],KHM:['AS',181035,'Cambodia'],CHN:['AS',9596961,'China'],GEO:['AS',69700,'Georgia'],IND:['AS',3287263,'India'],IDN:['AS',1904569,'Indonesia'],IRN:['AS',1648195,'Iran'],IRQ:['AS',438317,'Iraq'],ISR:['AS',20770,'Israel'],JPN:['AS',377975,'Japan'],JOR:['AS',89342,'Jordan'],KAZ:['AS',2724900,'Kazakhstan'],KWT:['AS',17818,'Kuwait'],KGZ:['AS',199951,'Kyrgyzstan'],LAO:['AS',236800,'Laos'],LBN:['AS',10452,'Lebanon'],MYS:['AS',330803,'Malaysia'],MDV:['AS',300,'Maldives'],MNG:['AS',1564110,'Mongolia'],MMR:['AS',676578,'Myanmar'],NPL:['AS',147181,'Nepal'],PRK:['AS',120538,'North Korea'],OMN:['AS',309500,'Oman'],PAK:['AS',881913,'Pakistan'],PSE:['AS',6020,'Palestine'],PHL:['AS',300000,'Philippines'],QAT:['AS',11586,'Qatar'],SAU:['AS',2149690,'Saudi Arabia'],SGP:['AS',728,'Singapore'],KOR:['AS',100210,'South Korea'],LKA:['AS',65610,'Sri Lanka'],SYR:['AS',185180,'Syria'],TWN:['AS',36193,'Taiwan'],TJK:['AS',143100,'Tajikistan'],THA:['AS',513120,'Thailand'],TLS:['AS',14874,'Timor-Leste'],TUR:['AS',783562,'Turkey'],TKM:['AS',488100,'Turkmenistan'],ARE:['AS',83600,'UAE'],UZB:['AS',447400,'Uzbekistan'],VNM:['AS',331212,'Vietnam'],YEM:['AS',527968,'Yemen'],
-  DZA:['AF',2381741,'Algeria'],AGO:['AF',1246700,'Angola'],BEN:['AF',114763,'Benin'],BWA:['AF',581730,'Botswana'],BFA:['AF',272967,'Burkina Faso'],BDI:['AF',27834,'Burundi'],CPV:['AF',4033,'Cabo Verde'],CMR:['AF',475442,'Cameroon'],CAF:['AF',622984,'Central African Republic'],TCD:['AF',1284000,'Chad'],COM:['AF',1862,'Comoros'],COG:['AF',342000,'Congo'],COD:['AF',2344858,'DR Congo'],CIV:['AF',322463,'Côte d’Ivoire'],DJI:['AF',23200,'Djibouti'],EGY:['AF',1001450,'Egypt'],GNQ:['AF',28051,'Equatorial Guinea'],ERI:['AF',117600,'Eritrea'],SWZ:['AF',17364,'Eswatini'],ETH:['AF',1104300,'Ethiopia'],GAB:['AF',267668,'Gabon'],GMB:['AF',11295,'Gambia'],GHA:['AF',238533,'Ghana'],GIN:['AF',245857,'Guinea'],GNB:['AF',36125,'Guinea-Bissau'],KEN:['AF',580367,'Kenya'],LSO:['AF',30355,'Lesotho'],LBR:['AF',111369,'Liberia'],LBY:['AF',1759540,'Libya'],MDG:['AF',587041,'Madagascar'],MWI:['AF',118484,'Malawi'],MLI:['AF',1240192,'Mali'],MRT:['AF',1030700,'Mauritania'],MUS:['AF',2040,'Mauritius'],MAR:['AF',446550,'Morocco'],MOZ:['AF',801590,'Mozambique'],NAM:['AF',825615,'Namibia'],NER:['AF',1267000,'Niger'],NGA:['AF',923768,'Nigeria'],RWA:['AF',26338,'Rwanda'],STP:['AF',964,'São Tomé & Príncipe'],SEN:['AF',196722,'Senegal'],SYC:['AF',459,'Seychelles'],SLE:['AF',71740,'Sierra Leone'],SOM:['AF',637657,'Somalia'],ZAF:['AF',1221037,'South Africa'],SSD:['AF',619745,'South Sudan'],SDN:['AF',1861484,'Sudan'],TZA:['AF',945087,'Tanzania'],TGO:['AF',56785,'Togo'],TUN:['AF',163610,'Tunisia'],UGA:['AF',241038,'Uganda'],ZMB:['AF',752612,'Zambia'],ZWE:['AF',390757,'Zimbabwe'],
-  ATG:['NA',442,'Antigua & Barbuda'],BHS:['NA',13943,'Bahamas'],BRB:['NA',430,'Barbados'],BLZ:['NA',22966,'Belize'],CAN:['NA',9984670,'Canada'],CRI:['NA',51100,'Costa Rica'],CUB:['NA',109884,'Cuba'],DMA:['NA',751,'Dominica'],DOM:['NA',48671,'Dominican Republic'],SLV:['NA',21041,'El Salvador'],GRD:['NA',344,'Grenada'],GTM:['NA',108889,'Guatemala'],HTI:['NA',27750,'Haiti'],HND:['NA',112492,'Honduras'],JAM:['NA',10991,'Jamaica'],MEX:['NA',1964375,'Mexico'],NIC:['NA',130373,'Nicaragua'],PAN:['NA',75417,'Panama'],KNA:['NA',261,'St. Kitts & Nevis'],LCA:['NA',616,'Saint Lucia'],VCT:['NA',389,'St. Vincent'],TTO:['NA',5130,'Trinidad & Tobago'],USA:['NA',9833517,'United States'],
-  ARG:['SA',2780400,'Argentina'],BOL:['SA',1098581,'Bolivia'],BRA:['SA',8515767,'Brazil'],CHL:['SA',756102,'Chile'],COL:['SA',1141748,'Colombia'],ECU:['SA',283561,'Ecuador'],GUY:['SA',214969,'Guyana'],PRY:['SA',406752,'Paraguay'],PER:['SA',1285216,'Peru'],SUR:['SA',163820,'Suriname'],URY:['SA',176215,'Uruguay'],VEN:['SA',912050,'Venezuela'],
-  AUS:['OC',7692024,'Australia'],FJI:['OC',18272,'Fiji'],KIR:['OC',811,'Kiribati'],MHL:['OC',181,'Marshall Islands'],FSM:['OC',702,'Micronesia'],NRU:['OC',21,'Nauru'],NZL:['OC',270467,'New Zealand'],PLW:['OC',459,'Palau'],PNG:['OC',462840,'Papua New Guinea'],WSM:['OC',2842,'Samoa'],SLB:['OC',28896,'Solomon Islands'],TON:['OC',747,'Tonga'],TUV:['OC',26,'Tuvalu'],VUT:['OC',12189,'Vanuatu']
+  ALB:['EU',28748,'Albania',2.8,41,20],AND:['EU',468,'Andorra',0.08,42.5,1.5],AUT:['EU',83879,'Austria',9,47.5,14.5],BLR:['EU',207600,'Belarus',9.4,53.7,27.5],BEL:['EU',30528,'Belgium',11.7,50.5,4.5],BIH:['EU',51209,'Bosnia & Herzegovina',3.2,44,18],BGR:['EU',110879,'Bulgaria',6.7,43,25],HRV:['EU',56594,'Croatia',3.9,45.1,15.2],CYP:['EU',9251,'Cyprus',1.2,35,33],CZE:['EU',78867,'Czechia',10.7,49.8,15.5],DNK:['EU',43094,'Denmark',5.9,56,10],EST:['EU',45227,'Estonia',1.3,59,26],FIN:['EU',338424,'Finland',5.5,64,26],FRA:['EU',551695,'France',68,46.6,2.2],DEU:['EU',357114,'Germany',83.4,51.2,10.5],GRC:['EU',131957,'Greece',10.4,39,22],HUN:['EU',93028,'Hungary',9.6,47,19.5],ISL:['EU',103000,'Iceland',0.39,64.9,-19],IRL:['EU',70273,'Ireland',5.1,53.1,-7.7],ITA:['EU',301336,'Italy',58.8,42.8,12.8],XKX:['EU',10887,'Kosovo',1.8,42.6,20.9],LVA:['EU',64559,'Latvia',1.9,57,24.6],LIE:['EU',160,'Liechtenstein',0.04,47.2,9.5],LTU:['EU',65300,'Lithuania',2.8,55.2,23.9],LUX:['EU',2586,'Luxembourg',0.65,49.6,6.1],MLT:['EU',316,'Malta',0.55,35.9,14.4],MDA:['EU',33846,'Moldova',2.6,47.4,28.4],MCO:['EU',2,'Monaco',0.04,43.7,7.4],MNE:['EU',13812,'Montenegro',0.62,42.7,19.4],NLD:['EU',41850,'Netherlands',17.6,52.1,5.3],MKD:['EU',25713,'North Macedonia',1.83,41.6,21.7],NOR:['EU',323802,'Norway',5.5,62,10],POL:['EU',312696,'Poland',38,52,19],PRT:['EU',92090,'Portugal',10.4,39.4,-8.2],ROU:['EU',238397,'Romania',19,45.9,24.9],RUS:['EU',17098246,'Russia',144,61.5,105],SMR:['EU',61,'San Marino',0.034,43.9,12.4],SRB:['EU',77474,'Serbia',6.7,44,21],SVK:['EU',49035,'Slovakia',5.4,48.7,19.7],SVN:['EU',20273,'Slovenia',2.1,46.1,14.8],ESP:['EU',505992,'Spain',48.6,40.4,-3.7],SWE:['EU',450295,'Sweden',10.6,62,15],CHE:['EU',41285,'Switzerland',8.8,46.8,8.2],UKR:['EU',603628,'Ukraine',38,49,32],GBR:['EU',242495,'United Kingdom',67.7,55.4,-3.4],VAT:['EU',0.49,'Vatican City',0.001,41.9,12.5],
+  AFG:['AS',652230,'Afghanistan',42.2,33.9,67.7],ARM:['AS',29743,'Armenia',2.78,40.1,45],AZE:['AS',86600,'Azerbaijan',10.4,40.1,47.6],BHR:['AS',778,'Bahrain',1.5,26,50.5],BGD:['AS',147570,'Bangladesh',172,23.7,90.4],BTN:['AS',38394,'Bhutan',0.78,27.5,90.4],BRN:['AS',5765,'Brunei',0.45,4.5,114.7],KHM:['AS',181035,'Cambodia',16.8,12.6,104.9],CHN:['AS',9596961,'China',1411,35,103],GEO:['AS',69700,'Georgia',3.7,42.3,43.4],IND:['AS',3287263,'India',1428,20.6,78.96],IDN:['AS',1904569,'Indonesia',278,-0.8,113.9],IRN:['AS',1648195,'Iran',88.5,32.4,53.7],IRQ:['AS',438317,'Iraq',45.5,33.2,43.7],ISR:['AS',20770,'Israel',9.7,31,34.85],JPN:['AS',377975,'Japan',124.9,36.2,138.3],JOR:['AS',89342,'Jordan',11.3,30.6,36.2],KAZ:['AS',2724900,'Kazakhstan',19.6,48,67],KWT:['AS',17818,'Kuwait',4.3,29.3,47.5],KGZ:['AS',199951,'Kyrgyzstan',6.7,41.2,74.8],LAO:['AS',236800,'Laos',7.6,19.9,102.5],LBN:['AS',10452,'Lebanon',5.5,33.9,35.9],MYS:['AS',330803,'Malaysia',34.3,4.2,109.7],MDV:['AS',300,'Maldives',0.52,3.2,73.2],MNG:['AS',1564110,'Mongolia',3.4,46.9,103.8],MMR:['AS',676578,'Myanmar',54.4,21.9,95.96],NPL:['AS',147181,'Nepal',30.9,28.4,84.1],PRK:['AS',120538,'North Korea',26,40.3,127.5],OMN:['AS',309500,'Oman',4.6,21.5,55.9],PAK:['AS',881913,'Pakistan',240,30.4,69.3],PSE:['AS',6020,'Palestine',5.5,31.9,35.2],PHL:['AS',300000,'Philippines',117,12.9,121.8],QAT:['AS',11586,'Qatar',2.7,25.4,51.2],SAU:['AS',2149690,'Saudi Arabia',36.9,23.9,45.1],SGP:['AS',728,'Singapore',5.9,1.35,103.8],KOR:['AS',100210,'South Korea',51.7,35.9,127.8],LKA:['AS',65610,'Sri Lanka',21.9,7.9,80.8],SYR:['AS',185180,'Syria',23.2,34.8,38.9],TWN:['AS',36193,'Taiwan',23.4,23.7,121],TJK:['AS',143100,'Tajikistan',10.1,38.9,71.3],THA:['AS',513120,'Thailand',71.7,15.9,100.99],TLS:['AS',14874,'Timor-Leste',1.4,-8.9,125.7],TUR:['AS',783562,'Turkey',85,38.96,35.2],TKM:['AS',488100,'Turkmenistan',6.4,38.97,59.6],ARE:['AS',83600,'UAE',9.5,24,54],UZB:['AS',447400,'Uzbekistan',35.6,41.4,64.6],VNM:['AS',331212,'Vietnam',98.9,14.06,108.3],YEM:['AS',527968,'Yemen',33.7,15.6,48.5],
+  DZA:['AF',2381741,'Algeria',45.6,28,2.6],AGO:['AF',1246700,'Angola',36.7,-11.2,17.9],BEN:['AF',114763,'Benin',13.7,9.3,2.3],BWA:['AF',581730,'Botswana',2.6,-22.3,24.7],BFA:['AF',272967,'Burkina Faso',23.3,12.2,-1.6],BDI:['AF',27834,'Burundi',13.2,-3.4,29.9],CPV:['AF',4033,'Cabo Verde',0.6,16,-24],CMR:['AF',475442,'Cameroon',28.6,7.4,12.4],CAF:['AF',622984,'Central African Republic',5.6,6.6,20.9],TCD:['AF',1284000,'Chad',18.3,15.5,18.7],COM:['AF',1862,'Comoros',0.85,-11.9,43.9],COG:['AF',342000,'Congo',6.1,-0.2,15.8],COD:['AF',2344858,'DR Congo',102,-4.04,21.8],CIV:['AF',322463,'Côte d’Ivoire',28.9,7.5,-5.5],DJI:['AF',23200,'Djibouti',1.1,11.8,42.6],EGY:['AF',1001450,'Egypt',112,26.8,30.8],GNQ:['AF',28051,'Equatorial Guinea',1.7,1.7,10.3],ERI:['AF',117600,'Eritrea',3.7,15.2,39.8],SWZ:['AF',17364,'Eswatini',1.2,-26.5,31.5],ETH:['AF',1104300,'Ethiopia',126.5,9.15,40.5],GAB:['AF',267668,'Gabon',2.4,-0.8,11.6],GMB:['AF',11295,'Gambia',2.8,13.4,-15.5],GHA:['AF',238533,'Ghana',34.1,7.95,-1.03],GIN:['AF',245857,'Guinea',13.5,9.95,-9.7],GNB:['AF',36125,'Guinea-Bissau',2.1,11.8,-15.2],KEN:['AF',580367,'Kenya',55.1,-0.02,37.9],LSO:['AF',30355,'Lesotho',2.3,-29.6,28.2],LBR:['AF',111369,'Liberia',5.4,6.4,-9.4],LBY:['AF',1759540,'Libya',6.9,26.3,17.2],MDG:['AF',587041,'Madagascar',30.3,-18.8,46.9],MWI:['AF',118484,'Malawi',20.9,-13.3,34.3],MLI:['AF',1240192,'Mali',23.3,17.6,-4.0],MRT:['AF',1030700,'Mauritania',4.9,21.0,-10.9],MUS:['AF',2040,'Mauritius',1.3,-20.3,57.6],MAR:['AF',446550,'Morocco',37.5,31.8,-7.1],MOZ:['AF',801590,'Mozambique',33.9,-18.7,35.5],NAM:['AF',825615,'Namibia',2.6,-22.96,18.5],NER:['AF',1267000,'Niger',27.2,17.6,8.1],NGA:['AF',923768,'Nigeria',223.8,9.08,8.7],RWA:['AF',26338,'Rwanda',13.8,-2.0,29.9],STP:['AF',964,'São Tomé & Príncipe',0.23,0.2,6.6],SEN:['AF',196722,'Senegal',17.8,14.5,-14.5],SYC:['AF',459,'Seychelles',0.1,-4.7,55.5],SLE:['AF',71740,'Sierra Leone',8.6,8.5,-11.8],SOM:['AF',637657,'Somalia',17.6,5.2,46.2],ZAF:['AF',1221037,'South Africa',60.4,-30.6,22.9],SSD:['AF',619745,'South Sudan',11.1,7.86,29.7],SDN:['AF',1861484,'Sudan',48.1,12.86,30.2],TZA:['AF',945087,'Tanzania',67.4,-6.4,34.9],TGO:['AF',56785,'Togo',9,8.6,0.8],TUN:['AF',163610,'Tunisia',12.5,33.9,9.5],UGA:['AF',241038,'Uganda',47.2,1.4,32.3],ZMB:['AF',752612,'Zambia',20.6,-13.1,27.8],ZWE:['AF',390757,'Zimbabwe',16.7,-19.0,29.2],
+  ATG:['NA',442,'Antigua & Barbuda',0.094,17.06,-61.8],BHS:['NA',13943,'Bahamas',0.41,25.0,-77.4],BRB:['NA',430,'Barbados',0.28,13.2,-59.5],BLZ:['NA',22966,'Belize',0.41,17.2,-88.5],CAN:['NA',9984670,'Canada',40.1,56.1,-106.3],CRI:['NA',51100,'Costa Rica',5.2,9.7,-83.8],CUB:['NA',109884,'Cuba',11.2,21.5,-77.8],DMA:['NA',751,'Dominica',0.073,15.4,-61.4],DOM:['NA',48671,'Dominican Republic',11.3,18.7,-70.2],SLV:['NA',21041,'El Salvador',6.4,13.8,-88.9],GRD:['NA',344,'Grenada',0.12,12.1,-61.7],GTM:['NA',108889,'Guatemala',17.6,15.8,-90.2],HTI:['NA',27750,'Haiti',11.7,18.97,-72.3],HND:['NA',112492,'Honduras',10.6,15.2,-86.2],JAM:['NA',10991,'Jamaica',2.8,18.1,-77.3],MEX:['NA',1964375,'Mexico',128.5,23.6,-102.5],NIC:['NA',130373,'Nicaragua',7,12.86,-85.2],PAN:['NA',75417,'Panama',4.5,8.5,-80.8],KNA:['NA',261,'St. Kitts & Nevis',0.048,17.4,-62.8],LCA:['NA',616,'Saint Lucia',0.18,13.9,-60.97],VCT:['NA',389,'St. Vincent',0.1,12.98,-61.3],TTO:['NA',5130,'Trinidad & Tobago',1.5,10.7,-61.2],USA:['NA',9833517,'United States',335,37.1,-95.7],
+  ARG:['SA',2780400,'Argentina',46,-38.4,-63.6],BOL:['SA',1098581,'Bolivia',12.4,-16.3,-63.6],BRA:['SA',8515767,'Brazil',216.4,-14.2,-51.9],CHL:['SA',756102,'Chile',19.6,-35.7,-71.5],COL:['SA',1141748,'Colombia',52.1,4.6,-74.3],ECU:['SA',283561,'Ecuador',18,-1.8,-78.2],GUY:['SA',214969,'Guyana',0.81,4.86,-58.9],PRY:['SA',406752,'Paraguay',6.8,-23.4,-58.4],PER:['SA',1285216,'Peru',34.4,-9.2,-75],SUR:['SA',163820,'Suriname',0.62,3.9,-56.0],URY:['SA',176215,'Uruguay',3.4,-32.5,-55.8],VEN:['SA',912050,'Venezuela',28.8,6.4,-66.6],
+  AUS:['OC',7692024,'Australia',26.6,-25.3,133.8],FJI:['OC',18272,'Fiji',0.94,-17.7,178],KIR:['OC',811,'Kiribati',0.13,1.9,-157.4],MHL:['OC',181,'Marshall Islands',0.04,7.1,171.2],FSM:['OC',702,'Micronesia',0.11,7.4,150.6],NRU:['OC',21,'Nauru',0.013,-0.5,166.9],NZL:['OC',270467,'New Zealand',5.2,-40.9,174.9],PLW:['OC',459,'Palau',0.018,7.5,134.6],PNG:['OC',462840,'Papua New Guinea',10.3,-6.3,143.96],WSM:['OC',2842,'Samoa',0.22,-13.76,-172.1],SLB:['OC',28896,'Solomon Islands',0.74,-9.6,160.2],TON:['OC',747,'Tonga',0.11,-21.2,-175.2],TUV:['OC',26,'Tuvalu',0.012,-7.5,177.6],VUT:['OC',12189,'Vanuatu',0.33,-15.4,166.9]
 };
-const TOTAL_LAND = Object.values(COUNTRIES).filter(([c]) => c !== 'AN').reduce((s,[,a]) => s+a, 0);
+const TOTAL_LAND = Object.values(COUNTRIES).reduce((s,[,a]) => s+a, 0);
+const TOTAL_POP = Object.values(COUNTRIES).reduce((s,c) => s+(c[3]||0), 0);
 const TOTAL_UN = 195;
-const DEMO_VISITS = ['FRA','ESP','PRT','ITA','GRC','MAR','TUN','EGY','TUR','GEO','JPN','THA','VNM','IDN','IND','LKA','MEX','USA','CAN','CRI','BRA','ARG','CHL','PER','ISL','NOR','GBR'];
+
+/* Landlocked countries (no coastline). Source: standard geographic reference. */
+const LANDLOCKED = new Set([
+  'AND','ARM','AUT','BLR','BTN','BOL','BWA','BFA','BDI','CAF','TCD','CZE','SWZ','ETH','HUN',
+  'KAZ','XKX','KGZ','LAO','LSO','LIE','LUX','MWI','MLI','MDA','MNG','NPL','NER','MKD','PRY',
+  'RWA','SMR','SRB','SVK','SSD','CHE','TJK','TKM','UGA','UZB','VAT','ZMB','ZWE','AZE'
+]);
+
+/* Geographic-extreme membership lists (factual) */
+const GEO_SETS = {
+  equator:  ['BRA','COL','ECU','STP','GAB','COG','COD','UGA','KEN','SOM','IDN'],
+  arctic:   ['NOR','RUS','CAN','USA','ISL','FIN','SWE'],
+  himalaya: ['NPL','BTN','IND','CHN','PAK','AFG'],
+  andes:    ['ARG','BOL','CHL','COL','ECU','PER','VEN'],
+  sahara:   ['DZA','EGY','LBY','MLI','MRT','MAR','NER','SDN','TCD','TUN'],
+};
+
+const DEMO_VISITS = ['FRA','ESP','PRT','ITA','GRC','MAR','TUN','EGY','TUR','GEO','JPN','THA','VNM','IDN','IND','LKA','MEX','USA','CAN','CRI','BRA','ARG','CHL','PER','ISL','NOR','GBR','CHE','DEU','NLD','BEL','HRV','CZE'];
 
 function readVisits() {
   try {
@@ -637,28 +621,52 @@ function readVisits() {
     return Array.isArray(arr) ? arr.filter(s => typeof s === 'string') : null;
   } catch { return null; }
 }
+function continentName(code) {
+  const map = {EU:'Europe',AS:'Asia',AF:'Africa',NA:'N. America',SA:'S. America',OC:'Oceania'};
+  return map[code] || code;
+}
+function continentColor(code) {
+  const map = { EU:'#7CA8C9', AS:'#C99A6B', AF:'#C97A6B', NA:'#9DA88B', SA:'#B07AB8', OC:'#6BB0A4' };
+  return map[code] || '#968B6A';
+}
+function climateZone(lat) {
+  const a = Math.abs(lat);
+  if (a < 23.5) return 'Tropical';
+  if (a < 35)   return 'Subtropical';
+  if (a < 55)   return 'Temperate';
+  if (a < 66.5) return 'Subarctic';
+  return 'Polar';
+}
+const CLIMATE_ORDER = ['Tropical','Subtropical','Temperate','Subarctic','Polar'];
 
-/* ─── animation engine ─── */
-const easings = { outCubic: t => 1 - Math.pow(1 - t, 3) };
-function animate({duration, onFrame, onDone, ease = easings.outCubic}) {
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+function animate({duration, onFrame, onDone, ease = easeOutCubic}) {
   const t0 = performance.now();
-  let raf = 0;
   function tick(now) {
     const t = Math.min(1, (now - t0) / duration);
-    onFrame(ease(t), t);
-    if (t < 1) raf = requestAnimationFrame(tick);
+    onFrame(ease(t));
+    if (t < 1) requestAnimationFrame(tick);
     else if (onDone) onDone();
   }
-  raf = requestAnimationFrame(tick);
-  return () => cancelAnimationFrame(raf);
+  requestAnimationFrame(tick);
 }
-function fmtComma(n) { return Math.round(n).toLocaleString(); }
-function fmtPct1(n)  { return n.toFixed(1) + '%'; }
-
+const fmtComma = n => Math.round(n).toLocaleString();
+const fmtPct1  = n => n.toFixed(1) + '%';
+const fmtPct2  = n => n.toFixed(2);
+function fmtPop(nMillions) {
+  if (nMillions >= 1000) return (nMillions/1000).toFixed(2) + 'B';
+  if (nMillions >= 1)    return nMillions.toFixed(1) + 'M';
+  return Math.round(nMillions * 1000) + 'K';
+}
 function scheduleCount(el, target, fmt = 'plain') {
   const start = parseFloat(el.dataset.count) || 0;
-  const apply = (v) => {
-    el.textContent = fmt === 'comma' ? fmtComma(v) : fmt === 'pct1' ? fmtPct1(v) : Math.round(v);
+  const apply = v => {
+    el.textContent =
+      fmt === 'comma' ? fmtComma(v)
+      : fmt === 'pct1' ? fmtPct1(v)
+      : fmt === 'pct2' ? fmtPct2(v)
+      : fmt === 'pop'  ? fmtPop(v)
+      : Math.round(v);
     el.dataset.count = v;
   };
   return () => animate({
@@ -667,28 +675,371 @@ function scheduleCount(el, target, fmt = 'plain') {
     onDone: () => apply(target),
   });
 }
-
 function setupRevealObserver() {
   const obs = new IntersectionObserver(entries => {
     entries.forEach(en => {
       if (en.isIntersecting) {
         en.target.classList.add('in');
-        const fns = en.target._anims || [];
-        fns.forEach(fn => fn());
+        (en.target._anims || []).forEach(fn => fn());
         en.target._anims = [];
         obs.unobserve(en.target);
       }
     });
-  }, { threshold: 0.18 });
+  }, { threshold: 0.12 });
   document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 }
-
-function continentName(code) {
-  const map = {EU:'Europe',AS:'Asia',AF:'Africa',NA:'N. America',SA:'S. America',OC:'Oceania',AN:'Antarctica'};
-  return map[code] || code;
+function halton(i, b) {
+  let f = 1, r = 0;
+  while (i > 0) { f /= b; r += f * (i % b); i = Math.floor(i / b); }
+  return r;
 }
 
-/* ─── paint ─── */
+/* ── BADGE library — every entry uses real, derivable data ── */
+const BADGES = [
+  // Countries marked
+  { id:'c5',   group:'Countries',  axis:'count', t:5,   name:'First Footprints', palette:'sage',       art:'footprint-pair', meta:'5 countries' },
+  { id:'c10',  group:'Countries',  axis:'count', t:10,  name:'Tenfold',         palette:'butter',     art:'compass',         meta:'10 countries' },
+  { id:'c25',  group:'Countries',  axis:'count', t:25,  name:'Quarter Hundred', palette:'terracotta', art:'sextant',         meta:'25 countries' },
+  { id:'c50',  group:'Countries',  axis:'count', t:50,  name:'Half Century',    palette:'sage',       art:'wreath',          meta:'50 countries' },
+  { id:'c75',  group:'Countries',  axis:'count', t:75,  name:'Three-Quarter',   palette:'rose',       art:'quarter-arc',     meta:'75 countries' },
+  { id:'c100', group:'Countries',  axis:'count', t:100, name:'Centurion',       palette:'plum',       art:'sun',             meta:'100 countries' },
+  { id:'c195', group:'Countries',  axis:'count', t:195, name:'Completist',      palette:'rose',       art:'world',           meta:'all UN states' },
+
+  // % of inhabited land
+  { id:'l1',   group:'Land',       axis:'land', t:1,    name:'First Steps',     palette:'sky',        art:'star',            meta:'1% of land' },
+  { id:'l5',   group:'Land',       axis:'land', t:5,    name:'Walked Far',      palette:'butter',     art:'mountains',       meta:'5% of land' },
+  { id:'l10',  group:'Land',       axis:'land', t:10,   name:'Far Reaches',     palette:'sage',       art:'flag',            meta:'10% of land' },
+  { id:'l25',  group:'Land',       axis:'land', t:25,   name:'Quartermaster',   palette:'terracotta', art:'rope',            meta:'25% of land' },
+  { id:'l50',  group:'Land',       axis:'land', t:50,   name:'Halfway Home',    palette:'plum',       art:'anchor',          meta:'50% of land' },
+
+  // Continents
+  { id:'cont-EU', group:'Continents', axis:'cont', t:'EU', name:'Europe',     palette:'sky',        art:'cont-EU', meta:'visit any country' },
+  { id:'cont-AS', group:'Continents', axis:'cont', t:'AS', name:'Asia',       palette:'butter',     art:'cont-AS', meta:'visit any country' },
+  { id:'cont-AF', group:'Continents', axis:'cont', t:'AF', name:'Africa',     palette:'terracotta', art:'cont-AF', meta:'visit any country' },
+  { id:'cont-NA', group:'Continents', axis:'cont', t:'NA', name:'N. America', palette:'sage',       art:'cont-NA', meta:'visit any country' },
+  { id:'cont-SA', group:'Continents', axis:'cont', t:'SA', name:'S. America', palette:'plum',       art:'cont-SA', meta:'visit any country' },
+  { id:'cont-OC', group:'Continents', axis:'cont', t:'OC', name:'Oceania',    palette:'rose',       art:'cont-OC', meta:'visit any country' },
+
+  // Hemispheres
+  { id:'h-N', group:'Hemispheres', axis:'hemi', t:'N', name:'Northerner', palette:'sky',     art:'hemi-N', meta:'northern hemi' },
+  { id:'h-S', group:'Hemispheres', axis:'hemi', t:'S', name:'Southerner', palette:'sage',    art:'hemi-S', meta:'southern hemi' },
+  { id:'h-E', group:'Hemispheres', axis:'hemi', t:'E', name:'Easterner',  palette:'butter',  art:'hemi-E', meta:'eastern hemi' },
+  { id:'h-W', group:'Hemispheres', axis:'hemi', t:'W', name:'Westerner',  palette:'rose',    art:'hemi-W', meta:'western hemi' },
+
+  // Climate zones
+  { id:'clim-tropical',    group:'Climate', axis:'climate', t:'Tropical',    name:'Equator Crosser', palette:'sage',       art:'palm-circle', meta:'tropical zone' },
+  { id:'clim-subtropical', group:'Climate', axis:'climate', t:'Subtropical', name:'Sun Belt',        palette:'butter',     art:'cactus-sun',  meta:'subtropical zone' },
+  { id:'clim-temperate',   group:'Climate', axis:'climate', t:'Temperate',   name:'Four Seasons',    palette:'terracotta', art:'leaf-quad',   meta:'temperate zone' },
+  { id:'clim-subarctic',   group:'Climate', axis:'climate', t:'Subarctic',   name:'Pine Latitudes',  palette:'sky',        art:'pine-row',    meta:'subarctic zone' },
+  { id:'clim-polar',       group:'Climate', axis:'climate', t:'Polar',       name:'Polar Marker',    palette:'blue',       art:'iceberg',     meta:'polar zone' },
+
+  // Population reached (sum across visited, in millions)
+  { id:'pop-100m', group:'People',  axis:'pop', t:100,  name:'A Hundred Million', palette:'rose',       art:'crowd-3',     meta:'100M people' },
+  { id:'pop-500m', group:'People',  axis:'pop', t:500,  name:'Half a Billion',    palette:'terracotta', art:'crowd-5',     meta:'500M people' },
+  { id:'pop-1b',   group:'People',  axis:'pop', t:1000, name:'A Billion',         palette:'plum',       art:'globe-pulse', meta:'1B people' },
+  { id:'pop-2b',   group:'People',  axis:'pop', t:2000, name:'Two Billion',       palette:'butter',     art:'globe-crowd', meta:'2B people' },
+
+  // Coastlines
+  { id:'coast-5',  group:'Coast', axis:'coast', t:5,  name:'Tide Watcher',         palette:'sky',  art:'wave-single', meta:'5 coastal' },
+  { id:'coast-15', group:'Coast', axis:'coast', t:15, name:'Sea Wanderer',         palette:'blue', art:'wave-trio',   meta:'15 coastal' },
+  { id:'coast-30', group:'Coast', axis:'coast', t:30, name:'Cartographer of Shores', palette:'sage', art:'coast-map', meta:'30 coastal' },
+
+  // Geographic extremes
+  { id:'geo-equator',  group:'Geo', axis:'geo', t:'equator',  name:'Across the Line',   palette:'butter',     art:'equator-line', meta:'crossed the equator' },
+  { id:'geo-arctic',   group:'Geo', axis:'geo', t:'arctic',   name:'Above the Circle',  palette:'sky',        art:'aurora',       meta:'Arctic Circle' },
+  { id:'geo-himalaya', group:'Geo', axis:'geo', t:'himalaya', name:'Roof of the World', palette:'bone',       art:'peaks-three',  meta:'Himalayan nation' },
+  { id:'geo-andes',    group:'Geo', axis:'geo', t:'andes',    name:'Spine of America',  palette:'terracotta', art:'ridge-line',   meta:'Andean nation' },
+  { id:'geo-sahara',   group:'Geo', axis:'geo', t:'sahara',   name:'Sand Reckoning',    palette:'butter',     art:'dunes-sun',    meta:'Sahara nation' },
+];
+
+/* badge palette swatches */
+const PALETTE = {
+  terracotta: ['#E9C9B6','#5A2E1A'],
+  blue:       ['#BFD0DD','#1F3B55'],
+  sage:       ['#C7D2B8','#2D3E1F'],
+  butter:     ['#ECDFA7','#4A3C0E'],
+  plum:       ['#C9B4C2','#3C1F38'],
+  rose:       ['#E2BAB6','#561F22'],
+  sky:        ['#C6D8E2','#1B3A4F'],
+  bone:       ['#DCD3BB','#2A2410'],
+};
+
+/* ── badge art renderers (single-color line-art) ── */
+function badgeArt(kind, ink) {
+  const stroke = ink;
+  switch (kind) {
+    case 'compass': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <circle cx="32" cy="32" r="16" stroke-dasharray="2 3"/>
+        <path d="M32 14 L36 32 L32 50 L28 32 Z" fill="${stroke}" stroke="none"/>
+        <circle cx="32" cy="32" r="2" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'sextant': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 50 L54 50 A22 22 0 0 0 10 50 Z"/>
+        <path d="M22 50 L40 22"/>
+        <circle cx="22" cy="50" r="2.5" fill="${stroke}" stroke="none"/>
+        <path d="M14 50 A18 18 0 0 1 50 50" stroke-dasharray="2 2"/>
+      </svg>`;
+    case 'wreath': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 14 C12 22 12 42 22 50"/>
+        <path d="M42 14 C52 22 52 42 42 50"/>
+        <path d="M18 22 L24 26 M16 32 L23 32 M18 42 L24 38"/>
+        <path d="M46 22 L40 26 M48 32 L41 32 M46 42 L40 38"/>
+        <text x="32" y="38" text-anchor="middle" font-size="14" font-family="serif" fill="${stroke}" stroke="none" font-weight="600">★</text>
+      </svg>`;
+    case 'sun': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="11"/>
+        ${Array.from({length:8}).map((_,i)=>{
+          const a = i*Math.PI/4;
+          const x1=32+Math.cos(a)*16, y1=32+Math.sin(a)*16;
+          const x2=32+Math.cos(a)*22, y2=32+Math.sin(a)*22;
+          return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)}"/>`;
+        }).join('')}
+      </svg>`;
+    case 'world': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <ellipse cx="32" cy="32" rx="22" ry="9"/>
+        <ellipse cx="32" cy="32" rx="9" ry="22"/>
+        <path d="M14 24 L50 24 M14 40 L50 40"/>
+      </svg>`;
+    case 'star': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round">
+        <path d="M32 10 L38 26 L55 26 L41 36 L46 53 L32 43 L18 53 L23 36 L9 26 L26 26 Z"/>
+      </svg>`;
+    case 'mountains': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 50 L22 22 L34 40 L44 28 L58 50 Z"/>
+        <path d="M22 22 L26 30 M44 28 L48 36"/>
+        <circle cx="48" cy="14" r="3" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'flag': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 8 L20 56"/>
+        <path d="M20 12 C30 6 38 18 50 12 L50 28 C38 34 30 22 20 28 Z" fill="${stroke}" stroke="${stroke}"/>
+        <circle cx="20" cy="56" r="2" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'rope': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="14"/>
+        <circle cx="32" cy="32" r="14" stroke-dasharray="3 3" transform="rotate(15 32 32)"/>
+        <path d="M22 22 L42 42 M42 22 L22 42" stroke-width="1.2"/>
+      </svg>`;
+    case 'anchor': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="14" r="3"/>
+        <path d="M32 17 L32 50"/>
+        <path d="M22 26 L42 26"/>
+        <path d="M14 42 C18 52 32 56 32 50 C32 56 46 52 50 42"/>
+      </svg>`;
+    case 'cont-EU': return contBadge(stroke, 'M14 36 C18 22 28 16 38 18 C48 20 52 28 50 36 C48 44 38 50 28 48 C20 46 12 44 14 36 Z');
+    case 'cont-AS': return contBadge(stroke, 'M10 24 C18 16 30 14 42 18 C54 22 56 34 50 44 C42 54 26 52 18 46 C10 40 6 32 10 24 Z');
+    case 'cont-AF': return contBadge(stroke, 'M22 12 C34 12 44 22 42 34 C42 44 36 52 28 52 C20 52 16 42 18 32 C18 22 16 16 22 12 Z');
+    case 'cont-NA': return contBadge(stroke, 'M14 18 C26 12 42 16 48 26 C52 36 42 44 32 42 C22 42 14 50 12 40 C10 30 8 22 14 18 Z');
+    case 'cont-SA': return contBadge(stroke, 'M28 10 C38 12 42 22 38 32 C36 44 28 54 24 50 C20 46 22 38 22 30 C22 20 22 10 28 10 Z');
+    case 'cont-OC': return contBadge(stroke, 'M16 28 C24 22 36 24 42 30 C46 36 38 44 28 42 C20 40 12 34 16 28 Z M48 18 a2 2 0 1 0 0.1 0 Z M50 44 a2 2 0 1 0 0.1 0 Z');
+    case 'hemi-N': return hemiBadge(stroke, 'top');
+    case 'hemi-S': return hemiBadge(stroke, 'bottom');
+    case 'hemi-E': return hemiBadge(stroke, 'right');
+    case 'hemi-W': return hemiBadge(stroke, 'left');
+
+    /* — climate zones — */
+    case 'palm-circle': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22" stroke-dasharray="2 3"/>
+        <path d="M32 50 C30 42 30 34 32 24"/>
+        <path d="M32 24 C24 22 18 24 14 28"/>
+        <path d="M32 24 C40 22 46 24 50 28"/>
+        <path d="M32 24 C30 18 32 12 36 10"/>
+        <circle cx="30" cy="26" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="34" cy="26" r="1.5" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'cactus-sun': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="44" cy="20" r="6"/>
+        <path d="M40 14 L36 10 M48 14 L52 10 M50 20 L56 20 M46 27 L48 32" stroke-width="1.2"/>
+        <path d="M28 50 L28 26 C28 22 32 22 32 26 L32 50 Z"/>
+        <path d="M20 36 C20 32 24 32 24 36 L24 44 L28 44"/>
+        <path d="M40 32 C40 28 36 28 36 32 L36 38 L32 38"/>
+        <path d="M22 50 L38 50" stroke-dasharray="2 2"/>
+      </svg>`;
+    case 'leaf-quad': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22" stroke-dasharray="2 3"/>
+        <path d="M32 32 L32 14 M32 14 C30 16 30 18 32 20"/>
+        <path d="M32 32 L48 32 C46 34 44 34 42 32"/>
+        <path d="M32 32 C36 36 38 42 36 50 C32 46 30 38 32 32" fill="${stroke}" stroke="none"/>
+        <path d="M32 32 L16 30 C18 30 20 28 22 28 L18 26"/>
+        <circle cx="32" cy="32" r="2" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'pine-row': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 50 L20 30 L24 50 Z"/>
+        <path d="M28 50 L34 18 L40 50 Z"/>
+        <path d="M44 50 L48 36 L52 50 Z"/>
+        <path d="M10 50 L54 50"/>
+        <text x="34" y="14" text-anchor="middle" font-size="8" font-family="serif" font-weight="600" fill="${stroke}" stroke="none">★</text>
+      </svg>`;
+    case 'iceberg': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 36 L22 14 L30 24 L38 12 L48 22 L52 36 Z" fill="${stroke}" stroke="${stroke}" opacity="0.85"/>
+        <path d="M10 36 L54 36" stroke-dasharray="2 2"/>
+        <path d="M18 40 L24 50 L30 42 L36 52 L44 40" opacity="0.55"/>
+        <path d="M14 16 L18 18 M16 14 L18 18" stroke-width="1.2"/>
+      </svg>`;
+
+    /* — population — */
+    case 'crowd-3': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 50 A22 22 0 0 1 54 50" stroke-dasharray="2 3"/>
+        <circle cx="20" cy="28" r="5"/>
+        <path d="M14 44 C14 38 26 38 26 44 L26 50 L14 50 Z"/>
+        <circle cx="32" cy="22" r="6"/>
+        <path d="M24 42 C24 34 40 34 40 42 L40 50 L24 50 Z"/>
+        <circle cx="44" cy="28" r="5"/>
+        <path d="M38 44 C38 38 50 38 50 44 L50 50 L38 50 Z"/>
+      </svg>`;
+    case 'crowd-5': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="14" cy="30" r="4"/><path d="M9 44 C9 39 19 39 19 44 L19 50 L9 50 Z"/>
+        <circle cx="24" cy="26" r="4.5"/><path d="M19 42 C19 37 29 37 29 42 L29 50 L19 50 Z"/>
+        <circle cx="34" cy="22" r="5"/><path d="M28 40 C28 34 40 34 40 40 L40 50 L28 50 Z"/>
+        <circle cx="44" cy="26" r="4.5"/><path d="M39 42 C39 37 49 37 49 42 L49 50 L39 50 Z"/>
+        <circle cx="54" cy="30" r="4"/><path d="M49 44 C49 39 59 39 59 44 L59 50 L49 50 Z"/>
+      </svg>`;
+    case 'globe-pulse': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="10"/>
+        <circle cx="32" cy="32" r="3" fill="${stroke}" stroke="none"/>
+        <circle cx="32" cy="32" r="16" stroke-dasharray="2 3" opacity="0.7"/>
+        <circle cx="32" cy="32" r="22" stroke-dasharray="2 4" opacity="0.4"/>
+      </svg>`;
+    case 'globe-crowd': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="38" r="18"/>
+        <ellipse cx="32" cy="38" rx="18" ry="6"/>
+        <path d="M32 38 L32 56" opacity="0.4"/>
+        <circle cx="22" cy="18" r="2" fill="${stroke}" stroke="none"/>
+        <circle cx="32" cy="14" r="2" fill="${stroke}" stroke="none"/>
+        <circle cx="42" cy="18" r="2" fill="${stroke}" stroke="none"/>
+        <path d="M22 20 L22 22 M32 16 L32 20 M42 20 L42 22"/>
+      </svg>`;
+
+    /* — coastlines — */
+    case 'wave-single': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 36 C20 28 28 44 32 36 C36 28 44 44 56 36"/>
+        <circle cx="50" cy="20" r="4" fill="${stroke}" stroke="none"/>
+        <path d="M8 48 L56 48" stroke-dasharray="2 3" opacity="0.5"/>
+      </svg>`;
+    case 'wave-trio': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 26 C20 18 28 34 32 26 C36 18 44 34 56 26"/>
+        <path d="M8 36 C18 30 26 42 32 36 C38 30 46 42 56 36"/>
+        <path d="M8 46 C16 42 24 50 32 46 C40 42 48 50 56 46"/>
+        <path d="M30 22 L34 22 L32 16 Z" fill="${stroke}" stroke="${stroke}"/>
+        <path d="M32 22 L32 26"/>
+      </svg>`;
+    case 'coast-map': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="10" y="14" width="44" height="36" rx="2" stroke-dasharray="2 3"/>
+        <path d="M14 32 L18 28 L22 34 L26 30 L30 36 L34 30 L38 34 L42 28 L46 36 L50 30"/>
+        <circle cx="20" cy="40" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="32" cy="42" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="44" cy="40" r="1.5" fill="${stroke}" stroke="none"/>
+      </svg>`;
+
+    /* — geographic extremes — */
+    case 'equator-line': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <path d="M10 32 L54 32" stroke-width="2"/>
+        <path d="M52 30 L54 32 L52 34 Z" fill="${stroke}" stroke="${stroke}"/>
+        <path d="M12 30 L10 32 L12 34 Z" fill="${stroke}" stroke="${stroke}"/>
+        <ellipse cx="32" cy="32" rx="22" ry="8" stroke-dasharray="2 3" opacity="0.5"/>
+      </svg>`;
+    case 'aurora': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 50 L54 50"/>
+        <path d="M16 50 C16 36 18 30 16 18" opacity="0.85"/>
+        <path d="M28 50 C28 32 32 24 28 14" opacity="0.85"/>
+        <path d="M42 50 C42 38 44 32 42 22" opacity="0.85"/>
+        <text x="50" y="20" text-anchor="middle" font-size="10" font-family="serif" font-weight="600" fill="${stroke}" stroke="none">★</text>
+      </svg>`;
+    case 'peaks-three': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 50 L22 22 L36 50 Z"/>
+        <path d="M28 50 L40 14 L52 50 Z"/>
+        <path d="M44 50 L52 30 L60 50 Z"/>
+        <path d="M40 14 L44 14 L44 20"/>
+        <path d="M40 14 L40 20"/>
+        <path d="M8 50 L60 50"/>
+      </svg>`;
+    case 'ridge-line': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 50 L14 38 L20 44 L26 32 L32 40 L38 28 L46 36 L52 30 L58 42"/>
+        <path d="M22 22 L28 18 L34 22 M28 18 L28 14"/>
+      </svg>`;
+    case 'dunes-sun': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="44" cy="22" r="9"/>
+        <path d="M8 50 C18 36 28 36 36 44 C42 50 50 50 56 46"/>
+        <path d="M8 42 C16 32 24 32 32 38 C38 42 46 42 56 38" opacity="0.7"/>
+        <path d="M8 34 C14 28 20 28 28 32" opacity="0.5"/>
+        <path d="M8 50 L58 50"/>
+      </svg>`;
+
+    /* — country count expansion — */
+    case 'footprint-pair': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 38 C22 30 28 24 30 30 C32 36 28 44 24 44 C22 44 22 42 22 38 Z" fill="${stroke}" stroke="${stroke}"/>
+        <circle cx="20" cy="22" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="24" cy="20" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="28" cy="22" r="1.5" fill="${stroke}" stroke="none"/>
+        <path d="M40 50 C40 42 46 36 48 42 C50 48 46 56 42 56 C40 56 40 54 40 50 Z" fill="${stroke}" stroke="${stroke}"/>
+        <circle cx="38" cy="34" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="42" cy="32" r="1.5" fill="${stroke}" stroke="none"/>
+        <circle cx="46" cy="34" r="1.5" fill="${stroke}" stroke="none"/>
+      </svg>`;
+    case 'quarter-arc': return `
+      <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="32" cy="32" r="22"/>
+        <path d="M32 10 A22 22 0 0 1 54 32 L32 32 Z" fill="${stroke}" stroke="none" opacity="0.18"/>
+        <path d="M32 32 L32 10 A22 22 0 0 0 10 32 L32 32 Z" fill="${stroke}" stroke="${stroke}"/>
+        <path d="M32 32 L54 32 A22 22 0 0 1 32 54 L32 32 Z" fill="${stroke}" stroke="${stroke}"/>
+        <circle cx="44" cy="22" r="1.5" fill="${stroke}" stroke="none" opacity="1"/>
+      </svg>`;
+
+    default: return '';
+  }
+}
+function contBadge(stroke, d) {
+  return `
+    <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linejoin="round">
+      <circle cx="32" cy="32" r="24" stroke-dasharray="2 3"/>
+      <path d="${d}" fill="${stroke}" stroke="${stroke}" stroke-width="1.2" opacity="0.9"/>
+    </svg>`;
+}
+function hemiBadge(stroke, where) {
+  const half = {
+    top:    `<path d="M10 32 A22 22 0 0 1 54 32 Z" fill="${stroke}" stroke="${stroke}"/>`,
+    bottom: `<path d="M10 32 A22 22 0 0 0 54 32 Z" fill="${stroke}" stroke="${stroke}"/>`,
+    left:   `<path d="M32 10 A22 22 0 0 0 32 54 Z" fill="${stroke}" stroke="${stroke}"/>`,
+    right:  `<path d="M32 10 A22 22 0 0 1 32 54 Z" fill="${stroke}" stroke="${stroke}"/>`,
+  }[where];
+  return `
+    <svg viewBox="0 0 64 64" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+      <circle cx="32" cy="32" r="22"/>
+      ${half}
+      <ellipse cx="32" cy="32" rx="22" ry="8" fill="none"/>
+    </svg>`;
+}
+
+/* ── PAINT ── */
 function paint() {
   const stored = readVisits();
   let known;
@@ -698,153 +1049,214 @@ function paint() {
 
   const count = known.length;
   const visitedArea = known.reduce((s,c) => s + (COUNTRIES[c][1]||0), 0);
+  const visitedPopM = known.reduce((s,c) => s + (COUNTRIES[c][3]||0), 0);
   const continentsTouched = new Set(known.map(c => COUNTRIES[c][0]));
-  const conByCount = {};
-  known.forEach(c => { const k = COUNTRIES[c][0]; conByCount[k] = (conByCount[k]||0)+1; });
-  const fmt = n => Math.round(n).toLocaleString();
   const earthRatio = visitedArea / TOTAL_LAND;
+  const popRatio = visitedPopM / TOTAL_POP;
+
+  // hemispheres touched
+  const hemis = new Set();
+  known.forEach(iso => {
+    const [, , , , lat, lng] = COUNTRIES[iso];
+    if (lat >= 0) hemis.add('N'); else hemis.add('S');
+    if (lng >= 0) hemis.add('E'); else hemis.add('W');
+  });
+
+  // climate zones touched
+  const climates = new Set();
+  known.forEach(iso => {
+    const lat = COUNTRIES[iso][4];
+    climates.add(climateZone(lat));
+  });
+
+  // coastal countries marked = visited - landlocked
+  const coastalCount = known.filter(iso => !LANDLOCKED.has(iso)).length;
+  const totalCoastal = TOTAL_UN - LANDLOCKED.size;
+
+  // most/least populous within visited
+  let most = null, least = null;
+  known.forEach(iso => {
+    const c = COUNTRIES[iso];
+    if (!most || c[3] > most[3]) most = [...c, iso];
+    if (!least || c[3] < least[3]) least = [...c, iso];
+  });
 
   document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('in'); el._anims = []; });
 
-  /* PASSPORT */
-  const passport = document.querySelector('.passport');
-  passport._anims.push(scheduleCount(document.getElementById('pp-countries'), count));
-  passport._anims.push(scheduleCount(document.getElementById('pp-land'), visitedArea, 'comma'));
-  passport._anims.push(scheduleCount(document.getElementById('pp-cont'), continentsTouched.size));
-  passport._anims.push(scheduleCount(document.getElementById('pp-un'), (count/TOTAL_UN)*100, 'pct1'));
-  document.getElementById('pp-countries-sub').textContent =
-    count === 0 ? 'open the globe to begin' : `${continentsTouched.size} continent${continentsTouched.size===1?'':'s'} touched`;
-  document.getElementById('pp-land-sub').textContent = `${(earthRatio*100).toFixed(1)}% of inhabited land`;
+  /* HERO splatter */
+  const splatter = document.getElementById('splatter');
+  splatter.innerHTML = '';
+  const SPLATTER_TOTAL = 160;
+  const litCount = Math.round(SPLATTER_TOTAL * (count / TOTAL_UN));
+  const points = [];
+  for (let i = 0; i < SPLATTER_TOTAL; i++) {
+    points.push([halton(i + 7, 2), halton(i + 7, 3)]);
+  }
+  const order = points.map((_, i) => i).sort((a,b) => halton(a+31,5) - halton(b+31,5));
+  const litSet = new Set();
+  for (let i = 0; i < litCount; i++) litSet.add(order[i]);
+  const splatDots = [];
+  for (let i = 0; i < SPLATTER_TOTAL; i++) {
+    const [x, y] = points[i];
+    const lit = litSet.has(i);
+    const d = document.createElement('div');
+    d.className = 'dot';
+    const size = (lit ? 3.2 : 2.6) + halton(i+11,7) * 2.6;
+    d.style.left = (4 + x * 92) + '%';
+    d.style.top  = (4 + y * 92) + '%';
+    d.style.width = size+'px';
+    d.style.height = size+'px';
+    d.style.background = 'var(--c-bone-ink)';
+    d.style.setProperty('--op', (lit ? (0.55 + halton(i+13,11)*0.35) : (0.10 + halton(i+13,11)*0.10)).toFixed(3));
+    splatter.appendChild(d);
+    splatDots.push(d);
+  }
 
-  /* COUNTRIES */
-  const ccCard = document.querySelector('.card-countries');
-  const eu = conByCount.EU || 0, as = conByCount.AS || 0;
-  const other = count - eu - as;
-  ccCard._anims.push(scheduleCount(document.getElementById('cc-num'), count));
-  ccCard._anims.push(scheduleCount(document.getElementById('cc-eu'), eu));
-  ccCard._anims.push(scheduleCount(document.getElementById('cc-as'), as));
-  ccCard._anims.push(scheduleCount(document.getElementById('cc-other'), other));
-
-  /* CHART */
-  const cols = document.getElementById('chart-cols');
-  const xax  = document.getElementById('chart-x');
-  const yax  = document.getElementById('chart-y');
-  cols.innerHTML = ''; xax.innerHTML = '';
-  const continents = CONTINENT_ORDER.filter(([c]) => c !== 'AN');
-  const max = Math.max(1, ...continents.map(([c]) => conByCount[c] || 0));
-  const tick = Math.max(1, Math.ceil(max/3));
-  const yMax = tick * 3;
-  yax.innerHTML = `<span>0</span><span>${tick}</span><span>${tick*2}</span><span>${yMax}</span>`;
-  const barEls = [];
-  continents.forEach(([code, label]) => {
-    const v = conByCount[code] || 0;
-    const h = (v / yMax) * 100;
-    const col = document.createElement('div');
-    col.className = 'chart-col';
-    const bar = document.createElement('div');
-    bar.className = 'chart-bar';
-    bar.dataset.target = h;
-    col.appendChild(bar);
-    cols.appendChild(col);
-    barEls.push(bar);
-    const x = document.createElement('div'); x.textContent = label; xax.appendChild(x);
-  });
-  ccCard._anims.push(() => {
-    barEls.forEach((bar, i) => {
-      const targetH = parseFloat(bar.dataset.target) || 0;
-      setTimeout(() => { bar.style.height = targetH + '%'; }, i * 80);
-    });
-  });
-
-  /* % WORLD'S LAND */
-  const landCard = document.getElementById('card-land');
-  landCard._anims.push(scheduleCount(document.getElementById('land-stat'), earthRatio*100, 'pct1'));
-  landCard._anims.push(scheduleCount(document.getElementById('land-glyph'), earthRatio*100, 'pct1'));
-  document.getElementById('land-sub').textContent = `${fmt(visitedArea)} km² · measured against inhabited land`;
-  const sideRatio = Math.sqrt(Math.min(1, earthRatio));
-  const inner = document.getElementById('land-inner');
-  inner.style.width = '0'; inner.style.height = '0';
-  landCard._anims.push(() => {
+  const grid = document.getElementById('grid-stats');
+  grid._anims.push(() => {
+    void splatter.offsetHeight;
     requestAnimationFrame(() => {
-      inner.style.width  = (sideRatio * 100) + '%';
-      inner.style.height = (sideRatio * 100) + '%';
+      splatDots.forEach((d, i) => {
+        const r = halton(i+17, 13);
+        setTimeout(() => d.classList.add('appear'), 80 + r * 1100);
+      });
     });
   });
 
-  /* AROUND THE WORLD */
-  const aroundCard = document.getElementById('card-around');
-  aroundCard._anims.push(scheduleCount(document.getElementById('around-km'), visitedArea, 'comma'));
-  aroundCard._anims.push(scheduleCount(document.getElementById('around-avg'), count ? visitedArea/count : 0, 'comma'));
-  document.getElementById('around-mi').textContent = `${fmt(visitedArea*0.386)} mi² inhabited surface`;
-  aroundCard._anims.push(scheduleCount(document.getElementById('ratio-earth'), earthRatio*100, 'pct1'));
-  aroundCard._anims.push(scheduleCount(document.getElementById('ratio-un'), (count/TOTAL_UN)*100, 'pct1'));
-  document.getElementById('ratio-cont').textContent = `${continentsTouched.size}/7`;
-  ['ratio-earth-fill','ratio-un-fill','ratio-cont-fill'].forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.style.width = '38px';
-    const ratio = i === 0 ? earthRatio : i === 1 ? count/TOTAL_UN : continentsTouched.size/7;
-    aroundCard._anims.push(() => {
-      setTimeout(() => {
-        const w = Math.max(0, Math.min(1, ratio)) * 100;
-        el.style.width = w < 5 ? '38px' : `calc(${w}% - 12px)`;
-      }, 200 + i * 120);
-    });
+  /* hero counters */
+  grid._anims.push(scheduleCount(document.getElementById('hero-num'), count));
+  const heroCapPct = document.getElementById('hero-cap-pct');
+  heroCapPct.dataset.count = 0;
+  grid._anims.push(scheduleCount(heroCapPct, earthRatio*100, 'pct1'));
+  grid._anims.push(scheduleCount(document.getElementById('hero-cap-cont'), continentsTouched.size));
+
+  /* population */
+  grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
+  document.getElementById('stat-pop-pct').textContent = (popRatio*100).toFixed(1) + '%';
+
+  /* climate */
+  grid._anims.push(scheduleCount(document.getElementById('stat-clim'), climates.size));
+  const climateOrdered = CLIMATE_ORDER.filter(c => climates.has(c));
+  document.getElementById('stat-clim-list').innerHTML = climateOrdered.length
+    ? climateOrdered.join(' · ')
+    : 'none yet';
+
+  /* land covered */
+  grid._anims.push(scheduleCount(document.getElementById('stat-km'), visitedArea, 'comma'));
+  document.getElementById('stat-km-pct').textContent = (earthRatio*100).toFixed(2) + '%';
+
+  /* coastlines */
+  grid._anims.push(scheduleCount(document.getElementById('stat-coast'), coastalCount));
+  document.getElementById('stat-coast-of').textContent = `${coastalCount} of ${totalCoastal}`;
+
+  /* most/least populous */
+  document.getElementById('stat-most').textContent  = most ? most[2] : '—';
+  document.getElementById('stat-most-pop').textContent = most ? `${fmtPop(most[3])} people` : '—';
+  document.getElementById('stat-least').textContent = least ? least[2] : '—';
+  document.getElementById('stat-least-pop').textContent = least ? `${fmtPop(least[3])} people` : '—';
+
+  /* shape card */
+  const sf = document.getElementById('shape-figure');
+  const poly = document.getElementById('shape-poly');
+  const sideRatio = Math.sqrt(Math.min(1, earthRatio * 6));
+  sf.classList.remove('in');
+  poly.style.transform = 'scale(0)';
+  grid._anims.push(() => {
+    void poly.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      poly.style.transform = `scale(${Math.min(1, sideRatio)})`;
+    }));
   });
+  const shapePct = document.getElementById('shape-pct');
+  shapePct.dataset.count = 0;
+  grid._anims.push(scheduleCount(shapePct, earthRatio*100, 'pct2'));
+  document.getElementById('shape-km').textContent = fmtComma(visitedArea);
 
-  /* WHAT'S LEFT */
-  const leftCard = document.querySelector('.card-left');
-  const leftCount = TOTAL_UN - count;
-  leftCard._anims.push(scheduleCount(document.getElementById('left-num'), leftCount));
-  document.getElementById('left-label').textContent = leftCount === 1 ? 'country unmarked' : 'countries unmarked';
-  document.getElementById('left-sub').textContent = `${(100 - earthRatio*100).toFixed(1)}% of inhabited land remains`;
-
-  /* RAREST */
-  const visitedSorted = known.map(iso => [iso, ...COUNTRIES[iso]]).sort((a,b) => a[2]-b[2]);
-  if (visitedSorted.length) {
-    const [, , area, name] = visitedSorted[0];
-    document.getElementById('rare-name').textContent = name;
-    document.getElementById('rare-meta').textContent = `${continentName(visitedSorted[0][1])} · ${area<1?'<1':fmt(area)} km²`;
-  } else {
-    document.getElementById('rare-name').textContent = '—';
-    document.getElementById('rare-meta').textContent = 'mark a country to see its rarity';
+  /* ── BADGES ── */
+  // unlock condition resolver — every axis tied to real data
+  function isUnlocked(b) {
+    if (b.axis === 'count')   return count >= b.t;
+    if (b.axis === 'land')    return (earthRatio*100) >= b.t;
+    if (b.axis === 'cont')    return continentsTouched.has(b.t);
+    if (b.axis === 'hemi')    return hemis.has(b.t);
+    if (b.axis === 'climate') return climates.has(b.t);
+    if (b.axis === 'pop')     return visitedPopM >= b.t;
+    if (b.axis === 'coast')   return coastalCount >= b.t;
+    if (b.axis === 'geo')     return (GEO_SETS[b.t] || []).some(iso => known.includes(iso));
+    return false;
   }
 
-  /* CURATOR FOOTNOTE */
-  const unvisited = Object.entries(COUNTRIES)
-    .filter(([iso, v]) => v[0] !== 'AN' && !known.includes(iso))
-    .sort((a,b) => a[1][1] - b[1][1]);
-  const fb = document.getElementById('foot-body');
-  if (unvisited.length) {
-    const [, [, area, name]] = unvisited[0];
-    const areaTxt = area < 1 ? 'less than a square kilometre' : `${fmt(area)} square kilometre${Math.round(area)===1?'':'s'}`;
-    fb.innerHTML = `Of all the countries you have not yet seen, the smallest is <em>${name}</em> — ${areaTxt}, awaiting an entry in your atlas.`;
-  } else {
-    fb.textContent = 'The atlas is complete.';
-  }
+  // sort: unlocked first (preserving group order), then locked (preserving group order)
+  const sorted = [...BADGES].map(b => ({...b, _unlocked: isUnlocked(b)}))
+    .sort((a, b) => {
+      if (a._unlocked !== b._unlocked) return a._unlocked ? -1 : 1;
+      return BADGES.indexOf(a) - BADGES.indexOf(b);
+    });
 
-  /* RECENT VISITS */
+  const wall = document.getElementById('badge-wall');
+  wall.innerHTML = '';
+  let unlockedCount = 0;
+  sorted.forEach(b => {
+    const unlocked = b._unlocked;
+    if (unlocked) unlockedCount++;
+    const [bg, ink] = PALETTE[b.palette] || PALETTE.bone;
+    const div = document.createElement('div');
+    div.className = 'badge ' + (unlocked ? 'unlocked' : 'locked');
+    if (unlocked) {
+      div.style.setProperty('--badge-bg', bg);
+      div.style.setProperty('--badge-ink', ink);
+    }
+    div.innerHTML = `
+      <div class="badge-art">${badgeArt(b.art, unlocked ? ink : '#9893a0')}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-meta">${b.meta || ''}</div>
+    `;
+    wall.appendChild(div);
+  });
+  document.getElementById('badges-progress').textContent = `${unlockedCount} of ${BADGES.length} unlocked`;
+
+  // Update view-all button label based on current state
+  const viewAllBtn = document.getElementById('view-all');
+  const updateViewAll = () => {
+    const expanded = wall.classList.contains('expanded');
+    viewAllBtn.textContent = expanded
+      ? 'Show fewer'
+      : `View all ${BADGES.length} badges`;
+  };
+  updateViewAll();
+
+  /* ── RECENT VISITS ── */
   const list = document.getElementById('visits');
   list.innerHTML = '';
   const reversed = [...known].reverse();
-  reversed.slice(0, 8).forEach((iso, idx) => {
+  reversed.slice(0, 8).forEach((iso) => {
     const v = COUNTRIES[iso];
-    const li = document.createElement('div');
-    li.className = 'visit';
-    li.innerHTML = `<div class="seq">${reversed.length - idx}</div>
-      <div><div class="name">${v[2]}</div><div class="meta">${continentName(v[0])} · ${fmt(v[1])} km²</div></div>
-      <div class="meta">${iso}</div>`;
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="cdot" style="background:${continentColor(v[0])}"></span><span class="name">${v[2]}</span><span class="cont">${continentName(v[0])}</span>`;
     list.appendChild(li);
   });
-  if (!reversed.length) list.innerHTML = `<div style="padding:24px 4px; color:var(--muted); font-size:14px;">No countries marked yet — open the globe to begin.</div>`;
+  if (!reversed.length) {
+    list.innerHTML = `<li style="grid-template-columns: 1fr; color:var(--muted); padding:18px 16px; border-bottom:none;">No countries marked yet — open the globe to begin.</li>`;
+  }
 
   setupRevealObserver();
 }
 
-/* basic share button — copies current URL to clipboard */
+/* view-all toggle */
+document.getElementById('view-all').addEventListener('click', () => {
+  const wall = document.getElementById('badge-wall');
+  const btn = document.getElementById('view-all');
+  wall.classList.toggle('expanded');
+  btn.textContent = wall.classList.contains('expanded')
+    ? 'Show fewer'
+    : `View all ${BADGES.length} badges`;
+});
+
+/* share */
 document.getElementById('top-share').addEventListener('click', async () => {
   try {
-    if (navigator.share) { await navigator.share({ title: 'Your Atlas — Blank Earth', url: location.href }); }
-    else { await navigator.clipboard.writeText(location.href); }
+    if (navigator.share) await navigator.share({ title: 'Your Atlas — Blank Earth', url: location.href });
+    else await navigator.clipboard.writeText(location.href);
   } catch {}
 });
 
