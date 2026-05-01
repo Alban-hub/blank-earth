@@ -1191,10 +1191,6 @@ const STYLE = {
   // Single merged LineSegments for all borders (1 draw call).
   // Uses arcMaxElev which is rebuilt on every visit / unvisit.
   function rebuildBordersMerged() {
-    // Borders moved to a static canvas-texture overlay — this is a no-op now,
-    // kept as a function so visit/unvisit callsites don't need to change.
-    return;
-    // (legacy LineSegments rebuild kept below for fallback if ever needed)
     while (borderGroup.children.length) {
       const c = borderGroup.children[borderGroup.children.length - 1];
       borderGroup.remove(c); c.geometry.dispose();
@@ -1219,64 +1215,6 @@ const STYLE = {
   }
   rebuildBordersMerged();
   globe.add(borderGroup);
-  // The old LineSegments-based borders are kept in the scene graph (so visit/unvisit
-  // logic that pokes at borderGroup keeps working), but they're hidden in favour of
-  // a baked-canvas-texture overlay that has zero subpixel flicker at any zoom.
-  borderGroup.visible = false;
-
-  // ---- Texture-baked borders (replaces the flickery 1px LineSegments) ------
-  // Why: WebGL `gl.LINE` primitives are always 1 fragment wide. At extreme
-  // zoom-out the lines fall through subpixel positions and strobe as the globe
-  // rotates. Baking the borders to a high-res canvas and applying it as a
-  // texture lets us use Canvas 2D's native anti-aliasing + GPU mipmaps + 16×
-  // anisotropic filtering — borders stay crisp at any zoom, with no flicker.
-  function bakeBorderTexture() {
-    const W = 4096, H = 2048;        // 32 MB texture (raw); ~43 MB w/ mipmaps. Fine on modern phones.
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#' + STYLE.borderColor.toString(16).padStart(6, '0');
-    ctx.lineWidth = 2.2;             // Canvas-pixel width — anti-aliased on all sides
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    for (let arcIdx = 0; arcIdx < arcs.length; arcIdx++) {
-      const arc = arcs[arcIdx];
-      for (const seg of splitAntimeridian(arc)) {
-        const sub = subdivideRing(seg, 1.0);
-        if (sub.length < 2) continue;
-        ctx.beginPath();
-        for (let i = 0; i < sub.length; i++) {
-          const x = (sub[i][0] + 180) / 360 * W;
-          const y = (90 - sub[i][1]) / 180 * H;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-      }
-    }
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.generateMipmaps = true;
-    tex.anisotropy = Math.min(16, renderer.capabilities.getMaxAnisotropy());
-    tex.needsUpdate = true;
-    return tex;
-  }
-
-  const borderTex = bakeBorderTexture();
-  const borderSphereMat = new THREE.MeshBasicMaterial({
-    map: borderTex,
-    transparent: true,
-    depthWrite: false,    // don't occlude visited extrusions / outlines
-  });
-  const borderSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(R + SURFACE + STYLE.borderOffset, 96, 48),
-    borderSphereMat
-  );
-  borderSphere.renderOrder = 1;   // draw after country tiles, before atmosphere/extrusions
-  globe.add(borderSphere);
 
   // ---- Country flat fills (raycastable) ------------------------------------
 
@@ -1687,10 +1625,11 @@ const STYLE = {
     camera.position.set(0, 0, camDist);
     camera.lookAt(0, 0, 0);
 
-    // Texture-baked borders don't flicker, so the heavy fade is no longer needed.
-    // Keep a tiny editorial fade (full opacity close, 80% at far) for visual softness.
+    // Distance-based border fade: at extreme zoom-out, thin 1-pixel border lines
+    // alias and flicker as they fall on/off pixel rows during rotation. Fade them
+    // so the visual contrast at full-globe view doesn't strobe so prominently.
     const distRatio = Math.max(0, Math.min(1, (camDist / R - 3.0) / 3.0));
-    borderSphereMat.opacity = 1.0 - distRatio * 0.20;
+    borderMat.opacity = 1.0 - distRatio * 0.55;
 
     // Track whether any visited extrusion grew this frame (so the *final* tick
     // that sets scale=1 still triggers a render, before we go idle).
