@@ -1,4 +1,0 @@
-{
-  "_comment": "List the plug-in files (relative to /plugins/) you want loaded at runtime. Order is preserved. Remove a name to disable a plug-in without deleting its file.",
-  "plugins": []
-}
