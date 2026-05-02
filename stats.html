@@ -353,6 +353,158 @@
   }
   .extremes .col-meta strong { font-weight: 600; }
 
+  /* === LINES (v2) === */
+  /* The seven tiered cards. Same visual family as badges but a bit larger
+     and split into a 2-up grid on mobile / 4-up on desktop (one row of four,
+     then a second row of three). The tier ink and "TIER N" pill colour
+     come from data/tier-palette.js (TIER_INKS / TIER_TINTS). */
+  .lines { margin: 28px 0 36px; }
+  .line-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 540px) {
+    .line-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .line {
+    aspect-ratio: 1 / 1.18;
+    background: var(--paper-2);
+    border-radius: 12px;
+    padding: 12px 10px 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+    transition: transform 200ms ease, background 300ms, box-shadow 200ms;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .line:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -8px rgba(0,0,0,0.20);
+  }
+  .line .line-art {
+    width: 100%; aspect-ratio: 1 / 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .line .line-art svg { display: block; width: 80%; height: 80%; }
+  .line .line-name {
+    font-family: var(--serif);
+    font-size: 12px; font-weight: 500;
+    line-height: 1.15; text-align: center;
+    color: var(--ink);
+    margin-top: 6px;
+    letter-spacing: 0.01em;
+  }
+  .line .line-pill {
+    margin-top: 4px;
+    font-family: var(--sans);
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--line-pill-bg, transparent);
+    color: var(--line-ink, var(--muted));
+  }
+  /* Locked state — no tier earned yet. Same dim treatment as the badge wall. */
+  .line[data-tier="0"] {
+    background: rgba(214, 208, 195, 0.35);
+  }
+  .line[data-tier="0"] .line-art { opacity: 0.30; filter: grayscale(0.6); }
+  .line[data-tier="0"] .line-name { color: var(--muted); }
+  .line[data-tier="0"] .line-pill { color: var(--muted); opacity: 0.7; }
+  /* Earned tiers — tint the card softly so it reads as "stamped" */
+  .line[data-tier="1"], .line[data-tier="2"],
+  .line[data-tier="3"], .line[data-tier="4"] {
+    background: var(--line-card-bg, var(--paper-2));
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .line[data-tier="1"] .line-name,
+  .line[data-tier="2"] .line-name,
+  .line[data-tier="3"] .line-name,
+  .line[data-tier="4"] .line-name { color: var(--line-ink, var(--ink)); }
+
+  /* Expanded line — same expand-in-place pattern as badges */
+  .line.expanded {
+    grid-column: span 2;
+    grid-row: span 2;
+    aspect-ratio: auto;
+    min-height: 240px;
+    padding: 16px 18px 18px;
+    cursor: default;
+    z-index: 5;
+    overflow: visible;
+    box-shadow: 0 8px 22px -10px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.06);
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  .line.expanded .line-art { width: 52px; height: 52px; align-self: flex-start; }
+  .line.expanded .line-name {
+    font-size: 18px;
+    text-align: left;
+    letter-spacing: -0.005em;
+    margin-top: 6px;
+    line-height: 1.15;
+  }
+  .line.expanded .line-pill {
+    align-self: flex-start;
+    margin-top: 0;
+  }
+  .line .line-ladder { display: none; }
+  .line.expanded .line-ladder {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+  }
+  .line-ladder ol { list-style: none; padding: 0; margin: 0; }
+  .line-ladder li {
+    display: flex; align-items: baseline;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 0.5px dashed var(--hair);
+  }
+  .line-ladder li:last-child { border-bottom: none; }
+  .line-ladder .mark {
+    font-size: 12px; line-height: 1;
+    width: 14px; flex-shrink: 0;
+    color: var(--muted);
+  }
+  .line-ladder li.is-current .mark,
+  .line-ladder li.is-done .mark { color: var(--ink); }
+  .line-ladder .lab {
+    font-family: var(--sans); font-size: 9px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); width: 36px; flex-shrink: 0;
+    font-weight: 700;
+  }
+  .line-ladder .name {
+    font-family: var(--serif); font-style: italic;
+    color: var(--ink-2); flex: 1;
+  }
+  .line-ladder .thr {
+    font-family: var(--sans); font-size: 11px;
+    color: var(--muted); font-weight: 500;
+  }
+  .line-ladder li.is-current .name { color: var(--ink); font-style: normal; font-weight: 500; }
+  .line-ladder li.is-done .name    { color: var(--ink-2); }
+  .line-ladder li.is-future .name,
+  .line-ladder li.is-future .thr   { opacity: 0.55; }
+  .line-ladder .desc {
+    margin-top: 12px;
+    font-family: var(--serif); font-style: italic;
+    font-size: 12px; color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .line-close {
+    position: absolute; top: 10px; right: 10px;
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 0; background: rgba(0,0,0,0.06);
+    cursor: pointer; font-size: 16px; line-height: 1;
+    color: var(--ink);
+  }
+  .line-close:hover { background: rgba(0,0,0,0.10); }
+
   /* === BADGES === */
   .badges { margin: 28px 0 36px; }
   .section-h {
@@ -850,6 +1002,15 @@
 
     </section>
 
+    <!-- LINES (Step 3 — v2 tiered cards) -->
+    <section class="lines reveal" id="lines-section">
+      <div class="section-h">
+        <h2>Your lines</h2>
+        <span class="sub" id="lines-progress">— / —</span>
+      </div>
+      <div class="line-grid" id="line-grid"></div>
+    </section>
+
     <!-- BADGES -->
     <section class="badges reveal" id="badges-section">
       <div class="section-h">
@@ -893,6 +1054,10 @@ import { BADGES, PALETTE } from './data/badges.js';
 // under /art/icons/. Importing './art/index.js' triggers all the registerArt
 // calls so renderArt('compass', ink) works anywhere in this script.
 import { renderArt } from './art/index.js';
+// Step 3: the v2 "lines" — 7 tiered cards that replace the threshold-stacked
+// badges. The legacy badge wall is kept below them for now; Step 4 prunes it.
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js';
+import { TIER_INKS, TIER_TINTS, TIER_NUMERAL } from './data/tier-palette.js';
 
 function readVisits() {
   try {
@@ -1204,8 +1369,68 @@ function paint() {
     document.getElementById('stat-least-pop').textContent = count === 1 ? 'mark another country' : '—';
   }
 
-  /* ── BADGES ── */
+  /* ── LINES (v2) ── */
+  // Shared context object — also reused by the legacy BADGES block below.
   const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, coastalCount, known };
+
+  // Map a line's `axis` to the metric it tracks. Single source of truth for
+  // both the line-card rendering and the tier ladder.
+  function lineValue(axis) {
+    switch (axis) {
+      case 'count':   return ctx.count;
+      case 'land':    return ctx.earthRatio;
+      case 'pop':     return ctx.visitedPopM;
+      case 'coast':   return ctx.coastalCount;
+      case 'hemi':    return ctx.hemis.size;
+      case 'climate': return ctx.climates.size;
+      case 'cont':    return ctx.continentsTouched.size;
+      default:        return 0;
+    }
+  }
+  // Render the value as a short string for the "x of y" progress copy.
+  function fmtLineValue(axis, v) {
+    if (axis === 'land') return v.toFixed(1) + '%';
+    if (axis === 'pop')  return fmtPop(v);
+    return Math.round(v).toLocaleString();
+  }
+
+  const lineGrid = document.getElementById('line-grid');
+  lineGrid.innerHTML = '';
+  let linesAtTopTier = 0;
+  for (const id of LINE_ORDER) {
+    const line = LINES[id];
+    if (!line) continue;
+    const value = lineValue(line.axis);
+    const tier = tierOf(line, value);
+    if (tier === line.tiers.length) linesAtTopTier++;
+    const ink = TIER_INKS[tier];
+    const tint = TIER_TINTS[tier];
+    const tierName = tier > 0 ? line.tiers[tier - 1].name : 'Locked';
+    const numeral = tier > 0 ? TIER_NUMERAL[tier] : '—';
+
+    const card = document.createElement('div');
+    card.className = 'line';
+    card.dataset.id = id;
+    card.dataset.tier = String(tier);
+    if (tier > 0) {
+      // Soft tint for earned cards. Background is a paper colour with the
+      // tier's hue layered on top; the pill repeats the same hue stronger.
+      card.style.setProperty('--line-card-bg', `linear-gradient(${tint}, ${tint}), var(--paper-2)`);
+      card.style.setProperty('--line-pill-bg', tint);
+      card.style.setProperty('--line-ink',     ink);
+    }
+    card.innerHTML = `
+      <div class="line-art">${renderArt(line.art, ink)}</div>
+      <div class="line-name">${line.name}</div>
+      <div class="line-pill">${tier > 0 ? `Tier ${numeral} · ${tierName}` : 'Not yet'}</div>
+    `;
+    card.addEventListener('click', () => selectLine(line, value, tier, card));
+    lineGrid.appendChild(card);
+  }
+  document.getElementById('lines-progress').textContent =
+    `${linesAtTopTier} of ${LINE_ORDER.length} at top tier`;
+
+  /* ── BADGES ── */
   function isUnlocked(b) {
     if (b.axis === 'count')   return count >= b.t;
     if (b.axis === 'land')    return earthRatio >= b.t;
@@ -1344,6 +1569,96 @@ function selectBadge(b, unlocked, ctx, divEl) {
   requestAnimationFrame(() => divEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
 
+/* ── LINE expand/collapse — same pattern as badges, with a tier ladder
+   instead of a single threshold copy line. */
+function collapseLine(divEl) {
+  if (!divEl.classList.contains('expanded')) return;
+  divEl.classList.remove('expanded');
+  divEl.style.gridColumn = '';
+  divEl.style.gridRow = '';
+  divEl.querySelectorAll('.line-ladder, .line-close').forEach(el => el.remove());
+}
+
+function selectLine(line, value, currentTier, divEl) {
+  // toggle: if this line is already expanded, collapse and return
+  if (divEl.classList.contains('expanded')) {
+    collapseLine(divEl);
+    return;
+  }
+  // collapse any other open line OR badge first — only one expand at a time
+  document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
+  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+
+  // grid placement so the expanded card doesn't overflow the right edge
+  const grid = document.getElementById('line-grid');
+  const cols = window.matchMedia('(max-width: 540px)').matches ? 2 : 4;
+  const idx = Array.from(grid.children).indexOf(divEl);
+  const col = (idx % cols) + 1;
+  const startCol = col === cols ? cols - 1 : col;
+  divEl.style.gridColumn = `${startCol} / span 2`;
+
+  // Helpers for the per-axis "x of y" string and the tier ladder content
+  const valStr = (() => {
+    if (line.axis === 'land') return value.toFixed(1) + '%';
+    if (line.axis === 'pop')  return fmtPop(value);
+    return Math.round(value).toLocaleString();
+  })();
+  // "X of Y target" — show user where they stand
+  const topThreshold = line.tiers[line.tiers.length - 1].threshold;
+  const topThresholdStr = (() => {
+    if (line.axis === 'land') return topThreshold + '%';
+    if (line.axis === 'pop')  return fmtPop(topThreshold);
+    return topThreshold.toLocaleString();
+  })();
+  const progressLine = currentTier === line.tiers.length
+    ? `<strong>${valStr}</strong> ${line.unit} — top tier reached.`
+    : `<strong>${valStr}</strong> of ${topThresholdStr} ${line.unit}.`;
+
+  // Tier ladder — every tier rendered, with marks indicating state
+  const tiersHtml = line.tiers.map((t, i) => {
+    const tierNum = i + 1;
+    let cls, mark;
+    if (tierNum < currentTier)      { cls = 'is-done';    mark = '✓'; }
+    else if (tierNum === currentTier){ cls = 'is-current'; mark = '●'; }
+    else                              { cls = 'is-future';  mark = '○'; }
+    const thrStr = (() => {
+      if (line.axis === 'land') return t.threshold + '%';
+      if (line.axis === 'pop')  return fmtPop(t.threshold);
+      return t.threshold.toLocaleString();
+    })();
+    return `<li class="${cls}">
+      <span class="mark">${mark}</span>
+      <span class="lab">Tier ${TIER_NUMERAL[tierNum]}</span>
+      <span class="name">${t.name}</span>
+      <span class="thr">${thrStr}</span>
+    </li>`;
+  }).join('');
+
+  const ladder = document.createElement('div');
+  ladder.className = 'line-ladder';
+  ladder.innerHTML = `
+    <div class="bd-prog">${progressLine}</div>
+    <ol>${tiersHtml}</ol>
+    <div class="desc">${line.description}</div>
+  `;
+  divEl.appendChild(ladder);
+
+  // close button (matches the badge close-button style)
+  const close = document.createElement('button');
+  close.className = 'line-close';
+  close.type = 'button';
+  close.setAttribute('aria-label', 'Close line details');
+  close.textContent = '×';
+  close.addEventListener('click', (e) => {
+    e.stopPropagation();
+    collapseLine(divEl);
+  });
+  divEl.appendChild(close);
+
+  divEl.classList.add('expanded');
+  requestAnimationFrame(() => divEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+}
+
 /* view-all toggle */
 document.getElementById('view-all').addEventListener('click', () => {
   const wall = document.getElementById('badge-wall');
@@ -1354,11 +1669,13 @@ document.getElementById('view-all').addEventListener('click', () => {
     : `View all ${BADGES.length} badges`;
 });
 
-/* collapse any expanded badge when the user clicks outside the wall */
+/* collapse any expanded badge OR line when the user clicks outside it */
 document.addEventListener('click', (e) => {
-  if (e.target.closest('.badge')) return;        // badge clicks are handled by selectBadge
+  if (e.target.closest('.badge')) return;        // badge clicks handled by selectBadge
+  if (e.target.closest('.line'))  return;        // line clicks handled by selectLine
   if (e.target.closest('#view-all')) return;     // toggling "view all" shouldn't collapse
   document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+  document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
 });
 
 /* ─── EXPORT AS PNG ───

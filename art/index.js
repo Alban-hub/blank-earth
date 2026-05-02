@@ -23,5 +23,6 @@ import './icons/climate.js';
 import './icons/population.js';
 import './icons/coast.js';
 import './icons/geo.js';
+import './icons/lines.js';      // Step 3 — The 7 v2 lines (only adds hemi-quad; the rest reuse icons above)
 
 export { renderArt, registerArt, listArt } from './_registry.js';
