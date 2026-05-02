@@ -74,7 +74,10 @@ html.embed-mode #scene{pointer-events:none}
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:10px 16px;font-family:var(--serif);font-size:13px;font-style:italic;border:0.5px solid var(--hair);max-width:min(420px,90vw);text-align:center;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,0.25);animation:toast-in 0.18s ease-out}
 @keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 
-/* Boot-error fallback — only shown if the engine fails to initialise */
+/* Boot-error fallback — only shown if the engine fails to initialise.
+   The `[hidden]` UA rule has lower specificity than `#boot-error`, so we must
+   re-assert display:none with matching specificity, or the overlay covers the globe on every load. */
+#boot-error[hidden]{display:none}
 #boot-error{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:var(--space);color:rgba(252,252,250,0.94);font-family:var(--serif)}
 #boot-error h2{font-size:24px;margin:0 0 12px;font-weight:500}
 #boot-error p{color:rgba(252,252,250,0.7);max-width:460px;line-height:1.5;font-style:italic;margin:0 0 20px}
