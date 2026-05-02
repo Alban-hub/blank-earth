@@ -10,7 +10,7 @@
 //    - Bump CACHE_VERSION when shipping a release to invalidate old caches.
 // =============================================================================
 
-const CACHE_VERSION = 'blank-earth-v7';   // bumped for title descriptions, Voyager line, darker steel tier 2, dropped Coastlines card
+const CACHE_VERSION = 'blank-earth-v9';   // editorial frontispiece + atlas-title redesign with hairline-and-fleuron divider
 const PRECACHE = [
   './',
   './index.html',

@@ -127,29 +127,47 @@
     box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.45);
   }
 
+  /* Frontispiece — the page's title block. Three-part hierarchy: a small
+     tracked-out sublabel, the H1 ("Your atlas, so far."), and a serif
+     italic standfirst describing the page. The bottom border closes the
+     block — the atlas-title (Layer 1) sits below it as a separate piece. */
   .frontispiece {
-    padding-bottom: 22px;
+    padding-bottom: 26px;
     border-bottom: 1px solid var(--hair);
-    margin-bottom: 22px;
+    margin-bottom: 24px;
+    font-feature-settings: "kern", "liga", "onum";
   }
   .frontispiece .ord {
     font-family: var(--sans);
-    font-size: 11px; color: var(--muted);
-    letter-spacing: 0.22em; text-transform: uppercase;
+    font-size: 10.5px; color: var(--muted);
+    letter-spacing: 0.26em; text-transform: uppercase;
     font-weight: 600;
   }
-  .frontispiece h1 {
-    margin: 8px 0 0; padding: 0;
+  .frontispiece h1, .frontispiece-title {
+    margin: 10px 0 0; padding: 0;
     font-family: var(--serif);
     font-weight: 500;
-    font-size: 42px; line-height: 1.02;
-    color: var(--ink); letter-spacing: -0.015em;
+    font-size: 46px; line-height: 1.02;
+    color: var(--ink); letter-spacing: -0.018em;
+  }
+  /* "so far" — italic emphasis. Slightly lighter weight so the italic reads
+     as a distinct voice rather than just slanted bold. */
+  .frontispiece h1 em, .frontispiece-title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--ink-2);
+    /* the period after </em> reads better with a touch of optical kerning */
   }
   .frontispiece .sub {
-    margin-top: 10px;
-    font-size: 13px; color: var(--ink-2);
-    line-height: 1.5; max-width: 36ch;
+    margin-top: 12px;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.55;
+    max-width: 38ch;
     text-wrap: pretty;
+    opacity: 0.92;
   }
 
   .grid {
@@ -629,42 +647,92 @@
   }
 
   /* === ATLAS TITLE (Layer 1) — the computed identity above the stats.
-     Three-part layout: small uppercase label, the title line itself, and a
-     one-sentence description of what that traveller type means. */
+     Editorial frontispiece treatment: a hairline divider with a centered
+     ornament (three graduated dots, classical printer's flourish), an
+     italic-serif sub-label in lowercase, the title itself in confident
+     italic serif, and a one-line italic description for context.
+     Borrowed in spirit from antique atlas frontispieces and Penguin
+     Classics title pages — restraint over decoration. */
   .atlas-title {
-    margin: 22px 0 28px;
+    margin: 36px 0 12px;
     text-align: center;
     font-family: var(--serif);
+    font-feature-settings: "kern", "liga", "onum";   /* old-style figures + ligatures */
   }
-  .atlas-title .lab {
-    display: block;
-    font-family: var(--sans);
-    font-size: 10px;
-    letter-spacing: 0.20em;
-    text-transform: uppercase;
+  .atlas-title.is-empty { margin: 28px 0 0; }
+
+  /* The divider — two hairlines flanking the gold-ink ornament. */
+  .atlas-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .atlas-rule {
+    flex: 0 0 110px;
+    height: 0.5px;
+    background: var(--ink);
+    opacity: 0.18;
+  }
+  @media (max-width: 540px) { .atlas-rule { flex-basis: 64px; } }
+  .atlas-orn {
+    width: 36px; height: 6px;
+    color: var(--c-butter-ink);
+    fill: currentColor;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  /* "a traveller's title" — small italic serif in sentence case. Lower-key
+     than uppercase tracked-out labels, more in step with the editorial tone. */
+  .atlas-title-lab {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 12.5px;
     color: var(--muted);
-    font-weight: 600;
-    margin-bottom: 12px;
-  }
-  .atlas-title .title-line { line-height: 1; }
-  .atlas-title .star { color: var(--c-butter-ink); margin: 0 12px; opacity: 0.65; font-size: 16px; }
-  .atlas-title .name {
-    font-size: 24px; font-weight: 500; font-style: italic;
-    color: var(--ink);
-    letter-spacing: 0.005em;
-  }
-  .atlas-title .desc {
-    font-family: var(--serif); font-style: italic;
-    font-size: 13.5px;
-    color: var(--ink-2);
-    margin: 14px auto 0;
-    max-width: 480px;
-    line-height: 1.55;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
     opacity: 0.85;
   }
-  .atlas-title .empty {
-    font-size: 16px; font-style: italic;
+
+  /* The name itself — large, italic, confidently set. No quotes, no stars
+     — the typography does the work. */
+  .atlas-title-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 38px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.05;
+    margin: 0 0 18px;
+  }
+  @media (max-width: 540px) {
+    .atlas-title-name { font-size: 30px; margin-bottom: 14px; }
+  }
+
+  /* One-line italic description — explains the pattern without being chatty. */
+  .atlas-title-desc {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    margin: 0 auto;
+    max-width: 480px;
+    opacity: 0.85;
+  }
+
+  /* Empty-state copy — visible before count ≥ 5. */
+  .atlas-title-empty {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
     color: var(--muted);
+    text-align: center;
+    margin: 18px 0 0;
+    opacity: 0.85;
   }
 
   /* === SETS (Layer 3) — curated collections. Each card: hero artwork
@@ -954,8 +1022,8 @@
   <main class="sheet">
 
     <header class="frontispiece">
-      <div class="ord">A personal reckoning</div>
-      <h1>Your atlas, so far.</h1>
+      <div class="ord">A Personal Reckoning</div>
+      <h1 class="frontispiece-title">Your atlas, <em>so far</em>.</h1>
       <p class="sub">Every country you've marked, the shape of your discovery, and what's still ahead.</p>
       <!-- Atlas title (Layer 1 — Cartographer's Title). Empty until count ≥ 5. -->
       <div class="atlas-title reveal" id="atlas-title"></div>
@@ -1428,20 +1496,28 @@ function paint() {
     `${linesAtTopTier} of ${LINE_ORDER.length} mastered`;
 
   /* ── ATLAS TITLE (Layer 1) ── */
+  // The divider is rendered with three small dots (graduated sizes) flanked
+  // by hairline rules — classical editorial ornament, replaces the stars.
+  // It only renders when there's a real title to introduce; in the empty
+  // state we just show the gentle "Your atlas is just beginning." copy.
   const titleEl = document.getElementById('atlas-title');
   if (titleEl) {
     const title = computeTitle(known);
     if (title.empty) {
-      titleEl.innerHTML = `<span class="empty">Your atlas is just beginning.</span>`;
+      titleEl.classList.add('is-empty');
+      titleEl.innerHTML = `<p class="atlas-title-empty">Your atlas is just beginning.</p>`;
     } else {
+      titleEl.classList.remove('is-empty');
+      const orn = '<svg class="atlas-orn" viewBox="0 0 36 6" aria-hidden="true"><circle cx="6" cy="3" r="0.9"/><circle cx="18" cy="3" r="1.5"/><circle cx="30" cy="3" r="0.9"/></svg>';
       titleEl.innerHTML = `
-        <span class="lab">Your traveller type</span>
-        <div class="title-line">
-          <span class="star">★</span>
-          <span class="name">${title.name}</span>
-          <span class="star">★</span>
+        <div class="atlas-divider" aria-hidden="true">
+          <span class="atlas-rule"></span>
+          ${orn}
+          <span class="atlas-rule"></span>
         </div>
-        ${title.description ? `<div class="desc">${title.description}</div>` : ''}
+        <div class="atlas-title-lab">a traveller's title</div>
+        <h2 class="atlas-title-name">${title.name}</h2>
+        ${title.description ? `<p class="atlas-title-desc">${title.description}</p>` : ''}
       `;
     }
   }
