@@ -13,6 +13,10 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+/* Match stats.html so the navigation gap (atlas → globe) doesn't flash white. */
+html{background:#0F1530}
+/* Opt into the View Transitions API for same-origin nav (Chrome 126+); older browsers ignore. */
+@view-transition{navigation:auto}
 body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;touch-action:none}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
 #scene:active{cursor:grabbing}
