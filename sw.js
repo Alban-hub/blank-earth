@@ -10,7 +10,7 @@
 //    - Bump CACHE_VERSION when shipping a release to invalidate old caches.
 // =============================================================================
 
-const CACHE_VERSION = 'blank-earth-v4';
+const CACHE_VERSION = 'blank-earth-v5';   // bumped for v2 lines: art/tier-palette.js gained paletteKeyFor
 const PRECACHE = [
   './',
   './index.html',

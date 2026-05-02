@@ -1105,11 +1105,18 @@ import { BADGES, PALETTE } from './data/badges.js';
 // Step 2 of the badge-system refactor: SVG renderers now live one-per-group
 // under /art/icons/. Importing './art/index.js' triggers all the registerArt
 // calls so renderArt('compass', ink) works anywhere in this script.
-import { renderArt } from './art/index.js';
+//
+// ?v=lines on the v2 imports below cache-busts the service worker's stale
+// cache for these files: their content changed (paletteKeyFor was added,
+// new icons/lines.js was added) but the SW had old copies pinned. Same
+// trick we used for three.js when the boot was breaking. Safe to remove on
+// the deploy after this one — by then the bumped CACHE_VERSION (sw.js v5)
+// will have rolled out, and new caches contain the fresh content.
+import { renderArt } from './art/index.js?v=lines';
 // Step 3: the v2 "lines" — 7 tiered cards that replace the threshold-stacked
 // badges. The legacy badge wall is kept below them for now; Step 4 prunes it.
-import { LINES, LINE_ORDER, tierOf } from './data/lines.js';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js';
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=lines';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=lines';
 
 function readVisits() {
   try {
