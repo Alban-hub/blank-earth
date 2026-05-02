@@ -1,0 +1,2024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A blank earth · globe</title>
+<style>
+:root {
+  --paper:#FCFCFA; --ink:#1c1838; --line:#D8D5CC; --hair:#ECEAE2;
+  --muted:#6b6985; --warm:#FAF6E8; --accent:#4488E0; --space:#0F1530;
+  --serif:"Iowan Old Style","Palatino","Cambria","Times New Roman",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;touch-action:none}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#scene:active{cursor:grabbing}
+.ui{position:fixed;top:0;left:0;right:0;z-index:5;padding:24px 28px;pointer-events:none;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.ui > * {pointer-events:auto}
+.brand{font-family:var(--serif);font-size:22px;font-weight:500;line-height:1.1;margin:0;color:rgba(252,252,250,0.94);text-shadow:0 1px 3px rgba(0,0,0,0.35)}
+.brand small{display:block;font-style:italic;font-size:12px;color:rgba(252,252,250,0.55);margin-top:4px;font-weight:400}
+.stats{font-family:var(--serif);font-size:13px;color:rgba(252,252,250,0.6);text-align:right;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.35)}
+.stats .num{font-size:24px;color:rgba(252,252,250,0.96);font-weight:500;display:block;line-height:1}
+.panel{position:fixed;left:28px;bottom:28px;z-index:5;background:rgba(252,252,250,0.92);backdrop-filter:blur(6px);border:0.5px solid var(--hair);padding:14px 16px;width:280px;font-size:13px}
+.panel .label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.search-row{display:flex;gap:6px}
+.search-row input{flex:1;border:0;border-bottom:0.5px solid var(--ink);background:transparent;padding:6px 2px;font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);outline:none}
+.search-row input::placeholder{color:var(--muted)}
+.btn{background:var(--paper);border:0.5px solid var(--ink);color:var(--ink);padding:9px 14px;font-size:12px;font-family:inherit;cursor:pointer;letter-spacing:0.02em}
+.btn:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.subtle{border-color:var(--line);color:var(--muted)}
+.btn.subtle:hover{background:var(--hair);color:var(--ink)}
+.visited-toggle{display:none;width:100%;background:none;border:0;border-top:0.5px dashed var(--hair);padding:10px 0 8px;margin-top:12px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;font-style:italic}
+.visited-toggle .chev{transition:transform 0.2s;font-style:normal;color:var(--muted);font-size:11px}
+.panel.expanded .visited-toggle .chev{transform:rotate(180deg)}
+.visited-list{margin-top:14px;max-height:32vh;overflow:auto;font-family:var(--serif);font-size:13px}
+.visited-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px dashed var(--hair)}
+.visited-list .row:last-child{border-bottom:none}
+.visited-list .row .name{font-style:italic;cursor:pointer;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.visited-list .row .name:hover{color:var(--accent)}
+.visited-list .row button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:6px 8px;line-height:1;min-width:28px;min-height:28px}
+.visited-list .row button:hover{color:var(--ink)}
+.visited-list .empty{color:var(--muted);font-style:italic;padding:6px 0;font-size:12px}
+.actions{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap}
+.actions .btn{font-size:11px;padding:8px 13px}
+.tip{position:fixed;left:28px;top:80px;background:rgba(252,252,250,0.95);border:0.5px solid var(--hair);padding:8px 12px;font-family:var(--serif);font-style:italic;font-size:12px;color:var(--muted);max-width:280px;line-height:1.5;z-index:5}
+.tip strong{color:var(--ink);font-weight:500;font-style:normal;font-family:var(--sans);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:4px}
+.hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
+.hover-label.show{opacity:1}
+@media (max-width:640px){
+  .panel{left:14px;right:14px;bottom:14px;width:auto}
+  .tip{display:none}
+  .ui{padding:14px}
+  .brand small{display:none}
+  .brand{font-size:19px}
+  .stats{font-size:11px}
+  .stats .num{font-size:22px}
+  .stat-prefix{display:none}
+  .panel .label{display:none}
+  .visited-toggle{display:flex}
+  .panel:not(.expanded) .visited-list{display:none}
+  .panel:not(.expanded) .actions{display:none}
+}
+.atlas-link{display:block;margin-top:12px;padding:12px 4px 4px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em;min-height:44px;display:flex;align-items:center;justify-content:flex-end}
+.atlas-link:hover,.atlas-link:active{color:var(--accent)}
+html.embed-mode .ui,html.embed-mode .panel,html.embed-mode .tip,html.embed-mode .hover-label,html.embed-mode #toast,html.embed-mode #boot-error{display:none!important}
+html.embed-mode body{pointer-events:none}
+html.embed-mode #scene{pointer-events:none}
+
+/* Toast — non-blocking storage warnings, plug-in messages */
+#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:10px 16px;font-family:var(--serif);font-size:13px;font-style:italic;border:0.5px solid var(--hair);max-width:min(420px,90vw);text-align:center;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,0.25);animation:toast-in 0.18s ease-out}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* Boot-error fallback — only shown if the engine fails to initialise */
+#boot-error{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:var(--space);color:rgba(252,252,250,0.94);font-family:var(--serif)}
+#boot-error h2{font-size:24px;margin:0 0 12px;font-weight:500}
+#boot-error p{color:rgba(252,252,250,0.7);max-width:460px;line-height:1.5;font-style:italic;margin:0 0 20px}
+#boot-error .btn{margin-bottom:16px;background:rgba(252,252,250,0.92);color:var(--ink)}
+#boot-error details{font-family:var(--sans);font-size:11px;color:rgba(252,252,250,0.45);max-width:460px;width:100%}
+#boot-error summary{cursor:pointer;letter-spacing:0.06em;text-transform:uppercase}
+#boot-error pre{text-align:left;margin-top:8px;padding:8px;background:rgba(0,0,0,0.3);overflow:auto;max-height:200px;font-size:11px;white-space:pre-wrap;word-break:break-word}
+</style>
+<meta name="theme-color" content="#0F1530">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="A blank earth">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icons/globe.svg">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+</head>
+<body>
+<script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode')</script>
+
+<div class="ui">
+  <div>
+    <h1 class="brand">A blank earth<small>type, or click one on the globe</small></h1>
+  </div>
+  <div class="stats">
+    <span class="num" id="count">0</span>
+    <span><span class="stat-prefix">places </span>visited</span>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>controls</strong>
+  drag to spin · scroll to zoom · click a country to mark it · double-click anywhere to reset
+</div>
+
+<div class="panel">
+  <div class="label">summon a country</div>
+  <div class="search-row">
+    <label for="search" class="sr-only">Country name</label>
+    <input id="search" list="countries" placeholder="e.g. france" autocomplete="off">
+    <datalist id="countries"></datalist>
+    <button class="btn" id="add">add</button>
+  </div>
+  <button class="visited-toggle" id="visited-toggle" type="button" aria-expanded="false" aria-controls="list">
+    <span><span id="visited-count-inline">0</span> visited</span>
+    <span class="chev" aria-hidden="true">▾</span>
+  </button>
+  <div class="visited-list" id="list"></div>
+  <div class="actions">
+    <button class="btn subtle" id="export">export</button>
+    <button class="btn subtle" id="import">import</button>
+    <input type="file" id="file" accept="application/json" hidden>
+    <button class="btn subtle" id="reset">reset</button>
+  </div>
+  <a class="atlas-link" href="stats.html">view atlas →</a>
+</div>
+
+<canvas id="scene" aria-label="Interactive globe — drag to rotate, scroll to zoom, click a country to mark it visited"></canvas>
+<div class="hover-label" id="hoverLabel"></div>
+
+<!-- Non-blocking, screen-reader-friendly status messages (storage warnings, etc.) -->
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Shown only if the engine fails to start (Three.js missing, init throws, etc.) -->
+<div id="boot-error" hidden role="alertdialog" aria-labelledby="boot-error-title">
+  <h2 id="boot-error-title">Couldn't start the globe</h2>
+  <p>Reload the page, or check that you're online. If the problem persists, the renderer (Three.js) may not have loaded.</p>
+  <button class="btn" type="button" onclick="location.reload()">reload</button>
+  <details><summary>technical details</summary><pre id="boot-error-msg"></pre></details>
+</div>
+
+<!-- world topology is fetched at runtime from ./data/world.topojson -->
+
+<!-- Three.js r128, served locally for offline + native packaging.
+     Integrity hash protects against asset corruption. -->
+<script src="./vendor/three-r128.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+<script>
+  // Boot guard: surface a clear error UI if Three.js failed to load,
+  // instead of leaving the user with a black screen.
+  if (typeof THREE === "undefined") {
+    var be = document.getElementById("boot-error");
+    if (be) be.hidden = false;
+  }
+</script>
+<script>
+//
+// =============================================================================
+//  STYLE & BEHAVIOUR CONFIG
+// =============================================================================
+//  Single source of truth. Material factories below are the swap points
+//  for surface styling. UV coordinates on country meshes use equirectangular
+//  lon/lat mapping → ready for global heightmap textures (see HEIGHTMAP block).
+// =============================================================================
+//
+const STYLE = {
+  // --- background & sphere --------------------------------------------------
+  background:           0x0F1530,
+  sphereColor:          0xD6CFB9,    // aged warm paper — deeper for legibility
+  sphereRoughness:      0.95,
+  sphereMetalness:      0.0,
+  sphereSegments:       128,
+
+  // --- atmospheric glow at rim ---------------------------------------------
+  atmosphereColorWarm:  0xE8B584,    // sepia-amber on the sun-lit side
+  atmosphereColorCool:  0x8FA0B8,    // cool slate-blue on the shadow side
+  atmosphereIntensity:  0.7,         // overall opacity multiplier at the rim
+  atmospherePower:      2.6,         // higher = thinner/sharper rim
+  atmosphereScale:      1.06,        // outer-sphere size relative to globe
+
+  // --- country fills (unvisited) -------------------------------------------
+  countryHueRange:      [30, 48],
+  countrySaturation:    0.12,
+  countryLightness:     0.96,
+  countryLightnessJitter: 0.012,
+  countryRoughness:     0.88,
+  countryMetalness:     0.0,
+
+  // --- borders --------------------------------------------------------------
+  borderColor:          0x2A2218,    // very dark sepia ink
+  borderOpacity:        1.0,         // fully opaque — thin lines need every pixel of contrast at distance
+  borderOffset:         0.10,        // height above country tile to avoid z-fight
+
+  // --- visited countries ----------------------------------------------------
+  visitedColor:         0x3D7BC9,    // cobalt blue — better contrast vs water
+  visitedExtrusionPct:  0.014,       // max height as fraction of globe radius
+  visitedRoughness:     0.55,
+  visitedMetalness:     0.05,
+  visitedEmissive:      0x001A3A,    // cooler base (offsets absence of bloom halo)
+  visitedEmissiveIntensity: 0.18,
+  visitedOutlineColor:  0x1c1838,
+  visitedOutlineOffset: 0.06,
+
+  // --- adaptive height (small islands get short stubs, big land full lift) -
+  heightSmallSize:      0.10,        // below this min-dim (deg) → flat at sea level
+  heightFullSize:       4.0,         // at/above this min-dim → full height
+  heightFloor:          0.25,        // minimum scale once extruded (prevents 0-height seams)
+  islandHeightMin:      0.20,        // smallest random extrusion (fraction of HEIGHT_MAX)
+  islandHeightMax:      0.55,        // tallest random extrusion (fraction of HEIGHT_MAX)
+
+  // --- lighting -------------------------------------------------------------
+  ambientIntensity:     0.22,
+  sunColor:             0xFFF5DC,
+  sunIntensity:         0.85,
+  sunDir:               [0.55, 0.45, 0.70],
+  hemiSky:              0xC8D4FF,
+  hemiGround:           0xF5EFE0,
+  hemiIntensity:        0.42,
+  rimColor:             0xB0C5D6,
+  rimIntensity:         0.20,
+  rimDir:               [-0.45, 0.30, -0.75],
+
+  // --- post-processing (bloom + vignette + grain) -------------------------
+  postEnabled:          false,       // off by default — set true to enable bloom+vignette+grain (costs ~3ms/frame, requires WebGL2 for clean AA)
+  postBloomStrength:    0.95,        // intensity of glow halo around visited
+  postBloomRadius:      1.4,         // multiplier on blur step (wider = softer halo)
+  postVignetteStrength: 0.32,        // 0 = none, 1 = strong
+  postVignetteSoftness: 0.55,        // edge of vignette transition (lower = sharper)
+  postGrainStrength:    0.014,       // film grain amplitude (subtle paper feel)
+  postBloomScale:       0.5,         // 0.5 = half-res blur (perf); 1.0 = full-res
+
+  // --- camera & interaction ------------------------------------------------
+  initialZoomMult:      2.7,
+  minZoomMult:          1.025,
+  maxZoomMult:          5.5,
+  tiltLimitDeg:         55,
+  dragSensitivityX:     0.0014,
+  dragSensitivityY:     0.0010,
+  zoomSensitivity:      0.0014,
+  cameraEasing:         0.20,
+  autoRotateSpeed:      -0.0006,
+  autoRotateDelay:      2200,
+
+  // --- mesh quality --------------------------------------------------------
+  triangleMaxEdge:      2.6,        // relaxed (per-vertex displacement is off — no need for ultra-fine fit)
+  ringSubdivision:      0.85,
+  ringSmoothIterations: 0,           // 0 = sharp ring corners (no smoothing)
+
+  // =========================================================================
+  // HEIGHTMAP (future) — uncomment + assign to enable.
+  // =========================================================================
+  //  Country meshes are built with equirectangular UV coords
+  //  (u = (lon+180)/360, v = (lat+90)/180). To enable heightmap displacement:
+  //
+  //  1. Provide a greyscale heightmap texture (equirectangular world map).
+  //     - Sources: NASA SRTM (real terrain), GEBCO (ocean floor),
+  //       custom procedural noise (cartoonish/stylized).
+  //  2. Set heightmapEnabled: true.
+  //  3. Tune heightmapScale (try 0.5 - 3.0 to start).
+  //  4. Lower triangleMaxEdge to 0.5 - 1.0 for dense tessellation
+  //     so displacement looks smooth (heavier but worth it).
+  //
+  //  Two style directions to plan for:
+  //  - Realistic (Universe Sandbox feel): real DEM data, smooth displacement,
+  //    PBR shading with rock/snow albedo maps.
+  //  - Cartoonish: low-poly procedural noise, banded/posterised colour
+  //    via a custom ShaderMaterial replacing createCountryMaterial.
+  // =========================================================================
+  heightmapEnabled:     false,       // per-vertex noise displacement (caused border misalignment)
+  heightmapTexture:     null,
+  heightmapScale:       0.55,
+  heightmapBias:        -0.1,
+
+  // --- per-country uniform elevation (real-world average heights) ---------
+  countryElevationEnabled: true,
+  elevationScale:       0.0008,      // metres → globe units (Bhutan @ 3280m → ~2.6 units)
+  elevationDefault:     150,         // metres for countries not in the table
+
+  // procedural noise parameters (algorithmic-art) ---------------------------
+  heightmapResolution:  1024,        // texture width (height = width/2). 512/1024/2048
+  heightmapBaseFreq:    20,          // controls scale of features (higher = smaller features)
+  heightmapOctaves:     5,           // number of fractal noise layers (5–7 = nice terrain)
+  heightmapPow:         1.35,        // peakiness — higher = more pronounced highs
+
+  // procedural NORMAL MAP (derived from heightmap, makes relief visible via lighting)
+  heightmapNormalStrength: 5.5,        // CPU-side gradient strength; higher = steeper terrain
+  heightmapNormalScale:    1.4,        // material normalScale uniform — visual punch
+
+  // --- data sources --------------------------------------------------------
+  // Override these to load alternate datasets (other countries, other elevation
+  // tables) without editing the engine. Both must resolve to JSON.
+  dataSources: {
+    topology:    './data/world.topojson',
+    elevations:  './data/elevations.json',
+  },
+
+  // --- plug-in loader ------------------------------------------------------
+  // Plug-ins are loaded by listing their filenames in plugins/manifest.json.
+  // Set to null to disable plug-in loading entirely.
+  pluginsManifest: './plugins/manifest.json',
+};
+
+// =============================================================================
+//  EVENT BUS — global, available before the IIFE so external scripts (plug-ins
+//  loaded via <script>) can subscribe even before the globe is ready.
+// =============================================================================
+//  Emitted events:
+//    globe.ready      { api }                    — once, after first render
+//    country.visit    { feature, isFirstVisit }  — country marked visited
+//    country.unvisit  { feature }                — country un-visited
+//    country.hover    { feature | null }         — hover changed (mouse only)
+//    country.click    { feature }                — country tapped/clicked
+//    storage.error    { kind, error }            — localStorage write failed
+// =============================================================================
+const NiceEarthEvents = (function(){
+  const listeners = Object.create(null);
+  // Sticky events are replayed to late subscribers (last payload). This matters
+  // for plug-ins loaded async via plugins/manifest.json — they may register
+  // *after* globe.ready has already fired and would otherwise miss it.
+  const STICKY = new Set(['globe.ready']);
+  const last = Object.create(null);
+  return {
+    on(name, fn) {
+      (listeners[name] || (listeners[name] = [])).push(fn);
+      if (STICKY.has(name) && name in last) {
+        try { fn(last[name]); } catch(err) { console.error('[NiceEarth] sticky replay failed for', name, err); }
+      }
+      return () => this.off(name, fn);
+    },
+    off(name, fn) { listeners[name] = (listeners[name] || []).filter(f => f !== fn); },
+    emit(name, data) {
+      if (STICKY.has(name)) last[name] = data;
+      const fns = listeners[name];
+      if (!fns) return;
+      for (let i = 0; i < fns.length; i++) {
+        try { fns[i](data); } catch(err) { console.error('[NiceEarth] listener error in', name, err); }
+      }
+    },
+    _listenerCount(name) { return (listeners[name] || []).length; },
+  };
+})();
+
+// Public namespace. Plug-ins call registerPlugin({ name, init(api) }) at any
+// time — whether the engine is ready or not, init is called exactly once with
+// the same api object. globe.ready is "sticky" inside the event bus, so late
+// subscribers still get it.
+window.NiceEarth = {
+  on:  NiceEarthEvents.on.bind(NiceEarthEvents),
+  off: NiceEarthEvents.off.bind(NiceEarthEvents),
+  _emit: NiceEarthEvents.emit.bind(NiceEarthEvents),
+  _pendingPlugins: [],
+  registerPlugin(plugin) {
+    if (!plugin || typeof plugin.init !== 'function') {
+      console.warn('[NiceEarth] registerPlugin: plug-in needs an init(api) function');
+      return;
+    }
+    if (this._api) {
+      try { plugin.init(this._api); } catch(e) { console.error('[NiceEarth] plug-in', plugin.name, 'init failed', e); }
+    } else {
+      this._pendingPlugins.push(plugin);
+    }
+  },
+};
+
+(async function(){
+  // ---------------------------------------------------------------------------
+  //  Boot — fetch external data, then run the rest of init synchronously.
+  // ---------------------------------------------------------------------------
+  function bootError(msg, err) {
+    const root = document.getElementById('boot-error');
+    if (root) root.hidden = false;
+    const pre = document.getElementById('boot-error-msg');
+    if (pre) pre.textContent = (msg || '') + (err ? '\n\n' + (err.stack || err.message || err) : '');
+    console.error('[NiceEarth] boot error:', msg, err);
+  }
+  let TOPO, ELEVATIONS;
+  try {
+    [TOPO, ELEVATIONS] = await Promise.all([
+      fetch(STYLE.dataSources.topology).then(r => { if (!r.ok) throw new Error('topology HTTP '+r.status); return r.json(); }),
+      fetch(STYLE.dataSources.elevations).then(r => { if (!r.ok) throw new Error('elevations HTTP '+r.status); return r.json(); }),
+    ]);
+  } catch(err) {
+    bootError('Could not load globe data. Check that ' + STYLE.dataSources.topology + ' and ' + STYLE.dataSources.elevations + ' are reachable.', err);
+    return;
+  }
+
+  const R = 100;
+  const HEIGHT_MAX = R * STYLE.visitedExtrusionPct;
+  const SURFACE = 0.06;
+
+  //
+  // ---------------------------------------------------------------------------
+  //  ATMOSPHERE SHADER (kept — cheap and adds depth at the rim)
+  // ---------------------------------------------------------------------------
+  //
+  const ATM_VERT = `
+    varying vec3 vNormalW;
+    varying vec3 vWorldPos;
+    void main(){
+      vNormalW = normalize(mat3(modelMatrix) * normal);
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `;
+  const ATM_FRAG = `
+    uniform vec3 uColorWarm;
+    uniform vec3 uColorCool;
+    uniform vec3 uSunDir;
+    uniform float uPower;
+    uniform float uIntensity;
+    varying vec3 vNormalW;
+    varying vec3 vWorldPos;
+    void main(){
+      vec3 N = normalize(vNormalW);
+      vec3 V = normalize(cameraPosition - vWorldPos);
+      // Fresnel: glow only at the rim
+      float fres = pow(1.0 - abs(dot(N, V)), uPower);
+      // Mix warm (sun side) ↔ cool (shadow side) — atmospheric scattering feel
+      float sunDot = dot(N, normalize(uSunDir));
+      float warmth = smoothstep(-0.35, 0.45, sunDot);
+      vec3 color = mix(uColorCool, uColorWarm, warmth);
+      // Slight intensity boost on the warm side to push the sunset feel
+      float gain = mix(0.9, 1.15, warmth);
+      gl_FragColor = vec4(color, fres * uIntensity * gain);
+    }
+  `;
+
+  //
+  // ---------------------------------------------------------------------------
+  //  MATERIAL FACTORIES — single point of style swap per surface
+  // ---------------------------------------------------------------------------
+  //
+  const SUN_DIR = new THREE.Vector3(...STYLE.sunDir).normalize();
+  const RIM_DIR = new THREE.Vector3(...STYLE.rimDir).normalize();
+
+  function applyHeightmapIfEnabled(mat) {
+    if (STYLE.heightmapEnabled && STYLE.heightmapTexture) {
+      mat.displacementMap = STYLE.heightmapTexture;
+      mat.displacementScale = STYLE.heightmapScale;
+      mat.displacementBias = STYLE.heightmapBias;
+      if (STYLE.heightmapNormalTexture) {
+        mat.normalMap = STYLE.heightmapNormalTexture;
+        mat.normalScale = new THREE.Vector2(STYLE.heightmapNormalScale, STYLE.heightmapNormalScale);
+      }
+    }
+    return mat;
+  }
+
+  function createSphereMaterial() {
+    return new THREE.MeshStandardMaterial({
+      color: STYLE.sphereColor,
+      roughness: STYLE.sphereRoughness,
+      metalness: STYLE.sphereMetalness,
+    });
+  }
+  function createAtmosphereMaterial() {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uColorWarm: { value: new THREE.Color(STYLE.atmosphereColorWarm) },
+        uColorCool: { value: new THREE.Color(STYLE.atmosphereColorCool) },
+        uSunDir:    { value: SUN_DIR.clone() },
+        uPower:     { value: STYLE.atmospherePower },
+        uIntensity: { value: STYLE.atmosphereIntensity },
+      },
+      vertexShader: ATM_VERT,
+      fragmentShader: ATM_FRAG,
+      transparent: true,
+      side: THREE.BackSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+  }
+  function createCountryMaterial(id) {
+    return applyHeightmapIfEnabled(new THREE.MeshStandardMaterial({
+      color: colorForCountry(id),
+      roughness: STYLE.countryRoughness,
+      metalness: STYLE.countryMetalness,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+      flatShading: false,
+    }));
+  }
+  function createVisitedFlatMaterial() {
+    return applyHeightmapIfEnabled(new THREE.MeshStandardMaterial({
+      color: STYLE.visitedColor,
+      roughness: STYLE.visitedRoughness,
+      metalness: STYLE.visitedMetalness,
+      emissive: STYLE.visitedEmissive,
+      emissiveIntensity: STYLE.visitedEmissiveIntensity,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+      flatShading: false,
+    }));
+  }
+  function createVisitedExtrusionMaterial() {
+    return applyHeightmapIfEnabled(new THREE.MeshStandardMaterial({
+      color: STYLE.visitedColor,
+      roughness: STYLE.visitedRoughness,
+      metalness: STYLE.visitedMetalness,
+      emissive: STYLE.visitedEmissive,
+      emissiveIntensity: STYLE.visitedEmissiveIntensity * 0.7,
+      flatShading: false,
+    }));
+  }
+  function createBorderMaterial() {
+    return new THREE.LineBasicMaterial({
+      color: STYLE.borderColor,
+      transparent: true,        // always transparent so we can fade dynamically with camera distance
+      opacity: STYLE.borderOpacity,
+    });
+  }
+  function createOutlineMaterial() {
+    return new THREE.LineBasicMaterial({ color: STYLE.visitedOutlineColor });
+  }
+
+  function colorForCountry(id) {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0;
+    const [hMin, hMax] = STYLE.countryHueRange;
+    const hue = (hMin + (Math.abs(h) % (hMax - hMin))) / 360;
+    const lit = STYLE.countryLightness + ((Math.abs(h >> 7) % 5) - 2) * STYLE.countryLightnessJitter;
+    return new THREE.Color().setHSL(hue, STYLE.countrySaturation, lit);
+  }
+
+  // ---------------------------------------------------------------------------
+  //  TopoJSON decoding
+  // ---------------------------------------------------------------------------
+  const tx = TOPO.transform;
+  function decodeArc(arc) {
+    const out = [];
+    let x = arc[0][0], y = arc[0][1];
+    out.push([x * tx.scale[0] + tx.translate[0], y * tx.scale[1] + tx.translate[1]]);
+    for (let i = 1; i < arc.length; i++) {
+      x += arc[i][0]; y += arc[i][1];
+      out.push([x * tx.scale[0] + tx.translate[0], y * tx.scale[1] + tx.translate[1]]);
+    }
+    return out;
+  }
+  const arcs = TOPO.arcs.map(decodeArc);
+  function ringFromIndices(idxs) {
+    const ring = [];
+    for (const idx of idxs) {
+      const arc = idx >= 0 ? arcs[idx] : arcs[~idx].slice().reverse();
+      if (ring.length === 0) ring.push(...arc);
+      else ring.push(...arc.slice(1));
+    }
+    return ring;
+  }
+
+  const byName = new Map(), byId = new Map();
+  for (const f of TOPO.features) {
+    if (!f.name) continue;
+    byName.set(f.name.toLowerCase(), f);
+    if (f.id) byId.set(f.id, f);
+  }
+
+  // ---------------------------------------------------------------------------
+  //  COUNTRY MEAN ELEVATIONS (metres above sea level)
+  //  Loaded at boot from STYLE.dataSources.elevations (default ./data/elevations.json).
+  //  Compiled from public sources (Wikipedia "List of countries by mean elevation",
+  //  USGS, World Bank). Approximate — fine for visualisation. ISO_A3 keys.
+  // ---------------------------------------------------------------------------
+  // Visited countries rise to their real average elevation; unvisited stay flat.
+  function elevationOf(id) {
+    if (!visited.has(id)) return 0;
+    const e = ELEVATIONS[id];
+    return (e === undefined ? STYLE.elevationDefault : e) * STYLE.elevationScale;
+  }
+
+  // arcMaxElev stores the visible-top altitude for each border arc.
+  // Filled by recomputeArcMaxElev() — recomputed every time a country is
+  // visited / unvisited, so borders always sit on top of any visited towers
+  // rather than being buried under them.
+  const arcMaxElev = new Float32Array(arcs.length);
+  function recomputeArcMaxElev() {
+    arcMaxElev.fill(0);
+    for (let arcIdx = 0; arcIdx < arcs.length; arcIdx++) {
+      let maxAlt = 0;
+      for (const [fIdx, polyIdx] of arcToPolys[arcIdx]) {
+        const f = TOPO.features[fIdx];
+        if (!visited.has(f.id)) continue;
+        const tops = countryPolyTops.get(f.id);
+        if (!tops || polyIdx >= tops.length) continue;
+        const t = tops[polyIdx];
+        if (t > maxAlt) maxAlt = t;
+      }
+      arcMaxElev[arcIdx] = maxAlt;
+    }
+  }
+
+  const datalist = document.getElementById('countries');
+  for (const n of [...byName.values()].map(f => f.name).sort()) {
+    const o = document.createElement('option'); o.value = n; datalist.appendChild(o);
+  }
+
+  // --- persistence ---------------------------------------------------------
+  // Storage layout is versioned via the key ("blank-earth/v1/visits"). Future
+  // schema changes should write a new key (e.g. /v2/) and migrate from v1 here
+  // rather than mutating the existing payload — keeps users safe across rollbacks.
+  const STORAGE_KEY = 'blank-earth/v1/visits';
+  const STORAGE_SCHEMA = 'blank-earth/v1';
+
+  function loadVisited() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return new Set();
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return new Set(parsed); // current shape
+      // Future shape: { schema, visited: [...], at }
+      if (parsed && parsed.schema === STORAGE_SCHEMA && Array.isArray(parsed.visited)) {
+        return new Set(parsed.visited);
+      }
+      console.warn('[NiceEarth] unknown storage shape, ignoring:', parsed);
+      return new Set();
+    } catch(err) {
+      console.warn('[NiceEarth] localStorage read failed:', err);
+      return new Set();
+    }
+  }
+
+  // Tiny non-blocking toast for storage / runtime warnings. The element is in
+  // the HTML (#toast) and styled via the main stylesheet.
+  let _toastTimer = 0;
+  function showToast(msg, ms) {
+    const el = document.getElementById('toast');
+    if (!el) { console.warn('[NiceEarth] toast:', msg); return; }
+    el.textContent = msg;
+    el.hidden = false;
+    if (_toastTimer) clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => { el.hidden = true; }, ms || 4200);
+  }
+
+  let visited = loadVisited();
+  function persist() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited]));
+    } catch(err) {
+      const isQuota = err && (err.name === 'QuotaExceededError' || err.code === 22 || err.code === 1014);
+      showToast(isQuota
+        ? 'Could not save — storage is full. Export your atlas to keep it safe.'
+        : 'Could not save your visits. Try exporting them.');
+      NiceEarthEvents.emit('storage.error', { kind: isQuota ? 'quota' : 'unknown', error: err });
+    }
+    updateUI();
+  }
+
+  // ---------------------------------------------------------------------------
+  //  PROCEDURAL HEIGHTMAP — algorithmic terrain via fractal value noise
+  // ---------------------------------------------------------------------------
+  //  Generates a greyscale equirectangular heightmap as a CanvasTexture.
+  //  Sampled by MeshStandardMaterial.displacementMap on country tiles.
+  //  Cost: ~80–250ms one-time at page load (1024x512). Tunable in STYLE.
+  // ---------------------------------------------------------------------------
+  function generateProceduralHeightmap() {
+    const W = STYLE.heightmapResolution;
+    const H = Math.max(2, Math.floor(W / 2));
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(W, H);
+    const data = imageData.data;
+
+    function hash(x, y) {
+      const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+      return n - Math.floor(n);
+    }
+    function sstep(t) { return t * t * (3 - 2 * t); }
+    function noise2(x, y) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const xf = x - xi, yf = y - yi;
+      const tx = sstep(xf), ty = sstep(yf);
+      const a = hash(xi, yi);
+      const b = hash(xi + 1, yi);
+      const c = hash(xi, yi + 1);
+      const d = hash(xi + 1, yi + 1);
+      return (a * (1-tx) + b * tx) * (1-ty) + (c * (1-tx) + d * tx) * ty;
+    }
+    function fractal(x, y, oct, persist, lac) {
+      let total = 0, amp = 1, freq = 1, max = 0;
+      for (let i = 0; i < oct; i++) {
+        total += noise2(x * freq, y * freq) * amp;
+        max += amp; amp *= persist; freq *= lac;
+      }
+      return total / max;
+    }
+
+    const baseFreq = STYLE.heightmapBaseFreq;
+    const oct = STYLE.heightmapOctaves;
+    const pw = STYLE.heightmapPow;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const u = x / W;
+        const v = y / H;
+        // Compress vertical sample rate slightly so features don't smear horizontally near poles
+        let h = fractal(u * baseFreq, v * baseFreq * 0.5, oct, 0.5, 2.0);
+        h = Math.pow(h, pw);
+        const idx = (y * W + x) * 4;
+        const v8 = Math.max(0, Math.min(255, Math.floor(h * 255)));
+        data[idx] = v8; data[idx+1] = v8; data[idx+2] = v8; data[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  // Force vertex normals to point radially outward from sphere center.
+  // Required for clean displacement on the sphere — guarantees that adjacent
+  // countries' shared-border vertices displace in identical directions and
+  // therefore stay seamless. Call after computeVertexNormals().
+  function radialiseNormals(geom) {
+    const pos = geom.attributes.position.array;
+    const nrm = geom.attributes.normal.array;
+    for (let i = 0; i < pos.length; i += 3) {
+      const x = pos[i], y = pos[i+1], z = pos[i+2];
+      const inv = 1 / Math.sqrt(x*x + y*y + z*z);
+      nrm[i] = x * inv; nrm[i+1] = y * inv; nrm[i+2] = z * inv;
+    }
+    geom.attributes.normal.needsUpdate = true;
+  }
+
+  // Generate a normal map from a heightmap canvas (Sobel-style gradient).
+  // Lets MeshStandardMaterial light the relief properly: ridges catch light,
+  // valleys fall into shadow. CPU-generated once at init.
+  function generateNormalMapFromHeightmap(hCanvas) {
+    const W = hCanvas.width, H = hCanvas.height;
+    const hCtx = hCanvas.getContext('2d');
+    const hd = hCtx.getImageData(0, 0, W, H).data;
+    const nCanvas = document.createElement('canvas');
+    nCanvas.width = W; nCanvas.height = H;
+    const nCtx = nCanvas.getContext('2d');
+    const nImg = nCtx.createImageData(W, H);
+    const nd = nImg.data;
+    const s = STYLE.heightmapNormalStrength;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        const xL = (x - 1 + W) % W;
+        const xR = (x + 1) % W;
+        const yU = Math.max(0, y - 1);
+        const yD = Math.min(H - 1, y + 1);
+        const hL = hd[(y * W + xL) * 4];
+        const hR = hd[(y * W + xR) * 4];
+        const hU = hd[(yU * W + x) * 4];
+        const hD = hd[(yD * W + x) * 4];
+        const dx = (hR - hL) * s / 255;
+        const dy = (hD - hU) * s / 255;
+        const inv = 1 / Math.sqrt(dx*dx + dy*dy + 1);
+        const nx = -dx * inv, ny = -dy * inv, nz = inv;
+        const idx = (y * W + x) * 4;
+        nd[idx]   = Math.floor((nx * 0.5 + 0.5) * 255);
+        nd[idx+1] = Math.floor((ny * 0.5 + 0.5) * 255);
+        nd[idx+2] = Math.floor((nz * 0.5 + 0.5) * 255);
+        nd[idx+3] = 255;
+      }
+    }
+    nCtx.putImageData(nImg, 0, 0);
+    const tex = new THREE.CanvasTexture(nCanvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }
+
+  // Pre-extract heightmap pixels into a flat Uint8Array for fast CPU sampling.
+  // Used to make borders + outlines follow the displaced terrain instead of
+  // floating at a fixed altitude (where they get buried under hills).
+  let _hmArr = null, _hmW = 0, _hmH = 0;
+  function prepareHeightmapSampler(canvas) {
+    const ctx = canvas.getContext('2d');
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    _hmArr = new Uint8Array(canvas.width * canvas.height);
+    for (let i = 0; i < _hmArr.length; i++) _hmArr[i] = img.data[i * 4];
+    _hmW = canvas.width; _hmH = canvas.height;
+  }
+  function sampleHeightAt(lon, lat) {
+    if (!_hmArr) return 0;
+    let u = (lon + 180) / 360;
+    u = u - Math.floor(u);  // wrap
+    const v = Math.max(0, Math.min(1, (lat + 90) / 180));
+    const x = Math.min(_hmW - 1, Math.floor(u * _hmW));
+    const y = Math.min(_hmH - 1, Math.floor(v * _hmH));
+    return _hmArr[y * _hmW + x] / 255;
+  }
+  // Returns the world-space radius at this lon/lat including terrain displacement
+  function radiusAt(lon, lat, baseR) {
+    if (!STYLE.heightmapEnabled || !_hmArr) return baseR;
+    return baseR + sampleHeightAt(lon, lat) * STYLE.heightmapScale + STYLE.heightmapBias;
+  }
+
+  // Generate procedural heightmap and derive normal map; prep CPU sampler
+  if (STYLE.heightmapEnabled && !STYLE.heightmapTexture) {
+    STYLE.heightmapTexture = generateProceduralHeightmap();
+    prepareHeightmapSampler(STYLE.heightmapTexture.image);
+    STYLE.heightmapNormalTexture = generateNormalMapFromHeightmap(STYLE.heightmapTexture.image);
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Three.js setup
+  // ---------------------------------------------------------------------------
+  const canvas = document.getElementById('scene');
+  // MSAA stays on everywhere — modern mobile GPUs handle 4× MSAA almost free
+  // (tile-based rendering), and without it thin border lines flicker badly when
+  // zoomed out. Pixel ratio capped at 1.75 on mobile for a sharpness/perf middle ground.
+  const _isMobile = window.matchMedia('(max-width: 640px)').matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.75 : 2));
+  renderer.setClearColor(STYLE.background, 1);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(STYLE.background);
+
+  // --- responsive camera tuning for small viewports ----------------------
+  // On phones, the original zoom is too tight (the globe fills the screen
+  // and looks like a flat map). Detect mobile and ease it out + widen FOV.
+  const IS_MOBILE = window.matchMedia('(max-width: 640px)').matches;
+  if (IS_MOBILE) {
+    STYLE.initialZoomMult = 3.6;       // was 2.7 — pull camera back
+    STYLE.minZoomMult     = 1.15;      // don't let users zoom inside the planet
+    STYLE.maxZoomMult     = 7.0;       // allow more zoom-out room
+    STYLE.dragSensitivityX = 0.0016;   // touch-tuned, calmer for finger drags
+    STYLE.dragSensitivityY = 0.0011;   // touch-tuned, calmer for finger drags
+    STYLE.cameraEasing    = 0.22;      // snappier follow on mobile (was 0.13) — finger lag → less mushy
+    STYLE.autoRotateDelay = 4500;      // wait longer before auto-rotate kicks in on touch
+  }
+  function fovForViewport() {
+    return window.matchMedia('(max-width: 640px)').matches ? 46 : 38;
+  }
+  const camera = new THREE.PerspectiveCamera(fovForViewport(), 1, 0.5, 4000);
+  let camDist = R * STYLE.initialZoomMult, targetCamDist = camDist;
+
+  scene.add(new THREE.AmbientLight(0xffffff, STYLE.ambientIntensity));
+  const sun = new THREE.DirectionalLight(STYLE.sunColor, STYLE.sunIntensity);
+  sun.position.copy(SUN_DIR).multiplyScalar(800);
+  scene.add(sun);
+  const hemi = new THREE.HemisphereLight(STYLE.hemiSky, STYLE.hemiGround, STYLE.hemiIntensity);
+  scene.add(hemi);
+  const rim = new THREE.DirectionalLight(STYLE.rimColor, STYLE.rimIntensity);
+  rim.position.copy(RIM_DIR).multiplyScalar(800);
+  scene.add(rim);
+
+  const atmosphere = new THREE.Mesh(
+    new THREE.SphereGeometry(R * STYLE.atmosphereScale, 96, 48),
+    createAtmosphereMaterial()
+  );
+  atmosphere.renderOrder = 2;
+  scene.add(atmosphere);
+
+  const globe = new THREE.Group();
+  globe.rotation.order = 'XYZ';   // R_Y first, R_X second — matches centerOn() math
+  scene.add(globe);
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(R, STYLE.sphereSegments, STYLE.sphereSegments / 2),
+    createSphereMaterial()
+  );
+  globe.add(sphere);
+
+  // ---------------------------------------------------------------------------
+  //  POST-PROCESSING PIPELINE
+  // ---------------------------------------------------------------------------
+  //  Selective bloom: render visited extrusions to a separate layer over black,
+  //  blur (separable Gaussian, half-res), then composite with vignette + grain
+  //  in a single final fragment shader. Total: ~4 fullscreen passes per frame.
+  // ---------------------------------------------------------------------------
+  const BLOOM_LAYER = 1;
+  let mainRT = null, bloomRTA = null, bloomRTB = null;
+
+  function makeRenderTargets(w, h) {
+    const opts = { format: THREE.RGBAFormat, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, type: THREE.UnsignedByteType };
+    if (mainRT)  mainRT.dispose();
+    if (bloomRTA) bloomRTA.dispose();
+    if (bloomRTB) bloomRTB.dispose();
+    const bw = Math.max(2, Math.floor(w * STYLE.postBloomScale));
+    const bh = Math.max(2, Math.floor(h * STYLE.postBloomScale));
+    // Main RT uses MSAA to preserve antialiasing through the pipeline
+    // (WebGL2 only — falls back to non-AA on WebGL1).
+    if (renderer.capabilities.isWebGL2 && THREE.WebGLMultisampleRenderTarget) {
+      mainRT = new THREE.WebGLMultisampleRenderTarget(w, h, opts);
+      mainRT.samples = 4;
+    } else {
+      mainRT = new THREE.WebGLRenderTarget(w, h, opts);
+    }
+    bloomRTA = new THREE.WebGLRenderTarget(bw, bh, opts);
+    bloomRTB = new THREE.WebGLRenderTarget(bw, bh, opts);
+  }
+
+  const fsQuadScene = new THREE.Scene();
+  const fsQuadCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const fsQuadMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), null);
+  fsQuadScene.add(fsQuadMesh);
+
+  const FS_VERT = `
+    varying vec2 vUv;
+    void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }
+  `;
+
+  const blurMat = new THREE.ShaderMaterial({
+    uniforms: { tMap: { value: null }, uDir: { value: new THREE.Vector2() }, uResolution: { value: new THREE.Vector2() }, uRadius: { value: 1.0 } },
+    vertexShader: FS_VERT,
+    fragmentShader: `
+      uniform sampler2D tMap;
+      uniform vec2 uDir;
+      uniform vec2 uResolution;
+      uniform float uRadius;
+      varying vec2 vUv;
+      void main(){
+        vec2 px = (uDir * uRadius) / uResolution;
+        vec4 sum = vec4(0.0);
+        sum += texture2D(tMap, vUv - 4.0*px) * 0.05;
+        sum += texture2D(tMap, vUv - 3.0*px) * 0.09;
+        sum += texture2D(tMap, vUv - 2.0*px) * 0.12;
+        sum += texture2D(tMap, vUv - 1.0*px) * 0.15;
+        sum += texture2D(tMap, vUv         ) * 0.18;
+        sum += texture2D(tMap, vUv + 1.0*px) * 0.15;
+        sum += texture2D(tMap, vUv + 2.0*px) * 0.12;
+        sum += texture2D(tMap, vUv + 3.0*px) * 0.09;
+        sum += texture2D(tMap, vUv + 4.0*px) * 0.05;
+        gl_FragColor = sum;
+      }
+    `,
+  });
+
+  const compositeMat = new THREE.ShaderMaterial({
+    uniforms: {
+      tScene:           { value: null },
+      tBloom:           { value: null },
+      uBloomStrength:   { value: STYLE.postBloomStrength },
+      uVignetteStrength:{ value: STYLE.postVignetteStrength },
+      uVignetteSoftness:{ value: STYLE.postVignetteSoftness },
+      uGrainStrength:   { value: STYLE.postGrainStrength },
+      uTime:            { value: 0 },
+    },
+    vertexShader: FS_VERT,
+    fragmentShader: `
+      uniform sampler2D tScene;
+      uniform sampler2D tBloom;
+      uniform float uBloomStrength;
+      uniform float uVignetteStrength;
+      uniform float uVignetteSoftness;
+      uniform float uGrainStrength;
+      uniform float uTime;
+      varying vec2 vUv;
+      float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      void main(){
+        vec3 scene = texture2D(tScene, vUv).rgb;
+        vec3 bloom = texture2D(tBloom, vUv).rgb * uBloomStrength;
+        vec3 col = scene + bloom;
+        // Subtle radial vignette
+        float d = distance(vUv, vec2(0.5));
+        float vig = 1.0 - smoothstep(uVignetteSoftness, 0.95, d) * uVignetteStrength;
+        col *= vig;
+        // Animated film grain (paper texture)
+        float g = hash(vUv * 1024.0 + uTime * 0.7) - 0.5;
+        col += vec3(g) * uGrainStrength;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+  });
+
+  const ORIG_BG = scene.background.clone();
+  const BLACK_BG = new THREE.Color(0x000000);
+
+  function setBloomLayer(obj) { obj.traverse(o => o.layers.enable(BLOOM_LAYER)); }
+
+  function renderPipeline() {
+    const w = renderer.domElement.width, h = renderer.domElement.height;
+    if (!mainRT || mainRT.width !== w || mainRT.height !== h) makeRenderTargets(w, h);
+
+    // 1. Main scene render (camera sees layer 0 + BLOOM_LAYER)
+    camera.layers.set(0);
+    camera.layers.enable(BLOOM_LAYER);
+    renderer.setRenderTarget(mainRT);
+    renderer.setClearColor(STYLE.background, 1);
+    renderer.clear();
+    renderer.render(scene, camera);
+
+    // 2. Bloom layer only, against black
+    camera.layers.set(BLOOM_LAYER);
+    scene.background = BLACK_BG;
+    renderer.setRenderTarget(bloomRTA);
+    renderer.setClearColor(0x000000, 1);
+    renderer.clear();
+    renderer.render(scene, camera);
+    scene.background = ORIG_BG;
+
+    // Restore camera mask
+    camera.layers.set(0);
+    camera.layers.enable(BLOOM_LAYER);
+
+    // 3. Horizontal blur RTA -> RTB
+    fsQuadMesh.material = blurMat;
+    blurMat.uniforms.tMap.value = bloomRTA.texture;
+    blurMat.uniforms.uDir.value.set(1, 0);
+    blurMat.uniforms.uResolution.value.set(bloomRTA.width, bloomRTA.height);
+    blurMat.uniforms.uRadius.value = STYLE.postBloomRadius;
+    renderer.setRenderTarget(bloomRTB);
+    renderer.render(fsQuadScene, fsQuadCamera);
+
+    // 4. Vertical blur RTB -> RTA
+    blurMat.uniforms.tMap.value = bloomRTB.texture;
+    blurMat.uniforms.uDir.value.set(0, 1);
+    renderer.setRenderTarget(bloomRTA);
+    renderer.render(fsQuadScene, fsQuadCamera);
+
+    // 5. Final composite -> screen
+    fsQuadMesh.material = compositeMat;
+    compositeMat.uniforms.tScene.value = mainRT.texture;
+    compositeMat.uniforms.tBloom.value = bloomRTA.texture;
+    compositeMat.uniforms.uTime.value = performance.now() * 0.001;
+    renderer.setRenderTarget(null);
+    renderer.render(fsQuadScene, fsQuadCamera);
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Geometry helpers
+  // ---------------------------------------------------------------------------
+  function lonLatToVec3(lon, lat, r) {
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = lon * Math.PI / 180;
+    return new THREE.Vector3(
+      r * Math.sin(phi) * Math.sin(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.cos(theta)
+    );
+  }
+  function lonLatToUV(lon, lat) {
+    return [(lon + 180) / 360, (lat + 90) / 180];
+  }
+
+  // Average each ring point with its neighbours (1-2-1 kernel). Same point
+  // count, but corners get rounded — walls/extrusions look continuous instead
+  // of faceted. Iteration count controlled by STYLE.ringSmoothIterations.
+  function ringSmoothAvg(ring, iterations) {
+    if (!iterations || ring.length < 4) return ring;
+    const closed = ring[0][0] === ring[ring.length-1][0] && ring[0][1] === ring[ring.length-1][1];
+    for (let it = 0; it < iterations; it++) {
+      const len = closed ? ring.length - 1 : ring.length;
+      const next = ring.map(p => [p[0], p[1]]);
+      for (let i = 0; i < len; i++) {
+        const aIdx = (i - 1 + len) % len;
+        const cIdx = (i + 1) % len;
+        const a = ring[aIdx], b = ring[i], c = ring[cIdx];
+        if (Math.abs(b[0]-a[0]) > 180 || Math.abs(c[0]-b[0]) > 180) continue;
+        next[i] = [(a[0] + 2*b[0] + c[0]) / 4, (a[1] + 2*b[1] + c[1]) / 4];
+      }
+      if (closed) next[ring.length-1] = next[0];
+      ring = next;
+    }
+    return ring;
+  }
+
+  function subdivideRing(ring, max) {
+    const out = [];
+    for (let i = 0; i < ring.length - 1; i++) {
+      const a = ring[i], b = ring[i+1];
+      out.push(a);
+      const dx = b[0]-a[0], dy = b[1]-a[1];
+      if (Math.abs(dx) > 180) continue;
+      const d = Math.hypot(dx, dy);
+      if (d > max) {
+        const n = Math.ceil(d / max);
+        for (let j = 1; j < n; j++) {
+          const t = j/n;
+          out.push([a[0] + dx*t, a[1] + dy*t]);
+        }
+      }
+    }
+    out.push(ring[ring.length - 1]);
+    if (STYLE.ringSmoothIterations > 0) {
+      return ringSmoothAvg(out, STYLE.ringSmoothIterations);
+    }
+    return out;
+  }
+
+  function splitAntimeridian(ring) {
+    const segs = [[]];
+    for (let i = 0; i < ring.length; i++) {
+      if (i > 0 && Math.abs(ring[i][0] - ring[i-1][0]) > 180) segs.push([]);
+      segs[segs.length-1].push(ring[i]);
+    }
+    return segs.filter(s => s.length > 1);
+  }
+
+  function subdivideTri2D(a, b, c, maxEdge2, out) {
+    const ab2 = (b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y);
+    const bc2 = (c.x-b.x)*(c.x-b.x) + (c.y-b.y)*(c.y-b.y);
+    const ca2 = (a.x-c.x)*(a.x-c.x) + (a.y-c.y)*(a.y-c.y);
+    const max2 = Math.max(ab2, bc2, ca2);
+    if (max2 <= maxEdge2) { out.push(a, b, c); return; }
+    if (ab2 >= bc2 && ab2 >= ca2) {
+      const m = new THREE.Vector2((a.x+b.x)/2, (a.y+b.y)/2);
+      subdivideTri2D(a, m, c, maxEdge2, out);
+      subdivideTri2D(m, b, c, maxEdge2, out);
+    } else if (bc2 >= ca2) {
+      const m = new THREE.Vector2((b.x+c.x)/2, (b.y+c.y)/2);
+      subdivideTri2D(a, b, m, maxEdge2, out);
+      subdivideTri2D(a, m, c, maxEdge2, out);
+    } else {
+      const m = new THREE.Vector2((c.x+a.x)/2, (c.y+a.y)/2);
+      subdivideTri2D(a, b, m, maxEdge2, out);
+      subdivideTri2D(m, b, c, maxEdge2, out);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Per-polygon adaptive height — small islands stubby, mainlands full lift
+  // ---------------------------------------------------------------------------
+  function polygonHeightFor(rings) {
+    const r = rings[0];
+    let minx=180, maxx=-180, miny=90, maxy=-90;
+    for (const p of r) {
+      if (p[0]<minx)minx=p[0]; if (p[0]>maxx)maxx=p[0];
+      if (p[1]<miny)miny=p[1]; if (p[1]>maxy)maxy=p[1];
+    }
+    const minDim = Math.min(maxx-minx, maxy-miny);
+    if (minDim < STYLE.heightSmallSize) return 0;  // skip extrusion entirely
+    const t = Math.min(1, (minDim - STYLE.heightSmallSize) / (STYLE.heightFullSize - STYLE.heightSmallSize));
+    const factor = STYLE.heightFloor + (1 - STYLE.heightFloor) * t;
+    return HEIGHT_MAX * factor;
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Build a flat country tile (for hover/click + base color).
+  //  Includes UV coords for future heightmap support.
+  // ---------------------------------------------------------------------------
+  function buildCountryFlatGeom(polys, baseR) {
+    const positions = [], uvs = [], coords = [];
+    const maxEdge2 = STYLE.triangleMaxEdge * STYLE.triangleMaxEdge;
+    const targetR = baseR;
+    for (const rings of polys) {
+      const subdiv = rings.map(rg => subdivideRing(rg, STYLE.ringSubdivision));
+      const outer2D = subdiv[0].map(p => new THREE.Vector2(p[0], p[1]));
+      const holes2D = subdiv.slice(1).map(rg => rg.map(p => new THREE.Vector2(p[0], p[1])));
+      let faces;
+      try { faces = THREE.ShapeUtils.triangulateShape(outer2D, holes2D); } catch(e){ continue; }
+      const all2D = [...outer2D]; for (const h of holes2D) all2D.push(...h);
+      const tris = [];
+      for (const tri of faces) subdivideTri2D(all2D[tri[0]], all2D[tri[1]], all2D[tri[2]], maxEdge2, tris);
+      for (let i = 0; i < tris.length; i += 3) {
+        for (let k = 0; k < 3; k++) {
+          const p = tris[i+k];
+          const v = lonLatToVec3(p.x, p.y, targetR);
+          const uv = lonLatToUV(p.x, p.y);
+          positions.push(v.x, v.y, v.z);
+          uvs.push(uv[0], uv[1]);
+          coords.push(p.x, p.y);
+        }
+      }
+    }
+    if (!positions.length) return null;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    g.setAttribute('uv',       new THREE.BufferAttribute(new Float32Array(uvs), 2));
+    g.computeVertexNormals();
+    radialiseNormals(g);
+    g.userData = { coords: new Float32Array(coords) };
+    return g;
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Build extrusion top for ONE polygon at a given height.
+  // ---------------------------------------------------------------------------
+  function buildPolygonTopGeom(rings, height, baseR) {
+    const positions = [], uvs = [];
+    const maxEdge2 = STYLE.triangleMaxEdge * STYLE.triangleMaxEdge;
+    const targetR = baseR + height;
+    const subdiv = rings.map(rg => subdivideRing(rg, STYLE.ringSubdivision));
+    const outer2D = subdiv[0].map(p => new THREE.Vector2(p[0], p[1]));
+    const holes2D = subdiv.slice(1).map(rg => rg.map(p => new THREE.Vector2(p[0], p[1])));
+    let faces;
+    try { faces = THREE.ShapeUtils.triangulateShape(outer2D, holes2D); } catch(e){ return null; }
+    const all2D = [...outer2D]; for (const h of holes2D) all2D.push(...h);
+    const tris = [];
+    for (const tri of faces) subdivideTri2D(all2D[tri[0]], all2D[tri[1]], all2D[tri[2]], maxEdge2, tris);
+    for (let i = 0; i < tris.length; i += 3) {
+      for (let k = 0; k < 3; k++) {
+        const p = tris[i+k];
+        const v = lonLatToVec3(p.x, p.y, targetR);
+        const uv = lonLatToUV(p.x, p.y);
+        positions.push(v.x, v.y, v.z);
+        uvs.push(uv[0], uv[1]);
+      }
+    }
+    if (!positions.length) return null;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    g.setAttribute('uv',       new THREE.BufferAttribute(new Float32Array(uvs), 2));
+    g.computeVertexNormals();
+    radialiseNormals(g);
+    return g;
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Build extrusion side walls for ONE polygon. INDEXED geometry so adjacent
+  //  quads share vertices → computeVertexNormals averages normals → smooth
+  //  shading along the whole perimeter (no facet seams).
+  // ---------------------------------------------------------------------------
+  function buildPolygonWallsGeom(rings, height, baseR) {
+    const positions = [], indices = [];
+    let vertOffset = 0;
+    for (const ringRaw of rings) {
+      const ring = subdivideRing(ringRaw, STYLE.ringSubdivision);
+      const segs = splitAntimeridian(ring);
+      for (const seg of segs) {
+        const startVert = vertOffset;
+        for (const p of seg) {
+          const pi = lonLatToVec3(p[0], p[1], baseR);
+          const po = lonLatToVec3(p[0], p[1], baseR + height);
+          positions.push(pi.x, pi.y, pi.z);
+          positions.push(po.x, po.y, po.z);
+          vertOffset += 2;
+        }
+        for (let i = 0; i < seg.length - 1; i++) {
+          const ai = startVert + i*2;
+          const ao = startVert + i*2 + 1;
+          const bi = startVert + (i+1)*2;
+          const bo = startVert + (i+1)*2 + 1;
+          // outward-facing winding
+          indices.push(ai, bo, bi);
+          indices.push(ai, ao, bo);
+        }
+      }
+    }
+    if (!positions.length) return null;
+    const g = new THREE.BufferGeometry();
+    g.setIndex(indices);
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    g.computeVertexNormals();
+    return g;
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Outline (line on top of extrusion). One per polygon at its specific height.
+  // ---------------------------------------------------------------------------
+  function buildPolygonOutline(rings, height, baseR) {
+    const grp = new THREE.Group();
+    const mat = createOutlineMaterial();
+    for (const ring of rings) {
+      const segs = splitAntimeridian(ring);
+      for (const seg of segs) {
+        const sub = subdivideRing(seg, 0.7);
+        const pts = sub.map(p => lonLatToVec3(p[0], p[1], baseR + height + STYLE.visitedOutlineOffset));
+        const g = new THREE.BufferGeometry().setFromPoints(pts);
+        grp.add(new THREE.Line(g, mat));
+      }
+    }
+    return grp;
+  }
+
+
+  // Smooth ramp [0..1]: tiny islands → 0 (sea level), mainlands → 1 (full lift).
+  // Smaller-than-mainland but visible islands get a proportionally lower elevation.
+  function polygonElevationFactor(rings) {
+    const r = rings[0];
+    let minx=180, maxx=-180, miny=90, maxy=-90;
+    for (const p of r) {
+      if (p[0]<minx)minx=p[0]; if (p[0]>maxx)maxx=p[0];
+      if (p[1]<miny)miny=p[1]; if (p[1]>maxy)maxy=p[1];
+    }
+    const minDim = Math.min(maxx-minx, maxy-miny);
+    if (minDim < STYLE.heightSmallSize) return 0;
+    const t = Math.min(1, (minDim - STYLE.heightSmallSize) / (STYLE.heightFullSize - STYLE.heightSmallSize));
+    return STYLE.heightFloor + (1 - STYLE.heightFloor) * t;
+  }
+
+  function buildCountryBaseWalls(rings, baseR) {
+    if (baseR - (R + SURFACE) < 0.001) return null;
+    const positions = [], indices = [];
+    const coords = [], topMask = [];
+    let vertOffset = 0;
+    for (const ringRaw of rings) {
+      const ring = subdivideRing(ringRaw, STYLE.ringSubdivision);
+      const segs = splitAntimeridian(ring);
+      for (const seg of segs) {
+        const startVert = vertOffset;
+        for (const p of seg) {
+          const pi = lonLatToVec3(p[0], p[1], R + SURFACE);
+          const po = lonLatToVec3(p[0], p[1], baseR);
+          positions.push(pi.x, pi.y, pi.z);
+          positions.push(po.x, po.y, po.z);
+          coords.push(p[0], p[1]); coords.push(p[0], p[1]);
+          topMask.push(0, 1);
+          vertOffset += 2;
+        }
+        for (let i = 0; i < seg.length - 1; i++) {
+          const ai = startVert + i*2;
+          const ao = startVert + i*2 + 1;
+          const bi = startVert + (i+1)*2;
+          const bo = startVert + (i+1)*2 + 1;
+          indices.push(ai, bo, bi);
+          indices.push(ai, ao, bo);
+        }
+      }
+    }
+    if (!positions.length) return null;
+    const g = new THREE.BufferGeometry();
+    g.setIndex(indices);
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    g.computeVertexNormals();
+    g.userData = { coords: new Float32Array(coords), topMask: new Uint8Array(topMask) };
+    return g;
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Decode all country geometries (arcs → rings)
+  // ---------------------------------------------------------------------------
+  const countryRings = new Map();
+  // arcToPolys[arcIdx] = list of [featureIdx, polyIdx] pairs that include this arc.
+  // Lets each border arc look up the SPECIFIC polygon it bounds (not just the
+  // country) so its top altitude matches that polygon, not the country's max.
+  const arcToPolys = [];
+  for (let i = 0; i < arcs.length; i++) arcToPolys.push([]);
+  TOPO.features.forEach((f, fIdx) => {
+    let polys;
+    if (f.type === 'Polygon')           polys = [f.arcs.map(ringFromIndices)];
+    else if (f.type === 'MultiPolygon') polys = f.arcs.map(p => p.map(ringFromIndices));
+    else return;
+    countryRings.set(f.id, polys);
+    if (f.type === 'Polygon') {
+      for (const ring of f.arcs) for (const idx of ring) {
+        const real = idx >= 0 ? idx : ~idx;
+        arcToPolys[real].push([fIdx, 0]);
+      }
+    } else {
+      f.arcs.forEach((poly, polyIdx) => {
+        for (const ring of poly) for (const idx of ring) {
+          const real = idx >= 0 ? idx : ~idx;
+          arcToPolys[real].push([fIdx, polyIdx]);
+        }
+      });
+    }
+  });
+  // Per-country, per-polygon top altitude (relative to R + SURFACE).
+  // Populated when a country is visited, cleared when unvisited.
+  const countryPolyTops = new Map();
+
+  // ---- Borders rendered ONCE per arc (deduped via topology) ----------------
+  const borderMat = createBorderMaterial();
+  const borderGroup = new THREE.Group();
+  // Single merged LineSegments for all borders (1 draw call).
+  // Uses arcMaxElev which is rebuilt on every visit / unvisit.
+  function rebuildBordersMerged() {
+    while (borderGroup.children.length) {
+      const c = borderGroup.children[borderGroup.children.length - 1];
+      borderGroup.remove(c); c.geometry.dispose();
+    }
+    const positions = [];
+    for (let arcIdx = 0; arcIdx < arcs.length; arcIdx++) {
+      const arc = arcs[arcIdx];
+      const elev = arcMaxElev[arcIdx];
+      for (const seg of splitAntimeridian(arc)) {
+        const sub = subdivideRing(seg, 1.0);
+        const pts = sub.map(p => lonLatToVec3(p[0], p[1], R + SURFACE + elev + STYLE.borderOffset));
+        for (let i = 0; i < pts.length - 1; i++) {
+          positions.push(pts[i].x, pts[i].y, pts[i].z);
+          positions.push(pts[i+1].x, pts[i+1].y, pts[i+1].z);
+        }
+      }
+    }
+    if (!positions.length) return;
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    borderGroup.add(new THREE.LineSegments(g, borderMat));
+  }
+  rebuildBordersMerged();
+  globe.add(borderGroup);
+
+  // ---- Country flat fills (raycastable) ------------------------------------
+
+  // Merge a list of BufferGeometries into one (preserves position/normal/uv/index).
+  // Used to collapse all polygons of a country into a single Mesh per country —
+  // halves draw-call count vs per-polygon meshes.
+  function mergeBufferGeoms(geoms) {
+    geoms = geoms.filter(Boolean);
+    if (geoms.length === 0) return null;
+    if (geoms.length === 1) return geoms[0];
+    const hasIndex = !!geoms[0].index;
+    const hasUV    = !!geoms[0].attributes.uv;
+    let totalV = 0, totalI = 0;
+    for (const g of geoms) {
+      totalV += g.attributes.position.count;
+      if (hasIndex) totalI += g.index.count;
+    }
+    const pos = new Float32Array(totalV * 3);
+    const nrm = new Float32Array(totalV * 3);
+    const uvs = hasUV ? new Float32Array(totalV * 2) : null;
+    const idx = hasIndex ? new Uint32Array(totalI) : null;
+    let pOff = 0, uOff = 0, iOff = 0, vBase = 0;
+    for (const g of geoms) {
+      const p = g.attributes.position.array;
+      const n = g.attributes.normal.array;
+      pos.set(p, pOff); nrm.set(n, pOff); pOff += p.length;
+      if (hasUV) { const u = g.attributes.uv.array; uvs.set(u, uOff); uOff += u.length; }
+      if (hasIndex) {
+        const I = g.index.array;
+        for (let k = 0; k < I.length; k++) idx[iOff + k] = I[k] + vBase;
+        iOff += I.length;
+      }
+      vBase += g.attributes.position.count;
+      g.dispose();
+    }
+    const m = new THREE.BufferGeometry();
+    m.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    m.setAttribute('normal',   new THREE.BufferAttribute(nrm, 3));
+    if (uvs) m.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    if (idx) m.setIndex(new THREE.BufferAttribute(idx, 1));
+    return m;
+  }
+
+  // One merged tile mesh + one merged wall mesh per country (was per-polygon).
+  // Drops total mesh count from ~750 → ~400, halves draw calls during render.
+  const countryMeshes = new Map();      // id -> Mesh (single per country)
+  const countryWallMeshes = new Map();  // id -> Mesh | null
+  const allCountryMeshes = [];          // flat list for raycast
+  const countryFlatGroup = new THREE.Group();
+  globe.add(countryFlatGroup);
+  for (const f of TOPO.features) {
+    const polys = countryRings.get(f.id);
+    if (!polys) continue;
+    const elev = elevationOf(f.id);
+    const tileGeoms = [], wallGeoms = [];
+    for (const rings of polys) {
+      const factor = polygonElevationFactor(rings);
+      const baseR = R + SURFACE + elev * factor;
+      const tg = buildCountryFlatGeom([rings], baseR);
+      if (tg) tileGeoms.push(tg);
+      if (factor > 0) {
+        const wg = buildCountryBaseWalls(rings, baseR);
+        if (wg) wallGeoms.push(wg);
+      }
+    }
+    const mergedTile = mergeBufferGeoms(tileGeoms);
+    if (mergedTile) {
+      const mesh = new THREE.Mesh(mergedTile, createCountryMaterial(f.id));
+      mesh.userData = { id: f.id, name: f.name };
+      countryFlatGroup.add(mesh);
+      countryMeshes.set(f.id, mesh);
+      allCountryMeshes.push(mesh);
+    }
+    const mergedWall = mergeBufferGeoms(wallGeoms);
+    if (mergedWall) {
+      const wMesh = new THREE.Mesh(mergedWall, createCountryMaterial(f.id));
+      wMesh.userData = { id: f.id };
+      countryFlatGroup.add(wMesh);
+      countryWallMeshes.set(f.id, wMesh);
+    }
+  }
+
+  // ---- Visited (per-polygon adaptive extrusion + outline) ------------------
+  const visitedGroup = new THREE.Group();
+  globe.add(visitedGroup);
+  const visitedMeshes = new Map();
+
+  // Rebuild a country's tile + walls at the appropriate elevation for its
+  // current visit state. Called both when visiting and unvisiting.
+  function rebuildCountryGeom(id) {
+    const f = byId.get(id);
+    if (!f) return;
+    const polys = countryRings.get(id);
+    if (!polys) return;
+    const isVis = visited.has(id);
+    const elev  = elevationOf(id);   // 0 if unvisited, country elev if visited
+    const tileGeoms = [], wallGeoms = [];
+    for (const rings of polys) {
+      const factor = polygonElevationFactor(rings);
+      const baseR  = R + SURFACE + elev * factor;
+      const tg = buildCountryFlatGeom([rings], baseR);
+      if (tg) tileGeoms.push(tg);
+      if (isVis && factor > 0 && elev > 0) {
+        const wg = buildCountryBaseWalls(rings, baseR);
+        if (wg) wallGeoms.push(wg);
+      }
+    }
+    // Tile mesh — replace existing
+    const oldMesh = countryMeshes.get(id);
+    const newGeom = mergeBufferGeoms(tileGeoms);
+    if (newGeom) {
+      const mat = isVis ? createVisitedFlatMaterial() : createCountryMaterial(id);
+      const newMesh = new THREE.Mesh(newGeom, mat);
+      newMesh.userData = { id: id, name: f.name };
+      countryFlatGroup.add(newMesh);
+      countryMeshes.set(id, newMesh);
+      const ai = allCountryMeshes.indexOf(oldMesh);
+      if (ai >= 0) allCountryMeshes[ai] = newMesh;
+      else allCountryMeshes.push(newMesh);
+    }
+    if (oldMesh) {
+      countryFlatGroup.remove(oldMesh);
+      oldMesh.geometry.dispose();
+      oldMesh.material.dispose();
+    }
+    // Wall mesh — replace existing (or remove if no walls needed)
+    const oldWall = countryWallMeshes.get(id);
+    if (oldWall) {
+      countryFlatGroup.remove(oldWall);
+      oldWall.geometry.dispose();
+      oldWall.material.dispose();
+      countryWallMeshes.delete(id);
+    }
+    const newWallGeom = mergeBufferGeoms(wallGeoms);
+    if (newWallGeom) {
+      const wMat = isVis ? createVisitedFlatMaterial() : createCountryMaterial(id);
+      const wMesh = new THREE.Mesh(newWallGeom, wMat);
+      wMesh.userData = { id: id };
+      countryFlatGroup.add(wMesh);
+      countryWallMeshes.set(id, wMesh);
+    }
+  }
+  function setCountryVisited(id)   { rebuildCountryGeom(id); }
+  function setCountryUnvisited(id) { rebuildCountryGeom(id); }
+
+  function addCountry(f) {
+    if (visitedMeshes.has(f.id)) return;
+    const polys = countryRings.get(f.id);
+    if (!polys) return;
+    const isFirstVisit = !visited.has(f.id);
+    visited.add(f.id);                 // set BEFORE geometry rebuild
+    setCountryVisited(f.id);           // tile rebuilt at elevation now
+    const elev = elevationOf(f.id);
+    // Identify the mainland (largest polygon by bbox) — gets full extrusion.
+    let mainlandIdx = 0, mainlandArea = 0;
+    polys.forEach((rings, i) => {
+      const r = rings[0];
+      let mnx=180, mxx=-180, mny=90, mxy=-90;
+      for (const p of r) { if(p[0]<mnx)mnx=p[0]; if(p[0]>mxx)mxx=p[0]; if(p[1]<mny)mny=p[1]; if(p[1]>mxy)mxy=p[1]; }
+      const a = (mxx-mnx) * (mxy-mny);
+      if (a > mainlandArea) { mainlandArea = a; mainlandIdx = i; }
+    });
+    // Deterministic per-polygon random height for non-mainland polygons.
+    function randHeightFor(polyIdx) {
+      const key = (f.id || '') + ':' + polyIdx;
+      let h = 0;
+      for (let i = 0; i < key.length; i++) h = ((h << 5) - h + key.charCodeAt(i)) | 0;
+      const r = (Math.abs(h) % 1000) / 1000;            // 0..1
+      return HEIGHT_MAX * (STYLE.islandHeightMin + r * (STYLE.islandHeightMax - STYLE.islandHeightMin));
+    }
+    // First pass — compute each polygon's top altitude (for border lookup later).
+    const polyTops = new Float32Array(polys.length);
+    polys.forEach((rings, pi) => {
+      const factor = polygonElevationFactor(rings);
+      if (factor < 0.001) return;             // polyTops[pi] stays 0
+      const polyBase = elev * factor;
+      const h = (pi === mainlandIdx) ? HEIGHT_MAX : randHeightFor(pi);
+      polyTops[pi] = polyBase + (h > 0.001 ? h : 0);
+    });
+    countryPolyTops.set(f.id, polyTops);
+    // Second pass — build the extrusion, reusing polyTops for each polygon's height.
+    const grp = new THREE.Group();
+    const outlineGrp = new THREE.Group();
+    polys.forEach((rings, pi) => {
+      const factor = polygonElevationFactor(rings);
+      if (factor < 0.001) return;
+      const polyBaseR = R + SURFACE + elev * factor;
+      const h = polyTops[pi] - elev * factor;
+      if (h <= 0.001) return;
+      const top  = buildPolygonTopGeom(rings, h, polyBaseR);
+      const wall = buildPolygonWallsGeom(rings, h, polyBaseR);
+      if (top)  grp.add(new THREE.Mesh(top,  createVisitedExtrusionMaterial()));
+      if (wall) grp.add(new THREE.Mesh(wall, createVisitedExtrusionMaterial()));
+      outlineGrp.add(buildPolygonOutline(rings, h, polyBaseR));
+    });
+    grp.scale.set(0.001, 0.001, 0.001);
+    outlineGrp.scale.set(0.001, 0.001, 0.001);
+    visitedGroup.add(grp);
+    visitedGroup.add(outlineGrp);
+    setCountryVisited(f.id);
+    if (STYLE.postEnabled) setBloomLayer(grp);
+    visitedMeshes.set(f.id, { extr: grp, outline: outlineGrp, t: 0 });
+    visited.add(f.id);
+    persist();
+    centerOn(f);
+    NiceEarthEvents.emit('country.visit', { feature: f, isFirstVisit });
+  }
+
+  function removeCountry(id) {
+    const f = byId.get(id);
+    const e = visitedMeshes.get(id);
+    if (e) {
+      e.extr.children.forEach(c => { c.geometry.dispose(); c.material.dispose(); });
+      visitedGroup.remove(e.extr);
+      visitedGroup.remove(e.outline);
+      visitedMeshes.delete(id);
+    }
+    visited.delete(id);
+    countryPolyTops.delete(id);
+    setCountryUnvisited(id);
+    persist();
+    recomputeArcMaxElev();
+    rebuildBordersMerged();
+    if (f) NiceEarthEvents.emit('country.unvisit', { feature: f });
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Centering & camera
+  // ---------------------------------------------------------------------------
+  function countryCenter(f) {
+    const polys = countryRings.get(f.id);
+    if (!polys) return [0, 0];
+    let bestArea = 0, best = null;
+    for (const rings of polys) {
+      const r = rings[0];
+      let minx=180, maxx=-180, miny=90, maxy=-90;
+      for (const p of r) { if (p[0]<minx)minx=p[0]; if (p[0]>maxx)maxx=p[0]; if (p[1]<miny)miny=p[1]; if (p[1]>maxy)maxy=p[1]; }
+      const area = (maxx-minx) * (maxy-miny);
+      if (area > bestArea) { bestArea = area; best = r; }
+    }
+    if (!best) return [0, 0];
+    let cx=0, cy=0; for (const p of best) { cx+=p[0]; cy+=p[1]; }
+    return [cx / best.length, cy / best.length];
+  }
+  function centerOn(f) {
+    const [lon, lat] = countryCenter(f);
+    targetRotY = -lon * Math.PI / 180;
+    targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit, lat * Math.PI / 180));
+    if (targetCamDist > R * 2.0) targetCamDist = R * 1.9;
+    lastInteract = performance.now() + 1500;
+  }
+  function resetView() {
+    targetRotY = 0; targetRotX = 0.18;
+    targetCamDist = R * STYLE.initialZoomMult;
+    lastInteract = performance.now();
+  }
+
+  const tiltLimit = STYLE.tiltLimitDeg * Math.PI / 180;
+  let dragging = false, dragMoved = false, dx0 = 0, dy0 = 0, lx = 0, ly = 0;
+  let rotY = 0, rotX = 0.18, targetRotY = 0, targetRotX = 0.18;
+  let lastInteract = -10000;
+
+  const raycaster = new THREE.Raycaster();
+  const pointerNDC = new THREE.Vector2();
+  const hoverLabel = document.getElementById('hoverLabel');
+
+  function pickCountry(clientX, clientY) {
+    const rect = canvas.getBoundingClientRect();
+    pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointerNDC, camera);
+    const hits = raycaster.intersectObjects(allCountryMeshes, false);
+    return hits.length ? hits[0].object.userData : null;
+  }
+
+  // --- multi-touch + mouse pointer handling -------------------------------
+  // Tracks all active pointers so we can handle:
+  //   1 pointer  → drag-to-rotate
+  //   2 pointers → pinch-to-zoom (fingers spread out = zoom in; pinch = zoom out)
+  const activePointers = new Map();   // id → {x, y}
+  let pinchStartDist = 0;             // pixel distance between two fingers when pinch began
+  let pinchStartCamDist = 0;          // camera distance snapshot when pinch began
+
+  canvas.addEventListener('pointerdown', e => {
+    activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if (activePointers.size === 1) {
+      dragging = true; dragMoved = false;
+      canvas.setPointerCapture(e.pointerId);
+      dx0 = lx = e.clientX; dy0 = ly = e.clientY;
+    } else if (activePointers.size === 2) {
+      // Switching from drag → pinch. Stop rotation drag and snapshot state.
+      dragging = false;
+      const pts = [...activePointers.values()];
+      pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      pinchStartCamDist = targetCamDist;
+      hoverLabel.classList.remove('show');
+    }
+    lastInteract = performance.now();
+  });
+
+  function endPointer(e) {
+    // Only counts as a tap if exactly one pointer was active and it didn't move.
+    if (activePointers.size === 1 && dragging && !dragMoved) {
+      const hit = pickCountry(e.clientX, e.clientY);
+      if (hit) {
+        const f = byId.get(hit.id);
+        if (f) NiceEarthEvents.emit('country.click', { feature: f });
+        if (visited.has(hit.id)) removeCountry(hit.id);
+        else if (f) addCountry(f);
+      }
+    }
+    activePointers.delete(e.pointerId);
+    if (activePointers.size === 1) {
+      // 2-finger pinch → 1-finger drag: seamlessly resume rotating with remaining finger
+      const [remId, rem] = [...activePointers.entries()][0];
+      dragging = true;
+      dragMoved = true;   // already an in-flight gesture, not a tap
+      dx0 = lx = rem.x; dy0 = ly = rem.y;
+      try { canvas.setPointerCapture(remId); } catch {}
+    } else if (activePointers.size === 0) {
+      dragging = false;
+    }
+    lastInteract = performance.now();
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+
+  canvas.addEventListener('pointermove', e => {
+    if (activePointers.has(e.pointerId)) {
+      activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    }
+
+    // ── 2-finger pinch zoom (mobile) ──
+    if (activePointers.size === 2) {
+      const pts = [...activePointers.values()];
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1;
+      const scale = pinchStartDist / dist;   // fingers spread → scale<1 → camDist shrinks → zoom in
+      targetCamDist = Math.max(R * STYLE.minZoomMult,
+                       Math.min(R * STYLE.maxZoomMult, pinchStartCamDist * scale));
+      lastInteract = performance.now();
+      return;
+    }
+
+    // ── 1-pointer drag-to-rotate ──
+    if (dragging) {
+      const isTouch = e.pointerType === 'touch';
+      const tapThresh = isTouch ? 10 : 4;   // touch needs more tolerance for "tap, not drag"
+      const dx = e.clientX - lx, dy = e.clientY - ly;
+      lx = e.clientX; ly = e.clientY;
+      if (Math.hypot(e.clientX - dx0, e.clientY - dy0) > tapThresh) dragMoved = true;
+      const z = camDist / R;
+      targetRotY += dx * STYLE.dragSensitivityX * z;
+      targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit,
+                    targetRotX + dy * STYLE.dragSensitivityY * z));
+      lastInteract = performance.now();
+      hoverLabel.classList.remove('show');
+      return;
+    }
+
+    // ── hover (mouse only — touch has no concept of hover) ──
+    if (e.pointerType === 'touch') return;
+    // Raycast is the expensive bit (~1–2ms × 250 meshes). pointermove fires at
+    // 60–120 Hz; we coalesce to one raycast per animation frame, which is plenty
+    // for hover feedback and saves a real chunk of frame budget on slow CPUs.
+    _hoverPending = e;
+    if (_hoverScheduled) return;
+    _hoverScheduled = true;
+    requestAnimationFrame(_runHover);
+  });
+  let _hoverPending = null, _hoverScheduled = false, _hoverLastId = null;
+  function _runHover() {
+    _hoverScheduled = false;
+    const e = _hoverPending; _hoverPending = null;
+    if (!e) return;
+    const hit = pickCountry(e.clientX, e.clientY);
+    if (hit) {
+      hoverLabel.textContent = hit.name + (visited.has(hit.id) ? ' · click to remove' : ' · click to add');
+      hoverLabel.style.left = e.clientX + 'px';
+      hoverLabel.style.top = e.clientY + 'px';
+      hoverLabel.classList.add('show');
+      canvas.style.cursor = 'pointer';
+    } else {
+      hoverLabel.classList.remove('show');
+      canvas.style.cursor = 'grab';
+    }
+    // Emit hover only on transition (entered a new country, or left one) so
+    // plug-ins don't get a torrent of identical events as the cursor drifts.
+    const newId = hit ? hit.id : null;
+    if (newId !== _hoverLastId) {
+      _hoverLastId = newId;
+      NiceEarthEvents.emit('country.hover', { feature: hit ? byId.get(newId) : null });
+    }
+  }
+  canvas.addEventListener('pointerleave', () => { hoverLabel.classList.remove('show'); });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const factor = 1 + e.deltaY * STYLE.zoomSensitivity;
+    targetCamDist = Math.max(R * STYLE.minZoomMult, Math.min(R * STYLE.maxZoomMult, targetCamDist * factor));
+    lastInteract = performance.now();
+  }, { passive: false });
+  canvas.addEventListener('dblclick', () => { resetView(); });
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.fov = fovForViewport();   // wider FOV on phones, narrower on desktop — handles rotation too
+    camera.updateProjectionMatrix();
+  }
+  // Resize handler also forces a render — idle-skip would otherwise blank the canvas after a viewport change.
+  window.addEventListener('resize', () => { resize(); renderer.render(scene, camera); });
+  resize();
+
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+  // Idle-render skip: when nothing is moving (no drag, no easing, no growing
+  // extrusions, no auto-rotate kicking in), we don't need to redraw. Saves
+  // GPU + battery on mobile and keeps the laptop fan from spinning up.
+  const STILL_EPS = 0.00005;        // when |target - current| drops below this, treat as "settled"
+  function isCameraSettled() {
+    return Math.abs(targetRotY - rotY)        < STILL_EPS
+        && Math.abs(targetRotX - rotX)        < STILL_EPS
+        && Math.abs(targetCamDist - camDist)  < STILL_EPS * R;
+  }
+  function animate() {
+    requestAnimationFrame(animate);
+    const now = performance.now();
+    const autoRotating = !dragging && (now - lastInteract > STYLE.autoRotateDelay);
+    if (autoRotating) targetRotY += STYLE.autoRotateSpeed;
+
+    rotY += (targetRotY - rotY) * STYLE.cameraEasing;
+    rotX += (targetRotX - rotX) * STYLE.cameraEasing;
+    camDist += (targetCamDist - camDist) * STYLE.cameraEasing;
+    globe.rotation.y = rotY;
+    globe.rotation.x = rotX;
+    camera.position.set(0, 0, camDist);
+    camera.lookAt(0, 0, 0);
+
+    // Distance-based border fade: at extreme zoom-out, thin 1-pixel border lines
+    // alias and flicker as they fall on/off pixel rows during rotation. Fade them
+    // so the visual contrast at full-globe view doesn't strobe so prominently.
+    const distRatio = Math.max(0, Math.min(1, (camDist / R - 3.0) / 3.0));
+    borderMat.opacity = 1.0 - distRatio * 0.55;
+
+    // Track whether any visited extrusion grew this frame (so the *final* tick
+    // that sets scale=1 still triggers a render, before we go idle).
+    let visitedChanged = false;
+    for (const e of visitedMeshes.values()) {
+      if (e.t < 1) {
+        e.t = Math.min(1, e.t + 0.035);
+        const k = Math.max(0.001, easeOutCubic(e.t));
+        e.extr.scale.set(k, k, k);
+        e.outline.scale.set(k, k, k);
+        visitedChanged = true;
+      }
+    }
+
+    // Skip render if scene is fully static (saves ~5–8ms/frame on phones, big battery win)
+    if (!dragging && !autoRotating && !visitedChanged && isCameraSettled()) {
+      return;
+    }
+
+    if (STYLE.postEnabled) renderPipeline();
+    else renderer.render(scene, camera);
+  }
+  // Initial paint (otherwise idle-skip can swallow the first frame and we'd see a black canvas)
+  renderer.render(scene, camera);
+  animate();
+
+  // ---------------------------------------------------------------------------
+  //  UI wiring
+  // ---------------------------------------------------------------------------
+  const search = document.getElementById('search');
+  const addBtn = document.getElementById('add');
+  function tryAdd() {
+    const v = search.value.trim().toLowerCase();
+    if (!v) return;
+    let f = byName.get(v);
+    if (!f) {
+      const m = [...byName.entries()].find(([k]) => k.startsWith(v));
+      if (m) f = m[1];
+    }
+    if (!f) {
+      search.style.borderBottomColor = '#a32d2d';
+      search.setAttribute('aria-invalid', 'true');
+      setTimeout(() => { search.style.borderBottomColor = ''; search.removeAttribute('aria-invalid'); }, 800);
+      return;
+    }
+    addCountry(f);
+    search.value = '';
+  }
+  addBtn.onclick = tryAdd;
+  search.addEventListener('keydown', e => { if (e.key === 'Enter') tryAdd(); });
+
+  // Mobile-only: collapsible visited list + actions, to keep the panel compact.
+  const visitedToggle = document.getElementById('visited-toggle');
+  if (visitedToggle) {
+    visitedToggle.addEventListener('click', () => {
+      const panel = document.querySelector('.panel');
+      const expanded = panel.classList.toggle('expanded');
+      visitedToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    });
+  }
+
+  function updateUI() {
+    document.getElementById('count').textContent = visited.size;
+    const inline = document.getElementById('visited-count-inline');
+    if (inline) inline.textContent = visited.size;
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    if (!visited.size) {
+      const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'no countries summoned yet.';
+      list.appendChild(e); return;
+    }
+    const entries = [...visited].map(id => byId.get(id)).filter(Boolean)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    for (const f of entries) {
+      const row = document.createElement('div'); row.className = 'row';
+      const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = f.name;
+      nm.onclick = () => centerOn(f);
+      const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + f.name);
+      x.onclick = () => removeCountry(f.id);
+      row.appendChild(nm); row.appendChild(x);
+      list.appendChild(row);
+    }
+  }
+
+  for (const id of [...visited]) {
+    const f = byId.get(id);
+    if (!f) { visited.delete(id); continue; }
+    try { addCountry(f); }
+    catch (err) { console.warn('failed to restore visit:', id, err); visited.delete(id); }
+  }
+  recomputeArcMaxElev();
+  rebuildBordersMerged();
+  updateUI();
+
+  document.getElementById('export').onclick = () => {
+    const blob = new Blob([JSON.stringify({schema:'blank-earth/v1', visited:[...visited], at:new Date().toISOString()}, null, 2)], { type:'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'blank-earth-visits.json'; a.click();
+  };
+  document.getElementById('import').onclick = () => document.getElementById('file').click();
+  document.getElementById('file').onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = ev => {
+      try {
+        const d = JSON.parse(ev.target.result);
+        const ids = Array.isArray(d) ? d : (d.visited || []);
+        for (const id of [...visited]) removeCountry(id);
+        for (const id of ids) { const ff = byId.get(id); if (ff) addCountry(ff); }
+      } catch (err) { alert('Could not read that file.'); }
+    };
+    r.readAsText(f);
+  };
+  document.getElementById('reset').onclick = () => {
+    if (!confirm('Reset all visits?')) return;
+    for (const id of [...visited]) removeCountry(id);
+  };
+
+  // ---------------------------------------------------------------------------
+  //  PLUG-IN API — what plug-ins receive in their init({...}) call.
+  //  Designed to give them enough rope to do useful things (3D models per
+  //  country, content side-panels, theme switchers) without exposing internals
+  //  that would lock the engine into a particular API forever.
+  // ---------------------------------------------------------------------------
+  const pluginGroup = new THREE.Group();
+  pluginGroup.name = 'NiceEarthPlugins';
+  globe.add(pluginGroup);
+
+  const pluginApi = Object.freeze({
+    THREE,
+    STYLE,
+    on:  NiceEarthEvents.on.bind(NiceEarthEvents),
+    off: NiceEarthEvents.off.bind(NiceEarthEvents),
+    // Read-only state
+    getVisited()        { return new Set(visited); },
+    isVisited(id)       { return visited.has(id); },
+    getFeatureById(id)  { return byId.get(id) || null; },
+    getFeatureByName(n) { return byName.get((n||'').toLowerCase()) || null; },
+    getCountryCenter(id){ const f = byId.get(id); return f ? countryCenter(f) : null; },
+    // Geometry helpers (handy for plug-ins placing things on the globe)
+    lonLatToVec3,
+    radiusAt,
+    getRadius()         { return R; },
+    getSurface()        { return SURFACE; },
+    // Scene access — plug-ins should add to pluginGroup, not to scene/globe directly,
+    // so the engine can clean them up if the scene is rebuilt.
+    pluginGroup,
+    requestRender()     { /* one-shot kick for idle-skip — sets a flag the loop checks */
+                          lastInteract = performance.now(); },
+    // UI helpers
+    showToast,
+  });
+  window.NiceEarth._api = pluginApi;
+
+  // Run any plug-ins that registered before the engine was ready.
+  for (const p of (window.NiceEarth._pendingPlugins || [])) {
+    try { p.init(pluginApi); } catch(e) { console.error('[NiceEarth] plug-in', p.name, 'init failed', e); }
+  }
+  window.NiceEarth._pendingPlugins.length = 0;
+
+  // ---------------------------------------------------------------------------
+  //  PLUG-IN LOADER — fetches plugins/manifest.json (if present) and dynamically
+  //  loads each listed file as a <script>. Plug-in files call NiceEarth.registerPlugin
+  //  with { name, init(api) }.
+  // ---------------------------------------------------------------------------
+  if (STYLE.pluginsManifest) {
+    fetch(STYLE.pluginsManifest, { cache: 'no-cache' })
+      .then(r => r.ok ? r.json() : null)
+      .then(manifest => {
+        if (!manifest || !Array.isArray(manifest.plugins)) return;
+        for (const file of manifest.plugins) {
+          const s = document.createElement('script');
+          s.src = file.startsWith('/') || file.startsWith('http') ? file : './plugins/' + file;
+          s.async = true;
+          s.onerror = () => console.warn('[NiceEarth] plug-in failed to load:', file);
+          document.body.appendChild(s);
+        }
+      })
+      .catch(() => { /* manifest absent — that's fine, no plug-ins to load */ });
+  }
+
+  NiceEarthEvents.emit('globe.ready', { api: pluginApi });
+})().catch(err => {
+  // Catch-all: anything thrown during async boot lands here.
+  const root = document.getElementById('boot-error');
+  if (root) {
+    root.hidden = false;
+    const pre = document.getElementById('boot-error-msg');
+    if (pre) pre.textContent = (err && (err.stack || err.message)) || String(err);
+  }
+  console.error('[NiceEarth] init failed:', err);
+});
+
+// ---------------------------------------------------------------------------
+//  SERVICE WORKER — registers ./sw.js for offline + faster reloads. Skipped
+//  on file:// (where it can't run) and silently ignored if the worker is missing.
+// ---------------------------------------------------------------------------
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.warn('[NiceEarth] service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>

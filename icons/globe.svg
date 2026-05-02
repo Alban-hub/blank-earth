@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="A blank earth icon">
+  <defs>
+    <radialGradient id="space" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#1c1838"/>
+      <stop offset="100%" stop-color="#0F1530"/>
+    </radialGradient>
+    <radialGradient id="globe" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FCFCFA"/>
+      <stop offset="60%" stop-color="#E8E4D6"/>
+      <stop offset="100%" stop-color="#9A9580"/>
+    </radialGradient>
+    <radialGradient id="rim" cx="50%" cy="50%" r="50%">
+      <stop offset="80%" stop-color="rgba(255,225,180,0)"/>
+      <stop offset="92%" stop-color="rgba(255,225,180,0.45)"/>
+      <stop offset="100%" stop-color="rgba(255,225,180,0)"/>
+    </radialGradient>
+  </defs>
+  <!-- maskable safe zone is 80% of the canvas; everything inside r=205 from center -->
+  <rect width="512" height="512" fill="url(#space)"/>
+  <circle cx="256" cy="256" r="220" fill="url(#rim)"/>
+  <circle cx="256" cy="256" r="180" fill="url(#globe)"/>
+  <!-- stylised continent silhouettes (orange = visited) -->
+  <g fill="#E1864A" opacity="0.92">
+    <path d="M180 180 q12 -22 30 -16 q24 8 28 28 q4 18 -10 30 q-22 16 -38 4 q-16 -12 -10 -46z"/>
+    <path d="M250 230 q24 -8 38 8 q14 16 8 36 q-6 18 -22 22 q-22 4 -32 -10 q-12 -16 8 -56z"/>
+    <path d="M310 280 q14 -4 22 6 q10 12 4 26 q-6 12 -18 12 q-14 0 -16 -16 q-2 -16 8 -28z"/>
+    <path d="M170 280 q16 0 22 14 q6 14 -6 24 q-14 12 -28 4 q-12 -8 -8 -22 q4 -16 20 -20z"/>
+  </g>
+  <!-- meridian hairlines -->
+  <g fill="none" stroke="#1c1838" stroke-width="0.8" opacity="0.18">
+    <ellipse cx="256" cy="256" rx="180" ry="60"/>
+    <ellipse cx="256" cy="256" rx="180" ry="120"/>
+    <ellipse cx="256" cy="256" rx="60" ry="180"/>
+    <ellipse cx="256" cy="256" rx="120" ry="180"/>
+  </g>
+</svg>
