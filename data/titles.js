@@ -54,6 +54,7 @@ export const TITLES = [
   {
     id: 'mediterranean',
     name: 'The Mediterranean',
+    description: 'Concentrated visits ringing the inland sea — Italy, Greece, the North African coast, the Levant.',
     test: (s) => {
       const hits = [...MEDITERRANEAN].filter(c => s.visited.includes(c)).length;
       return hits >= 4 && hits / s.count >= 0.30;
@@ -63,6 +64,7 @@ export const TITLES = [
   {
     id: 'polar-light',
     name: 'The Polar Light',
+    description: 'Drawn to the high latitudes — Iceland, the Nordics, Russia’s north, the Canadian Arctic.',
     test: (s) => {
       const arctic = [...POLAR_NORTH].filter(c => s.visited.includes(c)).length;
       const highLatHits = s.lats.filter(HIGH_LAT).length;
@@ -73,6 +75,7 @@ export const TITLES = [
   {
     id: 'tropic-hand',
     name: 'The Tropic Hand',
+    description: 'Equatorial concentration — countries within fifteen degrees of the equator, in the band where the seasons barely shift.',
     test: (s) => {
       const tropics = s.lats.filter(TROPIC_BAND).length;
       return tropics >= 4 && tropics / s.count >= 0.40;
@@ -82,6 +85,7 @@ export const TITLES = [
   {
     id: 'old-world',
     name: 'The Old World',
+    description: 'Europe, Western Asia, North Africa — the long-inhabited heartland where most cities are older than most countries.',
     test: (s) => {
       const hits = [...OLD_WORLD].filter(c => s.visited.includes(c)).length;
       return hits >= 8 && hits / s.count >= 0.55;
@@ -91,6 +95,7 @@ export const TITLES = [
   {
     id: 'spice-trader',
     name: 'The Spice Trader',
+    description: 'Indian Ocean rim — east African coast through south and southeast Asia, the route that gave Europe pepper and cloves.',
     test: (s) => {
       const hits = [...SPICE_RIM].filter(c => s.visited.includes(c)).length;
       return hits >= 5 && hits / s.count >= 0.35;
@@ -100,8 +105,8 @@ export const TITLES = [
   {
     id: 'stargazer',
     name: 'The Stargazer',
+    description: 'Wide latitude range — your atlas spans from polar regions toward the tropics, or near it.',
     test: (s) => {
-      // Wide latitude range — covered both polar regions or a 100°+ span
       if (s.lats.length < 5) return false;
       return rangeOf(s.lats) >= 100;
     },
@@ -110,11 +115,8 @@ export const TITLES = [
   {
     id: 'continentalist',
     name: 'The Continentalist',
-    // Heavily landlocked-leaning travel — the inverse of Maritime. Kept as
-    // an identity even though we dropped the Maritime line.
+    description: 'Landlocked-leaning — drawn to the interior nations rather than the coasts. The Stans, the Alps, central Africa.',
     test: (s) => {
-      // Imported lazily here would require a circular reference. Use the
-      // landlocked check via state instead — caller passes s.landlockedCount.
       if (s.count < 8) return false;
       return s.landlockedCount / s.count >= 0.50;
     },
@@ -123,13 +125,14 @@ export const TITLES = [
   {
     id: 'wanderer',
     name: 'The Wanderer',
-    // Broad, unconcentrated traveller — many continents, no dominant region.
+    description: 'Broad spread, no concentration — the world generally rather than any single region.',
     test: (s) => s.count >= 15 && s.continents >= 4,
-    weight: 3,    // low priority — this is the catch-all for spread travellers
+    weight: 3,
   },
   {
     id: 'newcomer',
-    name: '',     // empty — we render special "Your atlas is just beginning." copy
+    name: '',
+    description: '',
     test: (s) => s.count < 5,
     weight: 0,
   },
@@ -170,7 +173,8 @@ export function computeTitle(visited) {
     .sort((a, b) => b.weight - a.weight);
   if (matches.length === 0) {
     // Visited enough to deserve a title but no pattern matched.
-    return { id: 'wanderer', name: 'The Wanderer', empty: false };
+    const wanderer = TITLES.find(t => t.id === 'wanderer');
+    return { id: 'wanderer', name: 'The Wanderer', description: wanderer.description, empty: false };
   }
   return { ...matches[0], empty: false };
 }

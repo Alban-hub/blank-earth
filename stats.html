@@ -575,17 +575,39 @@
     font-weight: 500;
   }
 
-  /* === ATLAS TITLE (Layer 1) — the computed identity above the stats. */
+  /* === ATLAS TITLE (Layer 1) — the computed identity above the stats.
+     Three-part layout: small uppercase label, the title line itself, and a
+     one-sentence description of what that traveller type means. */
   .atlas-title {
-    margin: 18px 0 28px;
+    margin: 22px 0 28px;
     text-align: center;
     font-family: var(--serif);
   }
-  .atlas-title .star { color: var(--c-butter-ink); margin: 0 10px; opacity: 0.7; }
+  .atlas-title .lab {
+    display: block;
+    font-family: var(--sans);
+    font-size: 10px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .atlas-title .title-line { line-height: 1; }
+  .atlas-title .star { color: var(--c-butter-ink); margin: 0 12px; opacity: 0.65; font-size: 16px; }
   .atlas-title .name {
-    font-size: 22px; font-weight: 500; font-style: italic;
+    font-size: 24px; font-weight: 500; font-style: italic;
     color: var(--ink);
     letter-spacing: 0.005em;
+  }
+  .atlas-title .desc {
+    font-family: var(--serif); font-style: italic;
+    font-size: 13.5px;
+    color: var(--ink-2);
+    margin: 14px auto 0;
+    max-width: 480px;
+    line-height: 1.55;
+    opacity: 0.85;
   }
   .atlas-title .empty {
     font-size: 16px; font-style: italic;
@@ -912,15 +934,6 @@
         </div>
       </div>
 
-      <!-- COASTLINES — paired with People to fill the row when Climate goes full-width -->
-      <div class="card sky">
-        <div class="card-lab">Coastlines</div>
-        <div>
-          <div class="card-num"><span data-count="0" id="stat-coast">0</span><span class="of">/<span id="stat-coast-of">—</span></span></div>
-          <div class="card-foot">coastal countries marked</div>
-        </div>
-      </div>
-
       <!-- CLIMATE ZONES with 5 mini-icons (full-width) -->
       <div class="card card-climate">
         <div class="card-lab">Climate zones</div>
@@ -1000,15 +1013,15 @@
 import {
   COUNTRIES, TOTAL_LAND, TOTAL_POP, TOTAL_UN,
   LANDLOCKED, ISLAND_NATIONS, DEMO_VISITS,
-} from './data/countries.js?v=v2';
+} from './data/countries.js?v=v3';
 // SVG renderers — single import point pulls in the registry + every icon module.
-import { renderArt } from './art/index.js?v=v2';
+import { renderArt } from './art/index.js?v=v3';
 // v2 atlas: title (Layer 1), lines (Layer 2 progression), sets (Layer 3 collections).
 // Legacy badges are gone — superseded by these three layers.
-import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v2';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v2';
-import { computeTitle } from './data/titles.js?v=v2';
-import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v2';
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v3';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v3';
+import { computeTitle } from './data/titles.js?v=v3';
+import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v3';
 
 function readVisits() {
   try {
@@ -1219,10 +1232,12 @@ function paint() {
     if (POLAR_TERRITORY.has(iso)) climates.add('Polar');  // see POLAR_TERRITORY note
   });
 
-  const coastalCount = known.filter(iso => !LANDLOCKED.has(iso)).length;
   // Powers The Islander line — countries whose territory is one or more islands.
   const islandCount  = known.filter(iso => ISLAND_NATIONS.has(iso)).length;
-  const totalCoastal = TOTAL_UN - LANDLOCKED.size;
+  // Powers The Voyager line — degrees of latitude between your most northern
+  // and most southern country. 0 with fewer than 2 visits.
+  const lats = known.map(iso => COUNTRIES[iso] ? COUNTRIES[iso][4] : null).filter(v => v !== null);
+  const latRange = lats.length >= 2 ? Math.max(...lats) - Math.min(...lats) : 0;
 
   let most = null, least = null;
   known.forEach(iso => {
@@ -1249,10 +1264,6 @@ function paint() {
   /* people */
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
   document.getElementById('stat-pop-pct').textContent = (popRatio*100).toFixed(1) + '%';
-
-  /* coastlines */
-  grid._anims.push(scheduleCount(document.getElementById('stat-coast'), coastalCount));
-  document.getElementById('stat-coast-of').textContent = totalCoastal;
 
   /* climate — 5 mini icons with always-visible label and hover tooltip */
   grid._anims.push(scheduleCount(document.getElementById('stat-clim'), climates.size));
@@ -1295,7 +1306,7 @@ function paint() {
 
   /* ── LINES (v2) ── */
   // Shared context object — also reused by the legacy BADGES block below.
-  const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, coastalCount, islandCount, known };
+  const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, islandCount, latRange, known };
 
   // Map a line's `axis` to the metric it tracks. Single source of truth for
   // both the line-card rendering and the tier ladder.
@@ -1304,8 +1315,8 @@ function paint() {
       case 'count':   return ctx.count;
       case 'land':    return ctx.earthRatio;
       case 'pop':     return ctx.visitedPopM;
-      case 'coast':   return ctx.coastalCount;
       case 'islands': return ctx.islandCount;
+      case 'latRange':return ctx.latRange;
       case 'hemi':    return ctx.hemis.size;
       case 'climate': return ctx.climates.size;
       case 'cont':    return ctx.continentsTouched.size;
@@ -1314,8 +1325,9 @@ function paint() {
   }
   // Render the value as a short string for the "x of y" progress copy.
   function fmtLineValue(axis, v) {
-    if (axis === 'land') return v.toFixed(1) + '%';
-    if (axis === 'pop')  return fmtPop(v);
+    if (axis === 'land')     return v.toFixed(1) + '%';
+    if (axis === 'pop')      return fmtPop(v);
+    if (axis === 'latRange') return Math.round(v) + '°';
     return Math.round(v).toLocaleString();
   }
 
@@ -1376,7 +1388,15 @@ function paint() {
     if (title.empty) {
       titleEl.innerHTML = `<span class="empty">Your atlas is just beginning.</span>`;
     } else {
-      titleEl.innerHTML = `<span class="star">★</span><span class="name">${title.name}</span><span class="star">★</span>`;
+      titleEl.innerHTML = `
+        <span class="lab">Your traveller type</span>
+        <div class="title-line">
+          <span class="star">★</span>
+          <span class="name">${title.name}</span>
+          <span class="star">★</span>
+        </div>
+        ${title.description ? `<div class="desc">${title.description}</div>` : ''}
+      `;
     }
   }
 
@@ -1518,18 +1538,15 @@ function selectLine(line, value, currentTier, divEl) {
   divEl.style.gridColumn = `${startCol} / span 2`;
 
   // Helpers for the per-axis "x of y" string and the tier ladder content
-  const valStr = (() => {
-    if (line.axis === 'land') return value.toFixed(1) + '%';
-    if (line.axis === 'pop')  return fmtPop(value);
-    return Math.round(value).toLocaleString();
-  })();
-  // "X of Y target" — show user where they stand
+  const fmtAxis = (v) => {
+    if (line.axis === 'land')     return v.toFixed(1) + '%';
+    if (line.axis === 'pop')      return fmtPop(v);
+    if (line.axis === 'latRange') return Math.round(v) + '°';
+    return Math.round(v).toLocaleString();
+  };
+  const valStr = fmtAxis(value);
   const topThreshold = line.tiers[line.tiers.length - 1].threshold;
-  const topThresholdStr = (() => {
-    if (line.axis === 'land') return topThreshold + '%';
-    if (line.axis === 'pop')  return fmtPop(topThreshold);
-    return topThreshold.toLocaleString();
-  })();
+  const topThresholdStr = fmtAxis(topThreshold);
   const progressLine = currentTier === line.tiers.length
     ? `<strong>${valStr}</strong> ${line.unit} — mastered.`
     : `<strong>${valStr}</strong> of ${topThresholdStr} ${line.unit}.`;
@@ -1541,11 +1558,7 @@ function selectLine(line, value, currentTier, divEl) {
     if (tierNum < currentTier)      { cls = 'is-done';    mark = '✓'; }
     else if (tierNum === currentTier){ cls = 'is-current'; mark = '●'; }
     else                              { cls = 'is-future';  mark = '○'; }
-    const thrStr = (() => {
-      if (line.axis === 'land') return t.threshold + '%';
-      if (line.axis === 'pop')  return fmtPop(t.threshold);
-      return t.threshold.toLocaleString();
-    })();
+    const thrStr = fmtAxis(t.threshold);
     return `<li class="${cls}">
       <span class="mark">${mark}</span>
       <span class="lab">Tier ${TIER_NUMERAL[tierNum]}</span>

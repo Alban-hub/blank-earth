@@ -77,6 +77,26 @@ export const LINES = {
     description: 'Pure island countries — Iceland, Japan, Madagascar, the Pacific archipelagos.',
   },
 
+  // The 8th line — added because the existing six all measure *count* on a
+  // single axis. The Voyager measures *spread*: the latitude range between
+  // your most northern and most southern country. Distinct concept, evocative
+  // ("Pole to Pole"), reuses the existing `sextant` icon (a celestial-
+  // navigation tool — fits the name).
+  voyager: {
+    id: 'voyager',
+    name: 'The Voyager',
+    axis: 'latRange',
+    art: 'sextant',
+    unit: '° of latitude',
+    tiers: [
+      { threshold: 30,  name: 'Local Range' },
+      { threshold: 70,  name: 'Continental Sweep' },
+      { threshold: 110, name: 'Hemispheric' },
+      { threshold: 150, name: 'Pole to Pole' },
+    ],
+    description: 'The latitude span between your most northern and most southern visit.',
+  },
+
   hemispherist: {
     id: 'hemispherist',
     name: 'The Hemispherist',
@@ -129,6 +149,7 @@ export const LINE_ORDER = [
   'surveyor',
   'demographer',
   'islander',
+  'voyager',
   'hemispherist',
   'climatologist',
   'continentalist',
