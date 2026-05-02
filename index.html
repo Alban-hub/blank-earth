@@ -148,7 +148,8 @@ html.embed-mode #scene{pointer-events:none}
 <!-- world topology is fetched at runtime from ./data/worldtopo.json -->
 
 <!-- Three.js r128, served locally for offline + native packaging. -->
-<script src="./vendor/three-r128.min.js"></script>
+<!-- ?v=2 cache-busts the SW's stale entry from the v3 cache; safe to remove on the deploy after this one. -->
+<script src="./vendor/three-r128.min.js?v=2"></script>
 <script>
   // Boot guard: surface a clear error UI if Three.js failed to load,
   // instead of leaving the user with a black screen.

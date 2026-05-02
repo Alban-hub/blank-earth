@@ -10,13 +10,13 @@
 //    - Bump CACHE_VERSION when shipping a release to invalidate old caches.
 // =============================================================================
 
-const CACHE_VERSION = 'blank-earth-v3';
+const CACHE_VERSION = 'blank-earth-v4';
 const PRECACHE = [
   './',
   './index.html',
   './stats.html',
   './manifest.webmanifest',
-  './vendor/three-r128.min.js',
+  './vendor/three-r128.min.js?v=2',
   './data/worldtopo.json',
   './data/elevations.json',
   './plugins/manifest.json',
