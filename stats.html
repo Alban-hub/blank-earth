@@ -31,6 +31,9 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  /* Disable native pull-to-refresh — we own the at-top pull gesture for
+     dismissing the atlas back to the globe (see setupReturnGesture in JS). */
+  html { overscroll-behavior-y: contain; }
   body {
     background: var(--space);
     color: var(--ink);
@@ -39,7 +42,13 @@
     text-rendering: optimizeLegibility;
     min-height: 100vh;
     font-style: normal;
+    overscroll-behavior-y: contain;
   }
+  /* Wrapper that the JS gesture translates. Held in its own stacking context
+     so position:fixed children inside (toolbars etc.) move with the wrapper. */
+  .atlas-content { will-change: transform; }
+  .atlas-content.springing { transition: transform 220ms cubic-bezier(.16,1,.3,1); }
+  .atlas-content.committing { transition: transform 320ms cubic-bezier(.6,.05,.7,1); }
   em, i, cite, address { font-style: normal; }
 
   .globe-bg {
@@ -1661,47 +1670,134 @@ document.getElementById('top-pdf').addEventListener('click', exportAtlasPDF);
 
 paint();
 
-// ---- Scroll-past-bottom returns to the globe -----------------------------
-// When the user scrolls all the way down and keeps scrolling, navigate back
-// to "/" — feels like the atlas slides off and reveals the globe behind it.
-// The state preserved in sessionStorage by index.html keeps the camera where
-// the user left it, so this looks like a vertical card transition.
+// ---- Pull-down-at-top returns to the globe -------------------------------
+// At the top of the atlas, dragging the page down translates the content out
+// of the way and reveals the globe behind it. The pull has elastic resistance
+// so short tugs spring back; only an intentional drag past ~40% of the
+// viewport commits to navigating. Replaces native iOS pull-to-refresh
+// (disabled via `overscroll-behavior-y: contain` on html/body).
 (function setupReturnGesture(){
-  let triggered = false;
-  let extraDownDelta = 0;          // accumulated downward scroll past the bottom
-  const PULL_THRESHOLD = 90;       // pixels of overscroll required to commit
-  const SCROLL_END_GRACE = 6;      // pixels of wiggle near the actual bottom
+  // Wrap everything except the iframe + scroll-fade into a transformable
+  // container. Doing it in JS avoids hand-editing 1500 lines of markup.
+  const wrap = document.createElement('div');
+  wrap.className = 'atlas-content';
+  [...document.body.children].forEach(child => {
+    if (child.tagName === 'IFRAME') return;
+    if (child.classList && child.classList.contains('scroll-fade')) return;
+    wrap.appendChild(child);
+  });
+  document.body.appendChild(wrap);
 
-  function atBottom() {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    return window.scrollY >= max - SCROLL_END_GRACE;
+  // --- Tunables --------------------------------------------------------
+  const COMMIT_FRACTION = 0.40;    // pull past 40% of viewport → navigate back
+  const RESIST_AFTER    = 80;      // first 80px of pull are 1:1, then resistance kicks in
+  const RESIST_FACTOR   = 0.45;    // resistance ratio past RESIST_AFTER (lower = stiffer)
+
+  let triggered = false;
+  let touchStartY = null;          // initial finger Y at the start of a pull
+  let pulling = false;             // are we currently translating the wrapper?
+  let lastDy = 0;
+
+  // Diminishing-returns curve so the pull feels elastic instead of 1:1 forever.
+  function elasticDistance(rawDy) {
+    if (rawDy <= RESIST_AFTER) return rawDy;
+    return RESIST_AFTER + (rawDy - RESIST_AFTER) * RESIST_FACTOR;
   }
-  function tryReturn() {
+
+  function setTranslate(px) {
+    wrap.style.transform = px ? `translate3d(0, ${px}px, 0)` : '';
+  }
+
+  function commit() {
     if (triggered) return;
     triggered = true;
-    location.href = '/';
+    wrap.classList.remove('springing');
+    wrap.classList.add('committing');
+    // Slide the whole wrapper off the bottom of the viewport, then navigate.
+    wrap.style.transform = `translate3d(0, ${window.innerHeight + 40}px, 0)`;
+    setTimeout(() => { location.href = '/'; }, 300);
   }
-  // Wheel: when at bottom and user scrolls down further, accumulate delta.
-  window.addEventListener('wheel', (e) => {
-    if (e.deltaY > 0 && atBottom()) {
-      extraDownDelta += e.deltaY;
-      if (extraDownDelta > PULL_THRESHOLD) tryReturn();
-    } else {
-      extraDownDelta = 0;          // user changed direction — reset
-    }
+
+  function springBack() {
+    wrap.classList.remove('committing');
+    wrap.classList.add('springing');
+    setTranslate(0);
+    // Strip the class once the transition ends so subsequent pulls aren't
+    // animated through a CSS transition (we want them to track the finger 1:1).
+    setTimeout(() => wrap.classList.remove('springing'), 240);
+  }
+
+  // --- Touch (mobile) --------------------------------------------------
+  window.addEventListener('touchstart', (e) => {
+    if (window.scrollY > 0 || triggered) { touchStartY = null; return; }
+    touchStartY = e.touches[0].clientY;
+    pulling = false;
+    lastDy = 0;
+    wrap.classList.remove('springing', 'committing');
   }, { passive: true });
-  // Touch: same idea, accumulate downward finger movement past the bottom.
-  let touchStartY = null;
-  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+
   window.addEventListener('touchmove', (e) => {
     if (touchStartY == null) return;
-    const dy = touchStartY - e.touches[0].clientY;   // positive = swiping up = scrolling down
-    if (dy > 0 && atBottom()) {
-      extraDownDelta = dy;
-      if (extraDownDelta > PULL_THRESHOLD) tryReturn();
+    const rawDy = e.touches[0].clientY - touchStartY;
+    // Up-swipe (negative) at top of page → user wants to scroll content normally,
+    // bail out of the gesture and let native scroll happen.
+    if (rawDy <= 0) {
+      if (pulling) { setTranslate(0); pulling = false; }
+      return;
     }
+    // If the page started scrolling for any reason, abandon the pull.
+    if (window.scrollY > 0) {
+      if (pulling) { setTranslate(0); pulling = false; }
+      return;
+    }
+    pulling = true;
+    lastDy = elasticDistance(rawDy);
+    setTranslate(lastDy);
+    // Block the page's native scroll for this gesture so the elastic feel
+    // isn't fighting with iOS overscroll bounce.
+    if (e.cancelable) e.preventDefault();
+  }, { passive: false });
+
+  window.addEventListener('touchend', () => {
+    if (touchStartY == null) return;
+    if (pulling) {
+      const threshold = window.innerHeight * COMMIT_FRACTION;
+      if (lastDy > threshold) commit();
+      else springBack();
+    }
+    touchStartY = null;
+    pulling = false;
   }, { passive: true });
-  window.addEventListener('touchend', () => { touchStartY = null; extraDownDelta = 0; }, { passive: true });
+
+  // --- Mouse wheel (desktop) ------------------------------------------
+  // Same idea, but accumulating wheel delta. A coast (no wheel for 140ms)
+  // counts as "release" — at that point we either commit or spring back.
+  let wheelAccum = 0;
+  let wheelTimer = 0;
+  window.addEventListener('wheel', (e) => {
+    if (triggered) return;
+    if (window.scrollY > 0) {
+      // user is scrolling content normally — reset any accumulated pull
+      if (wheelAccum) { wheelAccum = 0; setTranslate(0); }
+      return;
+    }
+    // deltaY < 0 = scrolling up at the top → treat as pull-down
+    if (e.deltaY >= 0) {
+      if (wheelAccum) { wheelAccum = 0; springBack(); }
+      return;
+    }
+    wheelAccum += -e.deltaY;
+    const dy = elasticDistance(wheelAccum);
+    setTranslate(dy);
+    if (e.cancelable) e.preventDefault();
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(() => {
+      const threshold = window.innerHeight * COMMIT_FRACTION;
+      if (dy > threshold) commit();
+      else springBack();
+      wheelAccum = 0;
+    }, 140);
+  }, { passive: false });
 })();
 </script>
 </body>
