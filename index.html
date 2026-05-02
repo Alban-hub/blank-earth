@@ -147,9 +147,8 @@ html.embed-mode #scene{pointer-events:none}
 
 <!-- world topology is fetched at runtime from ./data/world.topojson -->
 
-<!-- Three.js r128, served locally for offline + native packaging.
-     Integrity hash protects against asset corruption. -->
-<script src="./vendor/three-r128.min.js" integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu" crossorigin="anonymous"></script>
+<!-- Three.js r128, served locally for offline + native packaging. -->
+<script src="./vendor/three-r128.min.js"></script>
 <script>
   // Boot guard: surface a clear error UI if Three.js failed to load,
   // instead of leaving the user with a black screen.
