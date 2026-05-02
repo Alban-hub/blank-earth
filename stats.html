@@ -1660,6 +1660,49 @@ document.getElementById('top-share').addEventListener('click', exportAtlas);
 document.getElementById('top-pdf').addEventListener('click', exportAtlasPDF);
 
 paint();
+
+// ---- Scroll-past-bottom returns to the globe -----------------------------
+// When the user scrolls all the way down and keeps scrolling, navigate back
+// to "/" — feels like the atlas slides off and reveals the globe behind it.
+// The state preserved in sessionStorage by index.html keeps the camera where
+// the user left it, so this looks like a vertical card transition.
+(function setupReturnGesture(){
+  let triggered = false;
+  let extraDownDelta = 0;          // accumulated downward scroll past the bottom
+  const PULL_THRESHOLD = 90;       // pixels of overscroll required to commit
+  const SCROLL_END_GRACE = 6;      // pixels of wiggle near the actual bottom
+
+  function atBottom() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return window.scrollY >= max - SCROLL_END_GRACE;
+  }
+  function tryReturn() {
+    if (triggered) return;
+    triggered = true;
+    location.href = '/';
+  }
+  // Wheel: when at bottom and user scrolls down further, accumulate delta.
+  window.addEventListener('wheel', (e) => {
+    if (e.deltaY > 0 && atBottom()) {
+      extraDownDelta += e.deltaY;
+      if (extraDownDelta > PULL_THRESHOLD) tryReturn();
+    } else {
+      extraDownDelta = 0;          // user changed direction — reset
+    }
+  }, { passive: true });
+  // Touch: same idea, accumulate downward finger movement past the bottom.
+  let touchStartY = null;
+  window.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if (touchStartY == null) return;
+    const dy = touchStartY - e.touches[0].clientY;   // positive = swiping up = scrolling down
+    if (dy > 0 && atBottom()) {
+      extraDownDelta = dy;
+      if (extraDownDelta > PULL_THRESHOLD) tryReturn();
+    }
+  }, { passive: true });
+  window.addEventListener('touchend', () => { touchStartY = null; extraDownDelta = 0; }, { passive: true });
+})();
 </script>
 </body>
 </html>

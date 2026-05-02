@@ -249,8 +249,15 @@ const STYLE = {
   dragSensitivityY:     0.0005,
   zoomSensitivity:      0.0014,
   cameraEasing:         0.20,
+  // Post-release inertia: how much of the last drag velocity carries over each
+  // frame after the user lifts the pointer. 0 = none (snap stop). 0.95 = strong
+  // momentum. 0.85 ≈ ~250ms of barely-perceptible follow-through — adds
+  // organic feel without making the globe "slide" noticeably.
+  dragInertiaDecay:     0.85,
   autoRotateSpeed:      -0.0006,
-  autoRotateDelay:      2200,
+  // How long the globe stays "frozen" on the user's last position before drifting back
+  // into auto-rotate. Lowered from 2200ms — felt sluggish to re-engage after clicks/searches.
+  autoRotateDelay:      900,
 
   // --- mesh quality --------------------------------------------------------
   triangleMaxEdge:      2.6,        // relaxed (per-vertex displacement is off — no need for ultra-fine fit)
@@ -839,7 +846,7 @@ window.NiceEarth = {
     STYLE.dragSensitivityX = 0.0016;   // touch-tuned, calmer for finger drags
     STYLE.dragSensitivityY = 0.0011;   // touch-tuned, calmer for finger drags
     STYLE.cameraEasing    = 0.22;      // snappier follow on mobile (was 0.13) — finger lag → less mushy
-    STYLE.autoRotateDelay = 4500;      // wait longer before auto-rotate kicks in on touch
+    STYLE.autoRotateDelay = 2200;      // touch needs more pause than mouse — fingers linger
   }
   function fovForViewport() {
     return window.matchMedia('(max-width: 640px)').matches ? 46 : 38;
@@ -1356,30 +1363,79 @@ window.NiceEarth = {
   // ---- Borders rendered ONCE per arc (deduped via topology) ----------------
   const borderMat = createBorderMaterial();
   const borderGroup = new THREE.Group();
+
+  // ---- Border perf: pre-compute unit-radius vertex positions per arc/segment.
+  // Geometry rebuilds previously did ~58K Vector3 allocations + trig calls per
+  // un-visit click → 100ms-3s spikes (GC-dependent). With this cache the
+  // rebuild is just multiplies into a reused Float32Array (~3-8ms).
+  // Each entry: arcSegmentUnits[arcIdx] = [Float32Array(seg1 xyz), Float32Array(seg2 xyz), ...]
+  const arcSegmentUnits = arcs.map(arc => {
+    const segs = splitAntimeridian(arc);
+    return segs.map(seg => {
+      const sub = subdivideRing(seg, 1.0);
+      const out = new Float32Array(sub.length * 3);
+      for (let i = 0; i < sub.length; i++) {
+        const phi = (90 - sub[i][1]) * Math.PI / 180;
+        const theta = sub[i][0] * Math.PI / 180;
+        const sphi = Math.sin(phi);
+        out[i*3]   = sphi * Math.sin(theta);
+        out[i*3+1] = Math.cos(phi);
+        out[i*3+2] = sphi * Math.cos(theta);
+      }
+      return out;
+    });
+  });
+  // Total line-segment vertex count (each segment connects N points → (N-1)*2 verts)
+  let _bordersVertexCount = 0;
+  for (const segs of arcSegmentUnits) {
+    for (const u of segs) _bordersVertexCount += Math.max(0, u.length / 3 - 1) * 2;
+  }
+  const _bordersPositionsBuf = new Float32Array(_bordersVertexCount * 3);
+  let _bordersGeom = null, _bordersMesh = null;
+  let _bordersRebuildScheduled = false;
+
   // Single merged LineSegments for all borders (1 draw call).
   // Uses arcMaxElev which is rebuilt on every visit / unvisit.
   function rebuildBordersMerged() {
-    while (borderGroup.children.length) {
-      const c = borderGroup.children[borderGroup.children.length - 1];
-      borderGroup.remove(c); c.geometry.dispose();
-    }
-    const positions = [];
+    let off = 0;
     for (let arcIdx = 0; arcIdx < arcs.length; arcIdx++) {
-      const arc = arcs[arcIdx];
-      const elev = arcMaxElev[arcIdx];
-      for (const seg of splitAntimeridian(arc)) {
-        const sub = subdivideRing(seg, 1.0);
-        const pts = sub.map(p => lonLatToVec3(p[0], p[1], R + SURFACE + elev + STYLE.borderOffset));
-        for (let i = 0; i < pts.length - 1; i++) {
-          positions.push(pts[i].x, pts[i].y, pts[i].z);
-          positions.push(pts[i+1].x, pts[i+1].y, pts[i+1].z);
+      const r = R + SURFACE + arcMaxElev[arcIdx] + STYLE.borderOffset;
+      const segs = arcSegmentUnits[arcIdx];
+      for (let s = 0; s < segs.length; s++) {
+        const u = segs[s];
+        const n = u.length / 3;
+        for (let i = 0; i < n - 1; i++) {
+          const a = i * 3, b = a + 3;
+          _bordersPositionsBuf[off++] = u[a]   * r;
+          _bordersPositionsBuf[off++] = u[a+1] * r;
+          _bordersPositionsBuf[off++] = u[a+2] * r;
+          _bordersPositionsBuf[off++] = u[b]   * r;
+          _bordersPositionsBuf[off++] = u[b+1] * r;
+          _bordersPositionsBuf[off++] = u[b+2] * r;
         }
       }
     }
-    if (!positions.length) return;
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-    borderGroup.add(new THREE.LineSegments(g, borderMat));
+    if (!_bordersGeom) {
+      _bordersGeom = new THREE.BufferGeometry();
+      _bordersGeom.setAttribute('position', new THREE.BufferAttribute(_bordersPositionsBuf, 3));
+      _bordersMesh = new THREE.LineSegments(_bordersGeom, borderMat);
+      borderGroup.add(_bordersMesh);
+    } else {
+      _bordersGeom.attributes.position.needsUpdate = true;
+    }
+  }
+  // Defer + coalesce rebuilds to the next animation frame, so a click that
+  // toggles a country feels instant — the country tile re-colours immediately,
+  // the borders catch up one frame later (~16ms, imperceptible). Multiple
+  // toggles in quick succession collapse to a single rebuild.
+  function scheduleBorderRebuild() {
+    if (_bordersRebuildScheduled) return;
+    _bordersRebuildScheduled = true;
+    requestAnimationFrame(() => {
+      _bordersRebuildScheduled = false;
+      recomputeArcMaxElev();
+      rebuildBordersMerged();
+    });
   }
   rebuildBordersMerged();
   globe.add(borderGroup);
@@ -1607,8 +1663,7 @@ window.NiceEarth = {
     countryPolyTops.delete(id);
     setCountryUnvisited(id);
     persist();
-    recomputeArcMaxElev();
-    rebuildBordersMerged();
+    scheduleBorderRebuild();   // defer ~16ms — click feels instant
     if (f) NiceEarthEvents.emit('country.unvisit', { feature: f });
   }
 
@@ -1646,6 +1701,9 @@ window.NiceEarth = {
   const tiltLimit = STYLE.tiltLimitDeg * Math.PI / 180;
   let dragging = false, dragMoved = false, dx0 = 0, dy0 = 0, lx = 0, ly = 0;
   let rotY = 0, rotX = 0.18, targetRotY = 0, targetRotX = 0.18;
+  // Last per-event drag rotation, captured during pointermove and decayed each
+  // frame after release to produce subtle inertia (see animate loop).
+  let dragVelY = 0, dragVelX = 0;
   let lastInteract = -10000;
 
   const raycaster = new THREE.Raycaster();
@@ -1679,6 +1737,9 @@ window.NiceEarth = {
       dragging = true; dragMoved = false;
       canvas.setPointerCapture(e.pointerId);
       dx0 = lx = e.clientX; dy0 = ly = e.clientY;
+      // Cancel any leftover inertia from the previous drag so the new one
+      // doesn't start with momentum.
+      dragVelY = 0; dragVelX = 0;
     } else if (activePointers.size === 2) {
       // Switching from drag → pinch. Stop rotation drag and snapshot state.
       dragging = false;
@@ -1741,9 +1802,13 @@ window.NiceEarth = {
       lx = e.clientX; ly = e.clientY;
       if (Math.hypot(e.clientX - dx0, e.clientY - dy0) > tapThresh) dragMoved = true;
       const z = camDist / R;
-      targetRotY += dx * STYLE.dragSensitivityX * z;
-      targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit,
-                    targetRotX + dy * STYLE.dragSensitivityY * z));
+      const dRotY = dx * STYLE.dragSensitivityX * z;
+      const dRotY_clampedX = dy * STYLE.dragSensitivityY * z;
+      targetRotY += dRotY;
+      targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit, targetRotX + dRotY_clampedX));
+      // Capture per-event rotation for post-release inertia decay.
+      dragVelY = dRotY;
+      dragVelX = dRotY_clampedX;
       // 1:1 follow during drag — bypass the cameraEasing interpolation so the
       // globe sticks to the cursor instead of "catching up" a few frames late.
       // Easing still governs programmatic moves (resetView, centerOn, autorotate).
@@ -1824,6 +1889,19 @@ window.NiceEarth = {
     const now = performance.now();
     const autoRotating = !dragging && (now - lastInteract > STYLE.autoRotateDelay);
     if (autoRotating) targetRotY += STYLE.autoRotateSpeed;
+
+    // Post-release inertia: nudge the target by the leftover drag velocity each
+    // frame and decay it. The cameraEasing line below then smooths the tail so
+    // the motion fades out gracefully instead of stair-stepping.
+    if (!dragging && (dragVelY || dragVelX)) {
+      targetRotY += dragVelY;
+      targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit, targetRotX + dragVelX));
+      dragVelY *= STYLE.dragInertiaDecay;
+      dragVelX *= STYLE.dragInertiaDecay;
+      // Snap to zero once below ~0.006°/frame so we can re-enter the idle-render skip.
+      if (Math.abs(dragVelY) < 1e-4) dragVelY = 0;
+      if (Math.abs(dragVelX) < 1e-4) dragVelX = 0;
+    }
 
     rotY += (targetRotY - rotY) * STYLE.cameraEasing;
     rotX += (targetRotX - rotX) * STYLE.cameraEasing;
@@ -1931,6 +2009,41 @@ window.NiceEarth = {
   recomputeArcMaxElev();
   rebuildBordersMerged();
   updateUI();
+
+  // ---- Atlas state preservation ----------------------------------------
+  // Two consumers of the saved state:
+  //   1. The iframe that stats.html embeds (?embed=1): wants to render the
+  //      globe at the same coordinates as the parent left it, auto-rotating.
+  //   2. This same page when the user navigates BACK from stats.html: wants
+  //      to land on the same view, again auto-rotating immediately.
+  // Only the parent (non-embed) load consumes the storage; the iframe peeks
+  // without removing, so the parent's eventual return still finds the data.
+  try {
+    const isEmbed = document.documentElement.classList.contains('embed-mode');
+    const saved = sessionStorage.getItem('blank-earth/atlas-return');
+    if (saved) {
+      if (!isEmbed) sessionStorage.removeItem('blank-earth/atlas-return');
+      const s = JSON.parse(saved);
+      if (s && typeof s.rotY === 'number') {
+        targetRotY = rotY = s.rotY;
+        targetRotX = rotX = s.rotX;
+        targetCamDist = camDist = s.camDist;
+        // Trick lastInteract to a value far in the past so auto-rotate fires immediately.
+        lastInteract = -10000;
+      }
+    }
+  } catch (_) { /* sessionStorage unavailable — fall through to default view */ }
+  // Save state when navigating to the atlas, so we can restore on return.
+  const _atlasLink = document.querySelector('.atlas-link');
+  if (_atlasLink) {
+    _atlasLink.addEventListener('click', () => {
+      try {
+        sessionStorage.setItem('blank-earth/atlas-return', JSON.stringify({
+          rotY: targetRotY, rotX: targetRotX, camDist: targetCamDist,
+        }));
+      } catch (_) {}
+    });
+  }
 
   document.getElementById('export').onclick = () => {
     const blob = new Blob([JSON.stringify({schema:'blank-earth/v1', visited:[...visited], at:new Date().toISOString()}, null, 2)], { type:'application/json' });
