@@ -242,8 +242,11 @@ const STYLE = {
   minZoomMult:          1.025,
   maxZoomMult:          5.5,
   tiltLimitDeg:         55,
-  dragSensitivityX:     0.0014,
-  dragSensitivityY:     0.0010,
+  // Desktop only — mobile overrides these in the IS_MOBILE block (touch already feels right).
+  // Lowered from 0.0014/0.0010 → cursor-to-globe motion is roughly proportional now;
+  // a full-screen flick rotates ~half a turn instead of nearly a full one.
+  dragSensitivityX:     0.0007,
+  dragSensitivityY:     0.0005,
   zoomSensitivity:      0.0014,
   cameraEasing:         0.20,
   autoRotateSpeed:      -0.0006,
