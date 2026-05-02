@@ -37,9 +37,14 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .btn:hover{background:var(--ink);color:var(--paper)}
 .btn.subtle{border-color:var(--line);color:var(--muted)}
 .btn.subtle:hover{background:var(--hair);color:var(--ink)}
-.visited-toggle{display:none;width:100%;background:none;border:0;border-top:0.5px dashed var(--hair);padding:10px 0 8px;margin-top:12px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;font-style:italic}
-.visited-toggle .chev{transition:transform 0.2s;font-style:normal;color:var(--muted);font-size:11px}
+.visited-toggle{display:none;flex:1;background:rgba(28,24,56,0.06);border:0;border-radius:999px;padding:9px 14px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;gap:8px;transition:background 200ms;min-height:38px}
+.visited-toggle:hover,.visited-toggle:active{background:rgba(28,24,56,0.10)}
+.visited-toggle .chev{transition:transform 0.2s;color:var(--muted);font-size:13px;flex-shrink:0;line-height:1}
 .panel.expanded .visited-toggle .chev{transform:rotate(180deg)}
+.visited-toggle .vt-count{font-weight:500;color:var(--ink)}
+.panel-foot{display:none;gap:8px;margin-top:10px;align-items:stretch}
+.panel-foot .atlas-link-pill{flex:0 0 auto;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;background:transparent;border:0.5px solid var(--ink);color:var(--ink);font-family:var(--serif);font-size:13px;text-decoration:none;letter-spacing:0.01em;white-space:nowrap;transition:background 200ms,color 200ms}
+.panel-foot .atlas-link-pill:hover,.panel-foot .atlas-link-pill:active{background:var(--ink);color:var(--paper)}
 .visited-list{margin-top:14px;max-height:32vh;overflow:auto;font-family:var(--serif);font-size:13px}
 .visited-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px dashed var(--hair)}
 .visited-list .row:last-child{border-bottom:none}
@@ -55,7 +60,10 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
 .hover-label.show{opacity:1}
 @media (max-width:640px){
-  .panel{left:14px;right:14px;bottom:14px;width:auto}
+  /* Tighter panel — minimum footprint when collapsed: just search bar + the
+     "N visited ▾ | view atlas →" foot row. Everything else (list, export
+     buttons) hidden until the user taps the visited pill to expand. */
+  .panel{left:12px;right:12px;bottom:12px;width:auto;padding:10px 12px}
   .tip{display:none}
   .ui{padding:14px}
   .brand small{display:none}
@@ -65,8 +73,14 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
   .stat-prefix{display:none}
   .panel .label{display:none}
   .visited-toggle{display:flex}
+  .panel-foot{display:flex}
+  /* The standalone atlas-link block (visible on desktop) is hidden on
+     mobile — the .atlas-link-pill in .panel-foot replaces it. */
+  .panel > .atlas-link{display:none}
   .panel:not(.expanded) .visited-list{display:none}
   .panel:not(.expanded) .actions{display:none}
+  .visited-list{margin-top:10px;max-height:38vh}
+  .actions{margin-top:8px}
 }
 .atlas-link{display:block;margin-top:12px;padding:12px 4px 4px;border-top:0.5px dashed var(--hair);font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);text-decoration:none;text-align:right;letter-spacing:0.01em;min-height:44px;display:flex;align-items:center;justify-content:flex-end}
 .atlas-link:hover,.atlas-link:active{color:var(--accent)}
@@ -124,10 +138,17 @@ html.embed-mode #scene{pointer-events:none}
     <datalist id="countries"></datalist>
     <button class="btn" id="add">add</button>
   </div>
-  <button class="visited-toggle" id="visited-toggle" type="button" aria-expanded="false" aria-controls="list">
-    <span><span id="visited-count-inline">0</span> visited</span>
-    <span class="chev" aria-hidden="true">▾</span>
-  </button>
+  <!-- Foot row (mobile only) — the visited pill expands the list inline,
+       the atlas-link-pill is the persistent "go deeper" affordance. Both
+       always visible so users see at a glance there's more than just the
+       search bar. -->
+  <div class="panel-foot">
+    <button class="visited-toggle" id="visited-toggle" type="button" aria-expanded="false" aria-controls="list">
+      <span><span class="vt-count" id="visited-count-inline">0</span> visited · tap to manage</span>
+      <span class="chev" aria-hidden="true">▾</span>
+    </button>
+    <a class="atlas-link-pill" href="stats.html">atlas →</a>
+  </div>
   <div class="visited-list" id="list"></div>
   <div class="actions">
     <button class="btn subtle" id="export">export</button>
@@ -2038,16 +2059,17 @@ window.NiceEarth = {
     }
   } catch (_) { /* sessionStorage unavailable — fall through to default view */ }
   // Save state when navigating to the atlas, so we can restore on return.
-  const _atlasLink = document.querySelector('.atlas-link');
-  if (_atlasLink) {
-    _atlasLink.addEventListener('click', () => {
+  // Two links exist now — the desktop standalone "view atlas" and the mobile
+  // pill in .panel-foot — wire the same handler to both.
+  document.querySelectorAll('.atlas-link, .atlas-link-pill').forEach((el) => {
+    el.addEventListener('click', () => {
       try {
         sessionStorage.setItem('blank-earth/atlas-return', JSON.stringify({
           rotY: targetRotY, rotX: targetRotX, camDist: targetCamDist,
         }));
       } catch (_) {}
     });
-  }
+  });
 
   document.getElementById('export').onclick = () => {
     const blob = new Blob([JSON.stringify({schema:'blank-earth/v1', visited:[...visited], at:new Date().toISOString()}, null, 2)], { type:'application/json' });

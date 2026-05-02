@@ -10,7 +10,7 @@
 //    - Bump CACHE_VERSION when shipping a release to invalidate old caches.
 // =============================================================================
 
-const CACHE_VERSION = 'blank-earth-v9';   // editorial frontispiece + atlas-title redesign with hairline-and-fleuron divider
+const CACHE_VERSION = 'blank-earth-v11';  // mobile panel: compact foot row with discoverable "tap to manage" pill + atlas pill
 const PRECACHE = [
   './',
   './index.html',
