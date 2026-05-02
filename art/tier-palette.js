@@ -9,52 +9,67 @@
 //               unfinished. The 'max' style is a unified "Master" treatment:
 //               deep navy ink + gold border + dark stamp pill — visually
 //               richer than any regular tier.
-// Iteration 3: Tier II silver was reading as faded compared to Tier I
-// bronze (the opposite of how progression should feel). Darkened the steel
-// from #5E6E7A → #3A4856 so each tier visibly deepens. Bronze stays warm
-// and inviting at entry, steel anchors the middle as substantial, gold
-// brightens at Tier III, indigo seals at Tier IV, and Master adds the gold
-// rim. The rule: no later tier should look LESS earned than an earlier one.
+// Iteration 4: a single coherent progression instead of metals jumping
+// warm-to-cool-to-warm. The bronze→steel→gold→indigo metals story was
+// breaking the visual hierarchy because steel was cool while bronze and
+// gold were warm — the eye read steel as "less than" bronze even at
+// matched darkness.
+//
+// New scheme: a continuous warm-deepening curve that climaxes in gold and
+// transcends to indigo at the apex. Each tier is visibly richer than the
+// one before, in saturation AND in depth.
+//
+//   Tier 0 (locked)   — soft neutral grey
+//   Tier I            — pale warm copper, welcoming entry
+//   Tier II           — deep bronze, substantially earned
+//   Tier III          — saturated amber gold, brilliant milestone
+//   Tier IV           — deep indigo, regal cap
+//   Master            — near-black navy with a solid gold rim
+//
+// Read top-to-bottom: the warmth deepens through Tiers I-III, then the
+// hue shifts to a cool deep indigo for IV, and Master "seals" the line
+// with the gold trim. No tier looks faded next to its predecessor.
 export const TIER_INKS = {
   0: '#9893a0',     // locked — neutral grey
-  1: '#B5662B',     // bronze (warm copper-orange)
-  2: '#3A4856',     // steel — DARKER than the v2 silver, reads as substantial
-  3: '#D6A032',     // gold (saturated amber)
-  4: '#2D3275',     // indigo (deep purple-blue)
-  max: '#1A1F45',   // master — very deep navy, almost ink-black
+  1: '#C68554',     // light bronze (warm, welcoming)
+  2: '#88491F',     // deep bronze (visibly darker, richer than Tier I)
+  3: '#C9941F',     // gold (bright milestone)
+  4: '#2D3275',     // indigo (deep, regal)
+  max: '#1A1F45',   // master — almost ink-black navy, paired with a gold border
 };
 
-// Card background tints — soft hue washes layered on the paper colour.
-// Tier II tint also bumped to match the darker ink.
+// Card background tints — soft hue washes that mirror the ink. Tiers I-III
+// use warm earth tones in increasing depth; Tier IV switches to indigo;
+// Master uses the gold wash to distinguish itself from indigo.
 export const TIER_TINTS = {
   0: 'transparent',
-  1: 'rgba(181,102,43,0.20)',
-  2: 'rgba(58,72,86,0.20)',      // bumped from light silver to deeper steel
-  3: 'rgba(214,160,50,0.22)',
-  4: 'rgba(45,50,117,0.20)',
-  max: 'rgba(214,160,50,0.18)',  // gold wash — distinguishes "Master" from Tier IV
+  1: 'rgba(198,133,84,0.18)',    // pale bronze wash
+  2: 'rgba(136,73,31,0.20)',     // deep bronze wash
+  3: 'rgba(201,148,31,0.22)',    // gold wash
+  4: 'rgba(45,50,117,0.20)',     // indigo wash
+  max: 'rgba(214,160,50,0.20)',  // brighter gold wash — pairs with the gold rim
 };
 
-// Pill background. Saturation bumped across tiers so the stamp reads punchy
-// regardless of which hue.
+// Pill background — saturated hue at ~0.50 alpha so the "Tier N · Name"
+// stamp reads as a strong wax seal regardless of which tier.
 export const TIER_PILLS = {
   0: 'rgba(0,0,0,0.06)',
-  1: 'rgba(181,102,43,0.50)',
-  2: 'rgba(58,72,86,0.55)',      // darker steel — reads richer at higher alpha
-  3: 'rgba(214,160,50,0.50)',
-  4: 'rgba(45,50,117,0.45)',
-  max: '#1A1F45',                // solid dark navy — reads as a wax seal
+  1: 'rgba(198,133,84,0.55)',
+  2: 'rgba(136,73,31,0.60)',     // deeper bronze pill
+  3: 'rgba(201,148,31,0.55)',
+  4: 'rgba(45,50,117,0.50)',
+  max: '#1A1F45',                // solid dark navy — reads as the final seal
 };
 
-// Border colour for the card. Master gets a SOLID gold edge; tiers 1-4 get
-// their own hue at heavier alpha than before so the card feels framed.
+// Border colour. Master gets a solid gold edge (laurel rim); regular tiers
+// get their own hue at high alpha so the card feels framed.
 export const TIER_BORDERS = {
   0: 'transparent',
-  1: 'rgba(181,102,43,0.60)',
-  2: 'rgba(58,72,86,0.65)',      // darker steel border — was light grey
-  3: 'rgba(214,160,50,0.60)',
+  1: 'rgba(198,133,84,0.65)',
+  2: 'rgba(136,73,31,0.70)',
+  3: 'rgba(201,148,31,0.65)',
   4: 'rgba(45,50,117,0.55)',
-  max: '#D6A032',                // solid gold — laurel-wreath effect
+  max: '#D6A032',                // solid gold rim
 };
 
 // Roman numerals for the tier label. Kept as a tiny lookup so render code

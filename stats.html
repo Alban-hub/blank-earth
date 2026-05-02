@@ -204,6 +204,59 @@
   }
   .card-foot strong { font-weight: 600; }
 
+  /* Combined PEOPLE + LAND card — two columns sharing one butter-tinted bg.
+     Replaced the separate People / Land cards which were redundant with the
+     hero's "% of inhabited land" subtitle and verbose with their own foot copy. */
+  .card.combo {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    padding: 26px 28px;
+    align-items: center;
+  }
+  .card.combo .combo-col { min-width: 0; padding: 0 8px; }
+  .card.combo .combo-divider {
+    width: 1px;
+    align-self: stretch;
+    margin: 8px 12px;
+    background: var(--card-ink, var(--ink));
+    opacity: 0.18;
+  }
+  .card.combo .combo-num {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 56px; line-height: 1;
+    color: var(--card-ink, var(--ink));
+    letter-spacing: -0.02em;
+    margin-top: 6px;
+  }
+  .card.combo .combo-unit {
+    font-size: 22px; font-weight: 400;
+    margin-left: 4px; opacity: 0.55;
+  }
+  .card.combo .combo-pct {
+    margin-top: 8px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--card-ink, var(--ink));
+    opacity: 0.72;
+    letter-spacing: 0.01em;
+  }
+  .card.combo .combo-pct strong { font-weight: 600; opacity: 1; }
+  @media (max-width: 540px) {
+    .card.combo {
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 22px;
+    }
+    .card.combo .combo-divider {
+      width: auto; height: 1px;
+      margin: 16px 0;
+    }
+    .card.combo .combo-num { font-size: 44px; }
+    .card.combo .combo-unit { font-size: 18px; }
+  }
+
   .card.terracotta  { --card-bg: var(--c-terracotta-bg);  --card-ink: var(--c-terracotta-ink); }
   .card.blue        { --card-bg: var(--c-blue-bg);        --card-ink: var(--c-blue-ink); }
   .card.sage        { --card-bg: var(--c-sage-bg);        --card-ink: var(--c-sage-ink); }
@@ -925,12 +978,18 @@
         </div>
       </div>
 
-      <!-- POPULATION -->
-      <div class="card terracotta">
-        <div class="card-lab">People</div>
-        <div>
-          <div class="card-num"><span data-count="0" data-fmt="pop" id="stat-pop">0</span></div>
-          <div class="card-foot">share <strong id="stat-pop-pct">—%</strong> of the world's population</div>
+      <!-- COMBINED PEOPLE + LAND — two big numbers, side by side, no fine-print prose. -->
+      <div class="card combo butter span-2">
+        <div class="combo-col">
+          <div class="card-lab">People</div>
+          <div class="combo-num"><span data-count="0" data-fmt="pop" id="stat-pop">0</span></div>
+          <div class="combo-pct"><strong id="stat-pop-pct">—</strong></div>
+        </div>
+        <div class="combo-divider" aria-hidden="true"></div>
+        <div class="combo-col">
+          <div class="card-lab">Land covered</div>
+          <div class="combo-num"><span id="stat-km">0</span><span class="combo-unit">km²</span></div>
+          <div class="combo-pct"><strong id="stat-km-pct">—</strong></div>
         </div>
       </div>
 
@@ -940,15 +999,6 @@
         <div>
           <div class="card-num"><span data-count="0" id="stat-clim">0</span><span class="of">/5</span></div>
           <div class="climate-icons" id="climate-icons"></div>
-        </div>
-      </div>
-
-      <!-- LAND COVERED — compact, no redundant % -->
-      <div class="card butter span-2">
-        <div class="card-lab">Land covered</div>
-        <div>
-          <div class="card-num"><span id="stat-km">0</span><span class="unit">km²</span></div>
-          <div class="card-foot" id="stat-km-foot">—</div>
         </div>
       </div>
 
@@ -1013,15 +1063,15 @@
 import {
   COUNTRIES, TOTAL_LAND, TOTAL_POP, TOTAL_UN,
   LANDLOCKED, ISLAND_NATIONS, DEMO_VISITS,
-} from './data/countries.js?v=v3';
+} from './data/countries.js?v=v4';
 // SVG renderers — single import point pulls in the registry + every icon module.
-import { renderArt } from './art/index.js?v=v3';
+import { renderArt } from './art/index.js?v=v4';
 // v2 atlas: title (Layer 1), lines (Layer 2 progression), sets (Layer 3 collections).
 // Legacy badges are gone — superseded by these three layers.
-import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v3';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v3';
-import { computeTitle } from './data/titles.js?v=v3';
-import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v3';
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v4';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v4';
+import { computeTitle } from './data/titles.js?v=v4';
+import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v4';
 
 function readVisits() {
   try {
@@ -1263,7 +1313,7 @@ function paint() {
 
   /* people */
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
-  document.getElementById('stat-pop-pct').textContent = (popRatio*100).toFixed(1) + '%';
+  document.getElementById('stat-pop-pct').textContent = (popRatio * 100).toFixed(1) + '% of humanity';
 
   /* climate — 5 mini icons with always-visible label and hover tooltip */
   grid._anims.push(scheduleCount(document.getElementById('stat-clim'), climates.size));
@@ -1284,13 +1334,9 @@ function paint() {
     clEl.appendChild(wrap);
   });
 
-  /* land covered — compact, no redundant % */
-  document.getElementById('stat-km').textContent = fmtArea(visitedArea);
-  const km2Suffix = visitedArea >= 1e6 ? '' : '';
-  const avg = count ? Math.round(visitedArea / count) : 0;
-  document.getElementById('stat-km-foot').innerHTML = count
-    ? `across <strong>${continentsTouched.size}</strong> ${continentsTouched.size===1?'continent':'continents'} · avg <strong>${fmtArea(avg)} km²</strong> per country`
-    : `mark a country to begin`;
+  /* land covered — combined card with People; just the number + percent. */
+  document.getElementById('stat-km').textContent     = fmtArea(visitedArea);
+  document.getElementById('stat-km-pct').textContent = earthRatio.toFixed(2) + '% of inhabited land';
 
   /* extremes — when the user has only marked one country, "most populous" and
      "least populous" would point at the same row; show a gentle prompt instead */
