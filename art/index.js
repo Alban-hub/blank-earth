@@ -3,6 +3,15 @@
 // and that pulls in the registry + every icon module via the side-effect
 // imports below.
 //
+// Convention in this folder:
+//   _registry.js / _helpers.js  → underscore prefix = module-internal,
+//                                  not imported from outside /art/
+//   index.js                    → public entry point — what stats.html imports
+//   icons/                      → one file per icon group; each calls
+//                                  registerArt('<name>', ink => '<svg>...</svg>')
+//   tier-palette.js             → tier inks/tints/borders/pill colours
+//                                  (visual styling for the v2 lines)
+//
 // To add a new icon:
 //   1. Drop the icon's renderer into art/icons/<group>.js (or create a new
 //      group file and add it to the import list here).

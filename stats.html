@@ -357,7 +357,7 @@
   /* The seven tiered cards. Same visual family as badges but a bit larger
      and split into a 2-up grid on mobile / 4-up on desktop (one row of four,
      then a second row of three). The tier ink and "TIER N" pill colour
-     come from data/tier-palette.js (TIER_INKS / TIER_TINTS). */
+     come from art/tier-palette.js (TIER_INKS / TIER_TINTS). */
   .lines { margin: 28px 0 36px; }
   .line-grid {
     display: grid;
@@ -368,13 +368,16 @@
     .line-grid { grid-template-columns: repeat(2, 1fr); }
   }
   .line {
-    aspect-ratio: 1 / 1.18;
+    /* Was 1/1.18 — too short for the 2-line name + pill combo. 1.4 gives the
+       pill room to breathe even on locked cards where the copy is "Not yet". */
+    aspect-ratio: 1 / 1.42;
     background: var(--paper-2);
     border-radius: 12px;
-    padding: 12px 10px 10px;
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 14px 10px 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 8px;
     position: relative; overflow: hidden;
-    transition: transform 200ms ease, background 300ms, box-shadow 200ms;
+    transition: transform 200ms ease, background 300ms, box-shadow 200ms, border-color 300ms;
     cursor: pointer;
     border: 1px solid transparent;
   }
@@ -383,27 +386,29 @@
     box-shadow: 0 4px 12px -8px rgba(0,0,0,0.20);
   }
   .line .line-art {
-    width: 100%; aspect-ratio: 1 / 1;
+    width: 70%;                       /* was 100% — leaves more room for text below */
+    aspect-ratio: 1 / 1;
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .line .line-art svg { display: block; width: 80%; height: 80%; }
+  .line .line-art svg { display: block; width: 100%; height: 100%; }
   .line .line-name {
     font-family: var(--serif);
-    font-size: 12px; font-weight: 500;
-    line-height: 1.15; text-align: center;
+    font-size: 13px; font-weight: 500;
+    line-height: 1.2; text-align: center;
     color: var(--ink);
-    margin-top: 6px;
     letter-spacing: 0.01em;
   }
   .line .line-pill {
-    margin-top: 4px;
+    margin-top: auto;                 /* push pill to the bottom of the card */
     font-family: var(--sans);
     font-size: 9px; letter-spacing: 0.14em;
     text-transform: uppercase; font-weight: 700;
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 999px;
     background: var(--line-pill-bg, transparent);
-    color: var(--line-ink, var(--muted));
+    color: var(--line-pill-ink, var(--muted));
+    white-space: nowrap;
   }
   /* Locked state — no tier earned yet. Same dim treatment as the badge wall. */
   .line[data-tier="0"] {
@@ -412,11 +417,12 @@
   .line[data-tier="0"] .line-art { opacity: 0.30; filter: grayscale(0.6); }
   .line[data-tier="0"] .line-name { color: var(--muted); }
   .line[data-tier="0"] .line-pill { color: var(--muted); opacity: 0.7; }
-  /* Earned tiers — tint the card softly so it reads as "stamped" */
+  /* Earned tiers — tinted card, coloured border, name in the tier ink. */
   .line[data-tier="1"], .line[data-tier="2"],
   .line[data-tier="3"], .line[data-tier="4"] {
     background: var(--line-card-bg, var(--paper-2));
-    box-shadow: 0 1px 0 rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.04);
+    border-color: var(--line-border, transparent);
+    box-shadow: 0 2px 8px -4px rgba(0,0,0,0.08);
   }
   .line[data-tier="1"] .line-name,
   .line[data-tier="2"] .line-name,
@@ -1057,7 +1063,7 @@ import { renderArt } from './art/index.js';
 // Step 3: the v2 "lines" — 7 tiered cards that replace the threshold-stacked
 // badges. The legacy badge wall is kept below them for now; Step 4 prunes it.
 import { LINES, LINE_ORDER, tierOf } from './data/lines.js';
-import { TIER_INKS, TIER_TINTS, TIER_NUMERAL } from './data/tier-palette.js';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL } from './art/tier-palette.js';
 
 function readVisits() {
   try {
@@ -1413,11 +1419,13 @@ function paint() {
     card.dataset.id = id;
     card.dataset.tier = String(tier);
     if (tier > 0) {
-      // Soft tint for earned cards. Background is a paper colour with the
-      // tier's hue layered on top; the pill repeats the same hue stronger.
-      card.style.setProperty('--line-card-bg', `linear-gradient(${tint}, ${tint}), var(--paper-2)`);
-      card.style.setProperty('--line-pill-bg', tint);
-      card.style.setProperty('--line-ink',     ink);
+      // Earned card: tinted background, coloured border, saturated pill stamp.
+      // The pill ink is white-on-colour for max contrast (reads as a wax seal).
+      card.style.setProperty('--line-card-bg',  `linear-gradient(${tint}, ${tint}), var(--paper-2)`);
+      card.style.setProperty('--line-border',   TIER_BORDERS[tier]);
+      card.style.setProperty('--line-pill-bg',  TIER_PILLS[tier]);
+      card.style.setProperty('--line-pill-ink', '#FCFCFA');
+      card.style.setProperty('--line-ink',      ink);
     }
     card.innerHTML = `
       <div class="line-art">${renderArt(line.art, ink)}</div>
