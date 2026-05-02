@@ -363,6 +363,9 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
+    /* align-items:start so other cards stay their natural height when one
+       expands and grows taller — they don't stretch to match. */
+    align-items: start;
   }
   @media (max-width: 540px) {
     .line-grid { grid-template-columns: repeat(2, 1fr); }
@@ -399,16 +402,34 @@
     color: var(--ink);
     letter-spacing: 0.01em;
   }
+  /* Pill is now a stacked label + name. Top line is the tier label
+     ("Tier III" / "Master" / "Not yet"). Bottom line is the tier name in
+     italics. Stacking lets the name breathe even at narrow card widths. */
   .line .line-pill {
-    margin-top: auto;                 /* push pill to the bottom of the card */
+    margin-top: auto;
+    width: calc(100% - 8px);          /* near-full-width but with breathing room */
+    padding: 5px 6px 6px;
+    border-radius: 8px;
+    background: var(--line-pill-bg, transparent);
+    color: var(--line-pill-ink, var(--muted));
+    display: flex; flex-direction: column; align-items: center;
+    line-height: 1.15;
+    text-align: center;
+  }
+  .line .pill-label {
     font-family: var(--sans);
     font-size: 9px; letter-spacing: 0.14em;
     text-transform: uppercase; font-weight: 700;
-    padding: 3px 9px;
-    border-radius: 999px;
-    background: var(--line-pill-bg, transparent);
-    color: var(--line-pill-ink, var(--muted));
-    white-space: nowrap;
+  }
+  .line .pill-name {
+    font-family: var(--serif); font-style: italic;
+    font-size: 10px; font-weight: 400;
+    margin-top: 2px;
+    /* don't allow extremely long names to balloon the pill — clamp to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   /* Locked state — no tier earned yet. Same dim treatment as the badge wall. */
   .line[data-tier="0"] {
@@ -419,7 +440,8 @@
   .line[data-tier="0"] .line-pill { color: var(--muted); opacity: 0.7; }
   /* Earned tiers — tinted card, coloured border, name in the tier ink. */
   .line[data-tier="1"], .line[data-tier="2"],
-  .line[data-tier="3"], .line[data-tier="4"] {
+  .line[data-tier="3"], .line[data-tier="4"],
+  .line[data-tier="max"] {
     background: var(--line-card-bg, var(--paper-2));
     border-color: var(--line-border, transparent);
     box-shadow: 0 2px 8px -4px rgba(0,0,0,0.08);
@@ -427,14 +449,27 @@
   .line[data-tier="1"] .line-name,
   .line[data-tier="2"] .line-name,
   .line[data-tier="3"] .line-name,
-  .line[data-tier="4"] .line-name { color: var(--line-ink, var(--ink)); }
+  .line[data-tier="4"] .line-name,
+  .line[data-tier="max"] .line-name { color: var(--line-ink, var(--ink)); }
+  /* Max tier — solid gold border (instead of low-alpha) reads as a finished
+     medal/seal. The pill stamp is dark navy with white text. */
+  .line[data-tier="max"] {
+    border-width: 1.5px;
+    box-shadow: 0 3px 12px -4px rgba(214,160,50,0.35);
+  }
 
-  /* Expanded line — same expand-in-place pattern as badges */
+  /* Expanded line — spans 2 cols, grows taller as content needs. We
+     deliberately DON'T span 2 rows: with only 7 cards in the grid, a 2x2
+     span causes auto-flow to displace siblings unpredictably (the maxed
+     card "jumped rows" bug). Instead the row stretches to fit the tallest
+     card, and align-items:start on the grid keeps siblings their natural
+     height (they don't stretch to match). */
   .line.expanded {
     grid-column: span 2;
-    grid-row: span 2;
+    grid-row: auto;
     aspect-ratio: auto;
-    min-height: 240px;
+    height: auto;
+    min-height: 280px;
     padding: 16px 18px 18px;
     cursor: default;
     z-index: 5;
@@ -452,9 +487,20 @@
     margin-top: 6px;
     line-height: 1.15;
   }
+  /* In the expanded view, the tier ladder below already shows full info, so
+     compress the pill back to a single inline row to save vertical space. */
   .line.expanded .line-pill {
     align-self: flex-start;
     margin-top: 0;
+    width: auto;
+    flex-direction: row;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+  .line.expanded .pill-name {
+    -webkit-line-clamp: 1;
+    font-size: 11px;
   }
   .line .line-ladder { display: none; }
   .line.expanded .line-ladder {
@@ -1063,7 +1109,7 @@ import { renderArt } from './art/index.js';
 // Step 3: the v2 "lines" — 7 tiered cards that replace the threshold-stacked
 // badges. The legacy badge wall is kept below them for now; Step 4 prunes it.
 import { LINES, LINE_ORDER, tierOf } from './data/lines.js';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL } from './art/tier-palette.js';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js';
 
 function readVisits() {
   try {
@@ -1408,35 +1454,47 @@ function paint() {
     if (!line) continue;
     const value = lineValue(line.axis);
     const tier = tierOf(line, value);
-    if (tier === line.tiers.length) linesAtTopTier++;
-    const ink = TIER_INKS[tier];
-    const tint = TIER_TINTS[tier];
-    const tierName = tier > 0 ? line.tiers[tier - 1].name : 'Locked';
-    const numeral = tier > 0 ? TIER_NUMERAL[tier] : '—';
+    const isMaxed = tier > 0 && tier === line.tiers.length;
+    if (isMaxed) linesAtTopTier++;
+
+    // Use the unified "max" palette when the line is maxed out, regardless of
+    // whether it's a 3-tier or 4-tier line. Both look identical when complete.
+    const pkey = paletteKeyFor(line, tier);
+    const ink     = TIER_INKS[pkey];
+    const tint    = TIER_TINTS[pkey];
+    const pillBg  = TIER_PILLS[pkey];
+    const border  = TIER_BORDERS[pkey];
+
+    const tierName = tier > 0 ? line.tiers[tier - 1].name : '';
+    // 2-line pill keeps long tier names from overflowing the card. Top line
+    // is the tier label ("Tier III" or "Master" for maxed); bottom line is
+    // the tier name in italics.
+    const labelText = tier === 0 ? 'Not yet' : isMaxed ? 'Master' : `Tier ${TIER_NUMERAL[tier]}`;
 
     const card = document.createElement('div');
     card.className = 'line';
     card.dataset.id = id;
-    card.dataset.tier = String(tier);
+    card.dataset.tier = isMaxed ? 'max' : String(tier);
     if (tier > 0) {
-      // Earned card: tinted background, coloured border, saturated pill stamp.
-      // The pill ink is white-on-colour for max contrast (reads as a wax seal).
       card.style.setProperty('--line-card-bg',  `linear-gradient(${tint}, ${tint}), var(--paper-2)`);
-      card.style.setProperty('--line-border',   TIER_BORDERS[tier]);
-      card.style.setProperty('--line-pill-bg',  TIER_PILLS[tier]);
+      card.style.setProperty('--line-border',   border);
+      card.style.setProperty('--line-pill-bg',  pillBg);
       card.style.setProperty('--line-pill-ink', '#FCFCFA');
       card.style.setProperty('--line-ink',      ink);
     }
     card.innerHTML = `
       <div class="line-art">${renderArt(line.art, ink)}</div>
       <div class="line-name">${line.name}</div>
-      <div class="line-pill">${tier > 0 ? `Tier ${numeral} · ${tierName}` : 'Not yet'}</div>
+      <div class="line-pill">
+        <span class="pill-label">${labelText}</span>
+        ${tierName ? `<span class="pill-name">${tierName}</span>` : ''}
+      </div>
     `;
     card.addEventListener('click', () => selectLine(line, value, tier, card));
     lineGrid.appendChild(card);
   }
   document.getElementById('lines-progress').textContent =
-    `${linesAtTopTier} of ${LINE_ORDER.length} at top tier`;
+    `${linesAtTopTier} of ${LINE_ORDER.length} mastered`;
 
   /* ── BADGES ── */
   function isUnlocked(b) {
@@ -1619,7 +1677,7 @@ function selectLine(line, value, currentTier, divEl) {
     return topThreshold.toLocaleString();
   })();
   const progressLine = currentTier === line.tiers.length
-    ? `<strong>${valStr}</strong> ${line.unit} — top tier reached.`
+    ? `<strong>${valStr}</strong> ${line.unit} — mastered.`
     : `<strong>${valStr}</strong> of ${topThresholdStr} ${line.unit}.`;
 
   // Tier ladder — every tier rendered, with marks indicating state
