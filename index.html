@@ -816,7 +816,10 @@ window.NiceEarth = {
   // zoomed out. Pixel ratio capped at 1.75 on mobile for a sharpness/perf middle ground.
   const _isMobile = window.matchMedia('(max-width: 640px)').matches;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.75 : 2));
+  // DPR cap: 1.5 desktop / 1.5 mobile. Going to 2 on Retina nearly doubles the
+  // pixel-shading cost (4M → 8M+ pixels) for marginal sharpness gains; native MSAA
+  // keeps edges crisp enough at 1.5×. This is the single biggest FPS lever.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isMobile ? 1.5 : 1.5));
   renderer.setClearColor(STYLE.background, 1);
   renderer.outputEncoding = THREE.sRGBEncoding;
   const scene = new THREE.Scene();
@@ -1417,6 +1420,9 @@ window.NiceEarth = {
     m.setAttribute('normal',   new THREE.BufferAttribute(nrm, 3));
     if (uvs) m.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
     if (idx) m.setIndex(new THREE.BufferAttribute(idx, 1));
+    // Compute bounding sphere up front so raycaster + frustum culling can
+    // quick-reject without scanning every triangle of the merged country mesh.
+    m.computeBoundingSphere();
     return m;
   }
 
@@ -1648,6 +1654,10 @@ window.NiceEarth = {
     pointerNDC.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     pointerNDC.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointerNDC, camera);
+    // Coarse reject: if the ray doesn't even hit the globe sphere, skip the
+    // per-country raycast over ~250 merged meshes. Hover fires every RAF while
+    // the cursor is over the canvas — most of that time it's in empty space.
+    if (!raycaster.intersectObject(sphere, false).length) return null;
     const hits = raycaster.intersectObjects(allCountryMeshes, false);
     return hits.length ? hits[0].object.userData : null;
   }
@@ -1731,6 +1741,11 @@ window.NiceEarth = {
       targetRotY += dx * STYLE.dragSensitivityX * z;
       targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit,
                     targetRotX + dy * STYLE.dragSensitivityY * z));
+      // 1:1 follow during drag — bypass the cameraEasing interpolation so the
+      // globe sticks to the cursor instead of "catching up" a few frames late.
+      // Easing still governs programmatic moves (resetView, centerOn, autorotate).
+      rotY = targetRotY;
+      rotX = targetRotX;
       lastInteract = performance.now();
       hoverLabel.classList.remove('show');
       return;
