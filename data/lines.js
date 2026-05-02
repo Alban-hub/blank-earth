@@ -62,19 +62,19 @@ export const LINES = {
     description: 'Combined population of the countries you\'ve marked.',
   },
 
-  maritime: {
-    id: 'maritime',
-    name: 'The Maritime',
-    axis: 'coast',
-    art: 'wave-trio',
-    unit: 'coastal countries',
+  islander: {
+    id: 'islander',
+    name: 'The Islander',
+    axis: 'islands',
+    art: 'archipelago',
+    unit: 'island nations',
     tiers: [
-      { threshold: 8,  name: 'Tide Watcher' },
-      { threshold: 20, name: 'Sea Wanderer' },
-      { threshold: 40, name: 'Cartographer of Shores' },
-      { threshold: 75, name: 'Master of Tides' },
+      { threshold: 4,  name: 'First Atoll' },
+      { threshold: 12, name: 'Reef-Hopper' },
+      { threshold: 25, name: 'Archipelago' },
+      { threshold: 40, name: 'Oceania' },
     ],
-    description: 'Countries with a coastline, marked.',
+    description: 'Pure island countries — Iceland, Japan, Madagascar, the Pacific archipelagos.',
   },
 
   hemispherist: {
@@ -128,7 +128,7 @@ export const LINE_ORDER = [
   'cartographer',
   'surveyor',
   'demographer',
-  'maritime',
+  'islander',
   'hemispherist',
   'climatologist',
   'continentalist',

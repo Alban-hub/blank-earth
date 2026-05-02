@@ -32,6 +32,7 @@ import './icons/climate.js';
 import './icons/population.js';
 import './icons/coast.js';
 import './icons/geo.js';
-import './icons/lines.js';      // Step 3 — The 7 v2 lines (only adds hemi-quad; the rest reuse icons above)
+import './icons/lines.js';      // Step 3 — The v2 lines (hemi-quad, archipelago)
+import './icons/sets.js';       // Step 4 — The 12 launch sets (hero artworks)
 
 export { renderArt, registerArt, listArt } from './_registry.js';

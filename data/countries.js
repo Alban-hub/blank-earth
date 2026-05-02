@@ -26,11 +26,29 @@ export const TOTAL_LAND = Object.values(COUNTRIES).reduce((s,[,a]) => s+a, 0);
 export const TOTAL_POP  = Object.values(COUNTRIES).reduce((s,c) => s+(c[3]||0), 0);
 export const TOTAL_UN   = 195;
 
-// Countries with no coastline. Used for the Maritime / coastal-count metrics.
+// Countries with no coastline. Kept for legacy stats and as a fact source.
 export const LANDLOCKED = new Set([
   'AND','ARM','AUT','BLR','BTN','BOL','BWA','BFA','BDI','CAF','TCD','CZE','SWZ','ETH','HUN',
   'KAZ','XKX','KGZ','LAO','LSO','LIE','LUX','MWI','MLI','MDA','MNG','NPL','NER','MKD','PRY',
   'RWA','SMR','SRB','SVK','SSD','CHE','TJK','TKM','UGA','UZB','VAT','ZMB','ZWE','AZE'
+]);
+
+// Pure island nations — countries whose territory is one or more islands with
+// no shared land borders (or whose identity is overwhelmingly island-based).
+// Powers the Islander line. ~47 entries from Iceland in the Atlantic to the
+// Pacific microstates. Inclusive: Hispaniola pair (HTI/DOM), Borneo/Brunei,
+// and Timor-Leste are kept since they're functionally island nations.
+export const ISLAND_NATIONS = new Set([
+  // Atlantic / Mediterranean
+  'ISL','IRL','GBR','MLT','CYP',
+  // Asian + Indian-Ocean islands
+  'JPN','PHL','IDN','LKA','MDV','TWN','BHR','SGP','BRN','TLS',
+  // Oceania
+  'NZL','AUS','PNG','FJI','KIR','TUV','PLW','MHL','FSM','NRU','TON','WSM','VUT','SLB',
+  // Caribbean
+  'BHS','CUB','JAM','HTI','DOM','GRD','BRB','TTO','LCA','VCT','ATG','KNA','DMA',
+  // African islands
+  'MDG','MUS','SYC','CPV','STP','COM',
 ]);
 
 // Curated geographic groupings used by the legacy "geo" badges. The v2 plan

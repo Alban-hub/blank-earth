@@ -557,8 +557,7 @@
   }
   .line-close:hover { background: rgba(0,0,0,0.10); }
 
-  /* === BADGES === */
-  .badges { margin: 28px 0 36px; }
+  /* === SHARED SECTION HEADER === (used by Lines, Sets, Recent visits) */
   .section-h {
     margin: 0 0 14px;
     display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
@@ -575,231 +574,135 @@
     font-size: 12px; color: var(--muted);
     font-weight: 500;
   }
-  .badge-wall {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-  .badge {
-    aspect-ratio: 1 / 1.12;
-    background: var(--paper-2);
-    border-radius: 12px;
-    padding: 10px 8px 8px;
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    position: relative; overflow: hidden;
-    transition: transform 200ms ease, background 300ms, box-shadow 200ms;
-    cursor: pointer;
-    border: 1px solid transparent;
-  }
-  .badge.selected {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px -8px rgba(0,0,0,0.25);
-    border-color: var(--ink);
-  }
-  .badge .badge-art {
-    width: 100%; aspect-ratio: 1 / 1;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .badge .badge-art svg { display: block; width: 88%; height: 88%; }
-  .badge .badge-name {
+
+  /* === ATLAS TITLE (Layer 1) — the computed identity above the stats. */
+  .atlas-title {
+    margin: 18px 0 28px;
+    text-align: center;
     font-family: var(--serif);
-    font-size: 11px; font-weight: 500;
-    line-height: 1.15; text-align: center;
+  }
+  .atlas-title .star { color: var(--c-butter-ink); margin: 0 10px; opacity: 0.7; }
+  .atlas-title .name {
+    font-size: 22px; font-weight: 500; font-style: italic;
     color: var(--ink);
-    margin-top: 4px;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.005em;
   }
-  .badge .badge-meta {
-    font-family: var(--sans);
-    font-size: 9px; letter-spacing: 0.12em;
-    text-transform: uppercase; font-weight: 600;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .badge.locked {
-    background: rgba(214, 208, 195, 0.45);
-  }
-  .badge.locked .badge-art { opacity: 0.32; filter: grayscale(0.7); }
-  .badge.locked .badge-name { color: var(--muted); }
-  .badge.locked .badge-meta { color: var(--muted); opacity: 0.7; }
-  .badge.unlocked {
-    background: var(--badge-bg, var(--c-butter-bg));
-    box-shadow: 0 1px 0 rgba(0,0,0,0.04), inset 0 0 0 1px rgba(0,0,0,0.04);
-  }
-  .badge.unlocked .badge-name { color: var(--badge-ink, var(--ink)); }
-  .badge.unlocked .badge-meta { color: var(--badge-ink, var(--ink)); opacity: 0.75; }
-
-  /* ─── EXPANDED BADGE — in-place reveal of explanation text ─── */
-  .badge.expanded {
-    grid-column: span 2;             /* JS sets grid-column-start so we never overflow */
-    grid-row: span 2;
-    aspect-ratio: auto;
-    min-height: 220px;
-    padding: 16px 18px 18px;
-    cursor: default;
-    z-index: 5;
-    overflow: visible;
-    box-shadow: 0 8px 22px -10px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.06);
-    /* a column layout when expanded — left-aligned content, top-down */
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 4px;
-  }
-  .badge.expanded .badge-art {
-    width: 52px; height: 52px;
-    align-self: flex-start;
-  }
-  .badge.expanded .badge-art svg { width: 100%; height: 100%; }
-  .badge.expanded .badge-name {
-    font-size: 19px;
-    text-align: left;
-    letter-spacing: -0.005em;
-    margin-top: 6px;
-    line-height: 1.15;
-  }
-  .badge.expanded .badge-meta {
-    text-align: left;
-    font-size: 9px;
-    margin-top: 0;
-  }
-  .badge .badge-inline {
-    display: none;
-  }
-  .badge.expanded .badge-inline {
-    display: block;
-    margin-top: 10px;
-    font-family: var(--sans);
-    text-align: left;
-  }
-  .badge.expanded .bd-pill {
-    display: inline-block;
-    font-size: 9px; letter-spacing: 0.16em;
-    text-transform: uppercase; font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    margin-bottom: 10px;
-    line-height: 1.2;
-  }
-  .badge.expanded .bd-pill.unlocked {
-    background: rgba(255,255,255,0.7);
-    color: var(--badge-ink, var(--ink));
-  }
-  .badge.expanded .bd-pill.locked {
-    background: rgba(0,0,0,0.06);
+  .atlas-title .empty {
+    font-size: 16px; font-style: italic;
     color: var(--muted);
   }
-  .badge.expanded .bd-text {
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: var(--badge-ink, var(--ink-2));
-    opacity: 0.92;
-  }
-  .badge.expanded.locked .bd-text { color: var(--ink-2); opacity: 0.95; }
-  .badge.expanded .bd-prog {
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--badge-ink, var(--muted));
-    opacity: 0.68;
-    font-variant-numeric: tabular-nums;
-  }
-  .badge.expanded .bd-prog strong { font-weight: 700; opacity: 1; }
-  .badge .badge-close { display: none; }
-  .badge.expanded .badge-close {
-    display: flex;
-    position: absolute;
-    top: 10px; right: 12px;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.06);
-    align-items: center; justify-content: center;
-    font-size: 16px; line-height: 1;
-    cursor: pointer;
-    border: none;
-    color: var(--badge-ink, var(--ink));
-    font-family: inherit;
-    padding: 0;
-  }
-  .badge.expanded .badge-close:hover { background: rgba(0,0,0,0.14); }
-  @media (max-width: 480px) {
-    .badge.expanded { min-height: 180px; padding: 14px 14px 16px; }
-    .badge.expanded .badge-name { font-size: 16px; }
-    .badge.expanded .badge-art { width: 42px; height: 42px; }
-    .badge.expanded .bd-text { font-size: 11.5px; }
-  }
 
-  /* badge details panel */
-  .badge-detail {
-    margin-top: 14px;
-    padding: 18px 20px;
+  /* === SETS (Layer 3) — curated collections. Each card: hero artwork
+     + name + "X of Y" progress + teaser. Click to expand into a chip
+     list of countries (✓ for visited, plain for not-yet). */
+  .sets { margin: 28px 0 36px; }
+  .set-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  @media (max-width: 540px) {
+    .set-grid { grid-template-columns: 1fr; }
+  }
+  .set {
     background: var(--paper-2);
     border-radius: 14px;
-    border-left: 3px solid var(--ink);
-    display: none;
-    animation: detailIn 240ms ease-out;
-  }
-  .badge-detail.open { display: block; }
-  @keyframes detailIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .badge-detail .bd-lab {
-    font-family: var(--sans);
-    font-size: 10px; letter-spacing: 0.16em;
-    text-transform: uppercase; font-weight: 600;
-    color: var(--muted);
-  }
-  .badge-detail .bd-name {
-    font-family: var(--serif);
-    font-size: 22px; font-weight: 500;
-    margin: 4px 0 6px;
-    color: var(--ink);
-    letter-spacing: -0.01em;
-  }
-  .badge-detail .bd-status {
-    display: inline-block;
-    font-family: var(--sans);
-    font-size: 10px; letter-spacing: 0.18em;
-    text-transform: uppercase; font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    margin-bottom: 10px;
-  }
-  .badge-detail .bd-status.unlocked {
-    background: var(--c-sage-bg); color: var(--c-sage-ink);
-  }
-  .badge-detail .bd-status.locked {
-    background: rgba(0,0,0,0.06); color: var(--muted);
-  }
-  .badge-detail .bd-how {
-    font-family: var(--sans);
-    font-size: 13px; line-height: 1.5;
-    color: var(--ink-2);
-    margin: 4px 0 0;
-  }
-  .badge-detail .bd-progress {
-    margin-top: 10px;
-    font-family: var(--sans);
-    font-size: 12px; color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .badge-detail .bd-progress strong { color: var(--ink); font-weight: 600; }
-
-  /* default state: collapsed (only show first 12 badges) */
-  .badge-wall:not(.expanded) > .badge:nth-child(n+13) { display: none; }
-
-  .view-all {
-    margin: 14px 0 0;
-    width: 100%;
-    background: none;
-    border: 1px solid var(--hair);
-    border-radius: 999px;
-    padding: 10px 16px;
-    font-family: var(--serif);
-    font-size: 13px; color: var(--ink);
+    padding: 16px 18px;
+    display: flex; gap: 14px;
+    position: relative;
     cursor: pointer;
-    transition: background 200ms, border-color 200ms;
+    border: 1px solid transparent;
+    transition: transform 200ms ease, box-shadow 200ms, border-color 200ms;
   }
-  .view-all:hover, .view-all:active { background: var(--paper-2); border-color: var(--ink); }
+  .set:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -8px rgba(0,0,0,0.14);
+  }
+  .set-art {
+    width: 64px; height: 64px;
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+  .set-art svg { width: 100%; height: 100%; display: block; }
+  .set-body { flex: 1; min-width: 0; }
+  .set-name {
+    font-family: var(--serif);
+    font-size: 16px; font-weight: 500;
+    color: var(--ink);
+    margin: 0 0 4px;
+    letter-spacing: -0.005em;
+  }
+  .set-progress {
+    font-family: var(--sans);
+    font-size: 11px; font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .set-progress strong { color: var(--ink); font-weight: 600; }
+  .set-bar {
+    height: 3px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .set-bar-fill {
+    height: 100%;
+    background: var(--ink-2);
+    transition: width 800ms cubic-bezier(.16,1,.3,1);
+  }
+  .set-teaser {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.4;
+    margin: 0;
+  }
+  /* Completed set — gold-washed card, gold border, gold progress bar.
+     Same visual language as the line "Master" treatment. */
+  .set.complete {
+    background: linear-gradient(rgba(214,160,50,0.16), rgba(214,160,50,0.16)), var(--paper-2);
+    border-color: rgba(214,160,50,0.55);
+    box-shadow: 0 2px 12px -6px rgba(214,160,50,0.40);
+  }
+  .set.complete .set-bar-fill { background: #B58B33; }
+
+  /* Expanded set — country chips appear below the teaser. */
+  .set.expanded { grid-column: span 2; padding: 20px 22px; }
+  @media (max-width: 540px) { .set.expanded { grid-column: span 1; } }
+  .set .set-countries { display: none; }
+  .set.expanded .set-countries {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px dashed var(--hair);
+  }
+  .set-chip {
+    font-family: var(--sans);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.05);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .set-chip.visited {
+    background: rgba(0,0,0,0.10);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .set-chip.visited::before { content: "✓ "; }
+  .set-close {
+    position: absolute; top: 12px; right: 14px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 0; background: rgba(0,0,0,0.06);
+    cursor: pointer; font-size: 15px; line-height: 1;
+    color: var(--ink);
+  }
+  .set-close:hover { background: rgba(0,0,0,0.12); }
 
   /* RECENT VISITS */
   .ledger { margin-top: 28px; }
@@ -914,8 +817,6 @@
   .export-footer .ef-mark { color: var(--ink); font-weight: 500; }
   .export-footer .ef-host { letter-spacing: 0.06em; }
   body.exporting .export-footer { display: flex; }
-  body.exporting #view-all,
-  body.exporting #badge-detail,
   body.exporting .topbar,
   body.exporting .scroll-fade,
   body.exporting .globe-bg { display: none !important; }
@@ -952,8 +853,6 @@
     .hero { grid-template-columns: 1fr; gap: 14px; }
     .hero-shape { max-width: 220px; justify-self: center; }
     .hero-num { font-size: 84px; }
-    .badge-wall { grid-template-columns: repeat(3, 1fr); }
-    .badge-wall:not(.expanded) > .badge:nth-child(n+10) { display: none; }
     .card-num { font-size: 42px; }
     .extremes { grid-template-columns: 1fr; gap: 14px; }
     .extremes .col + .col { border-left: 0; border-top: 1px solid rgba(60,31,56,0.18); padding-left: 0; padding-top: 14px; }
@@ -983,6 +882,8 @@
       <div class="ord">A personal reckoning</div>
       <h1>Your atlas, so far.</h1>
       <p class="sub">Every country you've marked, the shape of your discovery, and what's still ahead.</p>
+      <!-- Atlas title (Layer 1 — Cartographer's Title). Empty until count ≥ 5. -->
+      <div class="atlas-title reveal" id="atlas-title"></div>
     </header>
 
     <section class="grid reveal" id="grid-stats">
@@ -1063,14 +964,13 @@
       <div class="line-grid" id="line-grid"></div>
     </section>
 
-    <!-- BADGES -->
-    <section class="badges reveal" id="badges-section">
+    <!-- SETS (Layer 3 — curated collections) -->
+    <section class="sets reveal" id="sets-section">
       <div class="section-h">
-        <h2>Badges</h2>
-        <span class="sub" id="badges-progress">— / —</span>
+        <h2>Your sets</h2>
+        <span class="sub" id="sets-progress">— / —</span>
       </div>
-      <div class="badge-wall" id="badge-wall"></div>
-      <button class="view-all" id="view-all" type="button">View all badges</button>
+      <div class="set-grid" id="set-grid"></div>
     </section>
 
     <!-- LEDGER -->
@@ -1099,24 +999,16 @@
 // below is unchanged — it just imports what it used to define inline.
 import {
   COUNTRIES, TOTAL_LAND, TOTAL_POP, TOTAL_UN,
-  LANDLOCKED, GEO_SETS, GEO_LABEL, DEMO_VISITS,
-} from './data/countries.js';
-import { BADGES, PALETTE } from './data/badges.js';
-// Step 2 of the badge-system refactor: SVG renderers now live one-per-group
-// under /art/icons/. Importing './art/index.js' triggers all the registerArt
-// calls so renderArt('compass', ink) works anywhere in this script.
-//
-// ?v=lines on the v2 imports below cache-busts the service worker's stale
-// cache for these files: their content changed (paletteKeyFor was added,
-// new icons/lines.js was added) but the SW had old copies pinned. Same
-// trick we used for three.js when the boot was breaking. Safe to remove on
-// the deploy after this one — by then the bumped CACHE_VERSION (sw.js v5)
-// will have rolled out, and new caches contain the fresh content.
-import { renderArt } from './art/index.js?v=lines';
-// Step 3: the v2 "lines" — 7 tiered cards that replace the threshold-stacked
-// badges. The legacy badge wall is kept below them for now; Step 4 prunes it.
-import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=lines';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=lines';
+  LANDLOCKED, ISLAND_NATIONS, DEMO_VISITS,
+} from './data/countries.js?v=v2';
+// SVG renderers — single import point pulls in the registry + every icon module.
+import { renderArt } from './art/index.js?v=v2';
+// v2 atlas: title (Layer 1), lines (Layer 2 progression), sets (Layer 3 collections).
+// Legacy badges are gone — superseded by these three layers.
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v2';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v2';
+import { computeTitle } from './data/titles.js?v=v2';
+import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v2';
 
 function readVisits() {
   try {
@@ -1295,38 +1187,9 @@ function animateShapeTo(count, durationMs = 1500) {
   requestAnimationFrame(tick);
 }
 
-/* BADGES + PALETTE moved to data/badges.js (imported at top of script). */
-
-/* badgeArt + contBadge + hemiBadge moved to /art/ — call renderArt(name, ink) instead. */
-
-/* "How to unlock" copy — derived from each badge's axis & threshold */
-function howToCopy(b, ctx) {
-  if (b.axis === 'count')   return `Mark ${b.t} different countries on the globe.`;
-  if (b.axis === 'land')    return `Cover ${b.t}% of the world's inhabited land area through your visited countries.`;
-  if (b.axis === 'cont')    return `Visit any country in ${continentName(b.t)}.`;
-  if (b.axis === 'hemi')    return `Visit any country in the ${{N:'northern',S:'southern',E:'eastern',W:'western'}[b.t]} hemisphere.`;
-  if (b.axis === 'climate') return `Visit any country in the ${b.t.toLowerCase()} climate band — defined by latitude.`;
-  if (b.axis === 'pop')     return `Reach a combined population of ${fmtPop(b.t)} across your visited countries.`;
-  if (b.axis === 'coast')   return `Mark ${b.t} countries that have a coastline.`;
-  if (b.axis === 'geo')     return `Visit ${GEO_LABEL[b.t] || 'any country in this region'}.`;
-  return 'Keep exploring.';
-}
-
-/* Current progress copy — shows the user where they stand */
-function progressCopy(b, ctx) {
-  if (b.axis === 'count')   return `<strong>${ctx.count}</strong> of ${b.t} countries.`;
-  if (b.axis === 'land')    return `<strong>${ctx.earthRatio.toFixed(2)}%</strong> of ${b.t}% covered.`;
-  if (b.axis === 'cont')    return ctx.continentsTouched.has(b.t) ? `Marked.` : `Not yet visited.`;
-  if (b.axis === 'hemi')    return ctx.hemis.has(b.t) ? `Marked.` : `Not yet visited.`;
-  if (b.axis === 'climate') return ctx.climates.has(b.t) ? `Marked.` : `Not yet visited.`;
-  if (b.axis === 'pop')     return `<strong>${fmtPop(ctx.visitedPopM)}</strong> of ${fmtPop(b.t)} reached.`;
-  if (b.axis === 'coast')   return `<strong>${ctx.coastalCount}</strong> of ${b.t} coastal countries.`;
-  if (b.axis === 'geo') {
-    const have = (GEO_SETS[b.t] || []).filter(iso => ctx.known.includes(iso));
-    return have.length ? `Marked: ${have.map(iso => COUNTRIES[iso]?.[2] || iso).join(', ')}.` : `Not yet visited.`;
-  }
-  return '';
-}
+/* Legacy: BADGES + PALETTE + howToCopy + progressCopy + GEO_SETS lookups
+   were all part of the threshold-stacked badge wall. The wall has been
+   replaced by Lines (Layer 2 progression) + Sets (Layer 3 collections). */
 
 /* ─────── PAINT ─────── */
 function paint() {
@@ -1357,6 +1220,8 @@ function paint() {
   });
 
   const coastalCount = known.filter(iso => !LANDLOCKED.has(iso)).length;
+  // Powers The Islander line — countries whose territory is one or more islands.
+  const islandCount  = known.filter(iso => ISLAND_NATIONS.has(iso)).length;
   const totalCoastal = TOTAL_UN - LANDLOCKED.size;
 
   let most = null, least = null;
@@ -1430,7 +1295,7 @@ function paint() {
 
   /* ── LINES (v2) ── */
   // Shared context object — also reused by the legacy BADGES block below.
-  const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, coastalCount, known };
+  const ctx = { count, earthRatio, continentsTouched, hemis, climates, visitedPopM, coastalCount, islandCount, known };
 
   // Map a line's `axis` to the metric it tracks. Single source of truth for
   // both the line-card rendering and the tier ladder.
@@ -1440,6 +1305,7 @@ function paint() {
       case 'land':    return ctx.earthRatio;
       case 'pop':     return ctx.visitedPopM;
       case 'coast':   return ctx.coastalCount;
+      case 'islands': return ctx.islandCount;
       case 'hemi':    return ctx.hemis.size;
       case 'climate': return ctx.climates.size;
       case 'cont':    return ctx.continentsTouched.size;
@@ -1503,48 +1369,56 @@ function paint() {
   document.getElementById('lines-progress').textContent =
     `${linesAtTopTier} of ${LINE_ORDER.length} mastered`;
 
-  /* ── BADGES ── */
-  function isUnlocked(b) {
-    if (b.axis === 'count')   return count >= b.t;
-    if (b.axis === 'land')    return earthRatio >= b.t;
-    if (b.axis === 'cont')    return continentsTouched.has(b.t);
-    if (b.axis === 'hemi')    return hemis.has(b.t);
-    if (b.axis === 'climate') return climates.has(b.t);
-    if (b.axis === 'pop')     return visitedPopM >= b.t;
-    if (b.axis === 'coast')   return coastalCount >= b.t;
-    if (b.axis === 'geo')     return (GEO_SETS[b.t] || []).some(iso => known.includes(iso));
-    return false;
-  }
-  const sorted = [...BADGES].map(b => ({...b, _unlocked: isUnlocked(b)}))
-    .sort((a, b) => {
-      if (a._unlocked !== b._unlocked) return a._unlocked ? -1 : 1;
-      return BADGES.indexOf(a) - BADGES.indexOf(b);
-    });
-
-  const wall = document.getElementById('badge-wall');
-  wall.innerHTML = '';
-  let unlockedCount = 0;
-  sorted.forEach(b => {
-    const unlocked = b._unlocked;
-    if (unlocked) unlockedCount++;
-    const [bg, ink] = PALETTE[b.palette] || PALETTE.bone;
-    const div = document.createElement('div');
-    div.className = 'badge ' + (unlocked ? 'unlocked' : 'locked');
-    div.dataset.id = b.id;
-    if (unlocked) {
-      div.style.setProperty('--badge-bg', bg);
-      div.style.setProperty('--badge-ink', ink);
+  /* ── ATLAS TITLE (Layer 1) ── */
+  const titleEl = document.getElementById('atlas-title');
+  if (titleEl) {
+    const title = computeTitle(known);
+    if (title.empty) {
+      titleEl.innerHTML = `<span class="empty">Your atlas is just beginning.</span>`;
+    } else {
+      titleEl.innerHTML = `<span class="star">★</span><span class="name">${title.name}</span><span class="star">★</span>`;
     }
-    /* no hover tooltip on badges — click reveals the detail panel below the wall */
-    div.innerHTML = `
-      <div class="badge-art">${renderArt(b.art, unlocked ? ink : '#9893a0')}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-meta">${b.meta || ''}</div>
+  }
+
+  /* ── SETS (Layer 3) ── */
+  const setGrid = document.getElementById('set-grid');
+  setGrid.innerHTML = '';
+  let completedSets = 0;
+  for (const id of SET_ORDER) {
+    const set = SETS[id];
+    if (!set) continue;
+    const prog = setProgress(set, known);
+    if (prog.complete) completedSets++;
+    const pct = Math.round((prog.count / prog.total) * 100);
+    // ink colour for the artwork — palette ink, falling back to neutral.
+    const ink = prog.complete ? '#B58B33' : 'var(--ink-2)';
+
+    const card = document.createElement('div');
+    card.className = 'set' + (prog.complete ? ' complete' : '');
+    card.dataset.id = id;
+    // chip list rendered inline (visited first), used when the card expands.
+    const chipsHtml = set.countries.map(iso => {
+      const country = COUNTRIES[iso];
+      const name = country ? country[2] : iso;
+      const visited = prog.have.includes(iso);
+      return `<span class="set-chip${visited ? ' visited' : ''}">${name}</span>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="set-art">${renderArt(set.art, ink === 'var(--ink-2)' ? '#6b6985' : ink)}</div>
+      <div class="set-body">
+        <h3 class="set-name">${set.name}</h3>
+        <div class="set-progress"><strong>${prog.count}</strong> of ${prog.total}${prog.complete ? ' · ✓ Completed' : ''}</div>
+        <div class="set-bar"><div class="set-bar-fill" style="width: ${pct}%"></div></div>
+        <p class="set-teaser">${set.teaser}</p>
+        <div class="set-countries">${chipsHtml}</div>
+      </div>
     `;
-    div.addEventListener('click', () => selectBadge(b, unlocked, ctx, div));
-    wall.appendChild(div);
-  });
-  document.getElementById('badges-progress').textContent = `${unlockedCount} of ${BADGES.length} unlocked`;
+    card.addEventListener('click', () => selectSet(card));
+    setGrid.appendChild(card);
+  }
+  document.getElementById('sets-progress').textContent =
+    `${completedSets} of ${SET_ORDER.length} completed`;
 
   /* RECENT VISITS — newest first; each row shows the country's true ordinal
      in the user's atlas (so the most recent of 25 reads "25", not "01"). */
@@ -1581,69 +1455,42 @@ function paint() {
   setupRevealObserver();
 }
 
-/* In-place badge expansion: clicking a badge grows it to a 2×2 area in the
-   wall and reveals the explanation text inside. Clicking it again, the ×, or
-   anywhere outside the wall collapses it. The old separate detail panel below
-   the wall is no longer used. */
-function collapseBadge(divEl) {
+/* ── SET expand/collapse — clicking a set card grows it to span 2 cols and
+   reveals the country chip list (✓ for visited). The chip list is rendered
+   into the card markup at paint() time and just toggled visible by the
+   .expanded class — no extra DOM injection on click. */
+function collapseSet(divEl) {
   if (!divEl.classList.contains('expanded')) return;
   divEl.classList.remove('expanded');
-  divEl.style.gridColumn = '';
-  divEl.style.gridRow = '';
-  divEl.querySelectorAll('.badge-inline, .badge-close').forEach(el => el.remove());
+  divEl.querySelectorAll('.set-close').forEach(el => el.remove());
 }
 
-function selectBadge(b, unlocked, ctx, divEl) {
-  // toggle: if this badge is already expanded, collapse and return
+function selectSet(divEl) {
   if (divEl.classList.contains('expanded')) {
-    collapseBadge(divEl);
+    collapseSet(divEl);
     return;
   }
-  // collapse any other open badge first
-  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+  // Only one expand at a time — close any other open set OR line first.
+  document.querySelectorAll('.set.expanded').forEach(el => collapseSet(el));
+  document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
 
-  // figure out grid placement: avoid spilling past the right edge of the wall
-  const wall = document.getElementById('badge-wall');
-  const cols = window.matchMedia('(max-width: 480px)').matches ? 3 : 4;
-  // index among visible badges (display:none ones still count in grid; collapsed wall hides 13+)
-  const allBadges = Array.from(wall.children);
-  const idx = allBadges.indexOf(divEl);
-  const col = (idx % cols) + 1;
-  const startCol = col === cols ? cols - 1 : col;   // shift left if we're at the right edge
-  divEl.style.gridColumn = `${startCol} / span 2`;
-
-  // inject inline detail content
-  const statusKey = unlocked ? 'unlocked' : 'locked';
-  const statusLabel = unlocked ? 'Unlocked' : 'Locked';
-  const detail = document.createElement('div');
-  detail.className = 'badge-inline';
-  detail.innerHTML = `
-    <span class="bd-pill ${statusKey}">${statusLabel}</span>
-    <div class="bd-text">${howToCopy(b, ctx)}</div>
-    <div class="bd-prog">${progressCopy(b, ctx)}</div>
-  `;
-  divEl.appendChild(detail);
-
-  // close button
+  // Close button (matches the line-close style).
   const close = document.createElement('button');
-  close.className = 'badge-close';
+  close.className = 'set-close';
   close.type = 'button';
-  close.setAttribute('aria-label', 'Close badge details');
+  close.setAttribute('aria-label', 'Close set details');
   close.textContent = '×';
   close.addEventListener('click', (e) => {
     e.stopPropagation();
-    collapseBadge(divEl);
+    collapseSet(divEl);
   });
   divEl.appendChild(close);
-
   divEl.classList.add('expanded');
-
-  // give the user a chance to see it if they're scrolled past
   requestAnimationFrame(() => divEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
 
-/* ── LINE expand/collapse — same pattern as badges, with a tier ladder
-   instead of a single threshold copy line. */
+/* ── LINE expand/collapse — same pattern as sets, with a tier ladder
+   instead of a country chip list. */
 function collapseLine(divEl) {
   if (!divEl.classList.contains('expanded')) return;
   divEl.classList.remove('expanded');
@@ -1658,9 +1505,9 @@ function selectLine(line, value, currentTier, divEl) {
     collapseLine(divEl);
     return;
   }
-  // collapse any other open line OR badge first — only one expand at a time
+  // collapse any other open line OR set first — only one expand at a time
   document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
-  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+  document.querySelectorAll('.set.expanded').forEach(el => collapseSet(el));
 
   // grid placement so the expanded card doesn't overflow the right edge
   const grid = document.getElementById('line-grid');
@@ -1732,23 +1579,12 @@ function selectLine(line, value, currentTier, divEl) {
   requestAnimationFrame(() => divEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
 }
 
-/* view-all toggle */
-document.getElementById('view-all').addEventListener('click', () => {
-  const wall = document.getElementById('badge-wall');
-  const btn = document.getElementById('view-all');
-  wall.classList.toggle('expanded');
-  btn.textContent = wall.classList.contains('expanded')
-    ? 'Show fewer'
-    : `View all ${BADGES.length} badges`;
-});
-
-/* collapse any expanded badge OR line when the user clicks outside it */
+/* Collapse any expanded line OR set when the user clicks outside it */
 document.addEventListener('click', (e) => {
-  if (e.target.closest('.badge')) return;        // badge clicks handled by selectBadge
-  if (e.target.closest('.line'))  return;        // line clicks handled by selectLine
-  if (e.target.closest('#view-all')) return;     // toggling "view all" shouldn't collapse
-  document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+  if (e.target.closest('.line')) return;        // line clicks handled by selectLine
+  if (e.target.closest('.set'))  return;        // set clicks handled by selectSet
   document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
+  document.querySelectorAll('.set.expanded').forEach(el => collapseSet(el));
 });
 
 /* ─── EXPORT AS PNG ───
@@ -1793,12 +1629,11 @@ function loadJsPDF() {
    restore everything. Used by both PNG and PDF export paths. */
 async function captureSheet() {
   const html2canvas = await loadHtml2Canvas();
-  const wall   = document.getElementById('badge-wall');
-  const wallWasExpanded = wall.classList.contains('expanded');
   try {
-    wall.classList.add('expanded');
-    // collapse any in-place expanded badge before snapshot — restored by paint() on next reveal
-    document.querySelectorAll('.badge.expanded').forEach(el => collapseBadge(el));
+    // Collapse any in-place expanded line/set before snapshot — restored
+    // automatically by paint() on the next reveal.
+    document.querySelectorAll('.line.expanded').forEach(el => collapseLine(el));
+    document.querySelectorAll('.set.expanded').forEach(el => collapseSet(el));
     document.body.classList.add('exporting');
     // wait for layout to settle before snapshotting
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -1811,7 +1646,6 @@ async function captureSheet() {
       ignoreElements: el => el.tagName === 'IFRAME',
     });
   } finally {
-    if (!wallWasExpanded) wall.classList.remove('expanded');
     document.body.classList.remove('exporting');
   }
 }
