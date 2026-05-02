@@ -44,11 +44,19 @@
     font-style: normal;
     overscroll-behavior-y: contain;
   }
-  /* Wrapper that the JS gesture translates. Held in its own stacking context
-     so position:fixed children inside (toolbars etc.) move with the wrapper. */
-  .atlas-content { will-change: transform; }
-  .atlas-content.springing { transition: transform 220ms cubic-bezier(.16,1,.3,1); }
-  .atlas-content.committing { transition: transform 320ms cubic-bezier(.6,.05,.7,1); }
+  /* Wrapper that the JS gesture translates. position:relative + z-index keeps
+     it above .scroll-fade (z-index 1) so the gradient doesn't tint our cards. */
+  .atlas-content { position: relative; z-index: 3; will-change: transform, opacity; }
+  .atlas-content.springing  { transition: transform 220ms cubic-bezier(.16,1,.3,1), opacity 220ms ease; }
+  .atlas-content.committing { transition: transform 200ms cubic-bezier(.4,.0,.2,1), opacity 160ms ease-out; }
+  /* Topbar / scroll-fade: stay put during the gesture, fade out only on commit
+     so the atlas dissolves into the globe rather than abruptly cutting. */
+  .topbar      { transition: opacity 180ms ease-out; }
+  .scroll-fade { transition: opacity 200ms ease-out; }
+  .topbar.fading, .scroll-fade.fading { opacity: 0; pointer-events: none; }
+  /* Globe iframe: gets a transition so JS can crossfade it to full brightness
+     as the user pulls (dim atlas → bright earth). */
+  .globe-bg { transition: opacity 180ms ease-out; }
   em, i, cite, address { font-style: normal; }
 
   .globe-bg {
@@ -1677,21 +1685,31 @@ paint();
 // viewport commits to navigating. Replaces native iOS pull-to-refresh
 // (disabled via `overscroll-behavior-y: contain` on html/body).
 (function setupReturnGesture(){
-  // Wrap everything except the iframe + scroll-fade into a transformable
-  // container. Doing it in JS avoids hand-editing 1500 lines of markup.
+  // Wrap everything except the iframe + scroll-fade + topbar into a
+  // transformable container. The topbar must stay OUT of the wrap because
+  // a CSS transform on the wrapper breaks position:fixed for descendants
+  // (transformed ancestor becomes the containing block) — the topbar would
+  // scroll with the cards instead of staying pinned to the viewport.
   const wrap = document.createElement('div');
   wrap.className = 'atlas-content';
   [...document.body.children].forEach(child => {
     if (child.tagName === 'IFRAME') return;
     if (child.classList && child.classList.contains('scroll-fade')) return;
+    if (child.classList && child.classList.contains('topbar')) return;
     wrap.appendChild(child);
   });
   document.body.appendChild(wrap);
 
+  // Cache the chrome elements we'll cross-fade during the gesture.
+  const _iframe    = document.querySelector('.globe-bg');
+  const _topbar    = document.querySelector('.topbar');
+  const _scrollFx  = document.querySelector('.scroll-fade');
+
   // --- Tunables --------------------------------------------------------
-  const COMMIT_FRACTION = 0.40;    // pull past 40% of viewport → navigate back
-  const RESIST_AFTER    = 80;      // first 80px of pull are 1:1, then resistance kicks in
-  const RESIST_FACTOR   = 0.45;    // resistance ratio past RESIST_AFTER (lower = stiffer)
+  // Slightly easier to trigger — the user said "rather too easy than too hard".
+  const COMMIT_FRACTION = 0.22;    // pull past 22% of viewport → navigate back
+  const RESIST_AFTER    = 60;      // first 60px of pull are 1:1, then resistance kicks in
+  const RESIST_FACTOR   = 0.70;    // resistance ratio past RESIST_AFTER (higher = lighter)
 
   let triggered = false;
   let touchStartY = null;          // initial finger Y at the start of a pull
@@ -1704,8 +1722,21 @@ paint();
     return RESIST_AFTER + (rawDy - RESIST_AFTER) * RESIST_FACTOR;
   }
 
-  function setTranslate(px) {
+  // Apply pull-progress visuals: translate the wrap, fade it slightly, AND
+  // brighten the iframe back from 0.7 → 1.0 so the earth feels "already there"
+  // before the navigation actually commits. This is what kills the perceived
+  // sluggishness — the iframe staying dim was masking the slide animation.
+  function setPullVisuals(px) {
     wrap.style.transform = px ? `translate3d(0, ${px}px, 0)` : '';
+    if (px > 0) {
+      // 0..1 progress towards the commit threshold (clamped).
+      const p = Math.min(1, px / (window.innerHeight * COMMIT_FRACTION));
+      wrap.style.opacity   = (1   - p * 0.35).toFixed(3);   // 1 → 0.65
+      if (_iframe) _iframe.style.opacity = (0.7 + p * 0.30).toFixed(3); // 0.7 → 1.0
+    } else {
+      wrap.style.opacity = '';
+      if (_iframe) _iframe.style.opacity = '';
+    }
   }
 
   function commit() {
@@ -1713,17 +1744,21 @@ paint();
     triggered = true;
     wrap.classList.remove('springing');
     wrap.classList.add('committing');
-    // Slide the whole wrapper off the bottom of the viewport, then navigate.
+    // Fade out atlas chrome (topbar + bottom gradient) so what remains visually
+    // is just the bright earth. The user's eye lands on the globe before the
+    // navigation tear-down begins.
+    if (_topbar)   _topbar.classList.add('fading');
+    if (_scrollFx) _scrollFx.classList.add('fading');
+    if (_iframe)   _iframe.style.opacity = '1';
+    wrap.style.opacity = '0';
     wrap.style.transform = `translate3d(0, ${window.innerHeight + 40}px, 0)`;
-    setTimeout(() => { location.href = '/'; }, 300);
+    setTimeout(() => { location.href = '/'; }, 140);
   }
 
   function springBack() {
     wrap.classList.remove('committing');
     wrap.classList.add('springing');
-    setTranslate(0);
-    // Strip the class once the transition ends so subsequent pulls aren't
-    // animated through a CSS transition (we want them to track the finger 1:1).
+    setPullVisuals(0);
     setTimeout(() => wrap.classList.remove('springing'), 240);
   }
 
@@ -1742,17 +1777,17 @@ paint();
     // Up-swipe (negative) at top of page → user wants to scroll content normally,
     // bail out of the gesture and let native scroll happen.
     if (rawDy <= 0) {
-      if (pulling) { setTranslate(0); pulling = false; }
+      if (pulling) { setPullVisuals(0); pulling = false; }
       return;
     }
     // If the page started scrolling for any reason, abandon the pull.
     if (window.scrollY > 0) {
-      if (pulling) { setTranslate(0); pulling = false; }
+      if (pulling) { setPullVisuals(0); pulling = false; }
       return;
     }
     pulling = true;
     lastDy = elasticDistance(rawDy);
-    setTranslate(lastDy);
+    setPullVisuals(lastDy);
     // Block the page's native scroll for this gesture so the elastic feel
     // isn't fighting with iOS overscroll bounce.
     if (e.cancelable) e.preventDefault();
@@ -1769,6 +1804,24 @@ paint();
     pulling = false;
   }, { passive: true });
 
+  // --- Click on the globe area (around / behind the cards) returns ----
+  // The atlas layout has empty space showing the globe in two places: above
+  // the first card (.stage's 36vh padding-top) and below the last card. A
+  // click that lands on those scaffolding elements (rather than on a card,
+  // button, or interactive child) is the user tapping the globe — return.
+  document.body.addEventListener('click', (e) => {
+    if (triggered) return;
+    const t = e.target;
+    const isScaffolding = (
+      t === wrap ||
+      t === document.body ||
+      t === document.documentElement ||
+      (t.classList && (t.classList.contains('stage') || t.classList.contains('scroll-fade')))
+    );
+    if (isScaffolding) commit();
+    // Otherwise the click was on a card / button / link / etc. — leave alone.
+  });
+
   // --- Mouse wheel (desktop) ------------------------------------------
   // Same idea, but accumulating wheel delta. A coast (no wheel for 140ms)
   // counts as "release" — at that point we either commit or spring back.
@@ -1778,7 +1831,7 @@ paint();
     if (triggered) return;
     if (window.scrollY > 0) {
       // user is scrolling content normally — reset any accumulated pull
-      if (wheelAccum) { wheelAccum = 0; setTranslate(0); }
+      if (wheelAccum) { wheelAccum = 0; setPullVisuals(0); }
       return;
     }
     // deltaY < 0 = scrolling up at the top → treat as pull-down
@@ -1788,7 +1841,7 @@ paint();
     }
     wheelAccum += -e.deltaY;
     const dy = elasticDistance(wheelAccum);
-    setTranslate(dy);
+    setPullVisuals(dy);
     if (e.cancelable) e.preventDefault();
     clearTimeout(wheelTimer);
     wheelTimer = setTimeout(() => {
