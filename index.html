@@ -145,7 +145,7 @@ html.embed-mode #scene{pointer-events:none}
   <details><summary>technical details</summary><pre id="boot-error-msg"></pre></details>
 </div>
 
-<!-- world topology is fetched at runtime from ./data/world.topojson -->
+<!-- world topology is fetched at runtime from ./data/worldtopo.json -->
 
 <!-- Three.js r128, served locally for offline + native packaging. -->
 <script src="./vendor/three-r128.min.js"></script>
@@ -294,7 +294,7 @@ const STYLE = {
   // Override these to load alternate datasets (other countries, other elevation
   // tables) without editing the engine. Both must resolve to JSON.
   dataSources: {
-    topology:    './data/world.topojson',
+    topology:    './data/worldtopo.json',
     elevations:  './data/elevations.json',
   },
 
