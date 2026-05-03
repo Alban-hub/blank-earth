@@ -1,16 +1,20 @@
-// Regions — curated country lists for the v5.1 title classifier.
+// Regions — curated country lists for the v5.7 title classifier.
 //
 // One file, one source of truth for "what countries belong to what region".
 // Used exclusively by data/titles.js for regional + latitude-band scoring.
 //
-// Naming convention: regions are camelCase ids that match the title id
-// (without "the-" prefix). E.g. REGIONS.oliveBranch powers The Olive-Branch.
+// Naming convention: REGIONS keys are camelCase versions of the title id
+// (the kebab-case slug). E.g. REGIONS.oliveBranch powers id 'olive-branch'.
+// Some title *display names* diverge from their ids after the v5.7 rename
+// pass — e.g. REGIONS.mongol still powers id 'mongol', shown as
+// "The Steppe-Empire". Ids are stable (so persisted state stays valid);
+// names are editorial.
 //
 // Curatorial notes:
 //   • Regions overlap intentionally — a country can be in multiple. The
 //     scoring model handles this via density + nesting.
 //   • Inclusivity bias: regions reach slightly wider than strict definitions,
-//     since the 0.45 density floor + min-count gates do the discrimination.
+//     since the 0.50 density floor + min-count gates do the discrimination.
 //   • Latitude-band patterns (equatorialReach, polarReach) are *reach* lists
 //     — a country is included if its territory meaningfully touches the band,
 //     even if the centroid is outside it (Mexico, India, Bangladesh for the
@@ -39,10 +43,6 @@ export const REGIONS = {
   ],
 
   // The Romanesque — Roman Empire at greatest extent (Trajan, ~117 CE).
-  // Tightened: removed CZE/SVK (Bohemia & Slovakia were never Roman), kept
-  // ROU (Dacia, briefly Roman) and HUN (Pannonia). The audit's complaint:
-  // a user with central/eastern European focus shouldn't pick up Romanesque
-  // hits from countries that lie north of the Limes Germanicus.
   romanesque: [
     // Western Empire
     'ITA','ESP','PRT','FRA','GBR','MLT',
@@ -64,9 +64,12 @@ export const REGIONS = {
     'ISL','IRL','GBR',
   ],
 
-  // The Mongol — Mongol Empire at peak (~late 13th century, all four khanates).
-  // Mongolia, China (Yuan), Russia + Eastern Slavs (Golden Horde), Central
-  // Asia (Chagatai), Persia/Caucasus (Ilkhanate).
+  // The Steppe-Empire (id 'mongol') — Mongol Empire at peak (~late 13th
+  // century, all four khanates). Kept the id 'mongol' for state stability;
+  // display name renamed to deemphasize conquest framing and ethnic
+  // identity, parallel to the Pioneer→Anglosphere rename. The region itself
+  // is unchanged: Mongolia, China (Yuan), Russia + Eastern Slavs (Golden
+  // Horde), Central Asia (Chagatai), Persia/Caucasus (Ilkhanate).
   mongol: [
     'MNG','CHN',
     'RUS','UKR','BLR',
@@ -74,14 +77,18 @@ export const REGIONS = {
     'IRN','IRQ','AFG','AZE','ARM','GEO',
   ],
 
-  // The Crossroads — Caucasus + Anatolian + Iranian plateau
+  // The Plateau-Walker (id 'crossroads') — Caucasus + Anatolian + Iranian
+  // plateau. Renamed: "The Crossroads" read as a place/axis, not a
+  // character; "Plateau-Walker" joins the -Walker family.
   crossroads: [
     'ARM','AZE','GEO','TUR','IRN',
   ],
 
-  // The Conquistador — Spanish + Portuguese colonial reach. Iberia +
-  // Hispanic Latin America + Lusophone Brazil + Spanish Philippines.
-  // Replaces the v1 "Frontier" catch-all (which was just "the Americas").
+  // The Iberoamerican (id 'conquistador') — Spanish + Portuguese colonial
+  // reach. Iberia + Hispanic Latin America + Lusophone Brazil + Spanish
+  // Philippines. Renamed: "The Conquistador" labelled the user as an heir
+  // of the conqueror identity (parallel to the Pioneer rename); the
+  // geography is the same, the framing is now neutral.
   conquistador: [
     'ESP','PRT',
     // Hispanic North/Central America + Caribbean
@@ -96,8 +103,7 @@ export const REGIONS = {
   ],
 
   // The Anglosphere — countries linked by English language and the long
-  // tide of British migration / law / culture. Renamed from "Pioneer" to
-  // avoid valorizing colonial expansion; this is geographic/linguistic.
+  // tide of British migration / law / culture.
   anglosphere: [
     'GBR','IRL','USA','CAN','AUS','NZL',
     // South Asia (English co-official, common-law inheritance)
@@ -110,12 +116,12 @@ export const REGIONS = {
     'SGP','MYS','BRN',
   ],
 
-  // The Songhai — West Africa. Named for the medieval Songhai Empire
-  // (1430–1591), one of the largest African empires, alongside Mali and
-  // Ghana — the trans-Saharan trade kingdoms whose centers lay along the
-  // Niger River bend. Covers Senegal to Cameroon plus the inland Sahel
-  // bend. Parallel to Mongol/Hanseatic/Romanesque in naming (a historical
-  // civilizational identity, not a colonizer's identity).
+  // The Niger-Bend (id 'songhai') — West Africa. Renamed for the same
+  // reason as Mongol → Steppe-Empire: a title shouldn't attach a user to
+  // an empire-or-people name. The geography (Senegal to Cameroon plus the
+  // inland Sahel bend) is unchanged; the description still names Mali,
+  // Songhai and Ghana as the medieval trade kingdoms whose centres lay
+  // along the Niger Bend.
   songhai: [
     // Atlantic coast (Gulf of Guinea + the Senegambia)
     'SEN','GMB','GIN','GNB','SLE','LBR','CIV','GHA','TGO','BEN','NGA','CMR',
@@ -125,7 +131,9 @@ export const REGIONS = {
     'CPV',
   ],
 
-  // The Cordillera — Andean spine
+  // The Andes-Walker (id 'cordillera') — Andean spine. Renamed: "The
+  // Cordillera" read as a place to collect (same failure mode as
+  // Coral-Path → Reef-Walker).
   cordillera: [
     'ARG','BOL','CHL','COL','ECU','PER','VEN',
   ],
@@ -140,21 +148,20 @@ export const REGIONS = {
     'BRA','PER','COL','ECU','BOL','VEN','GUY','SUR',
   ],
 
-  // The Reef-Walker — Caribbean basin (renamed from coralPath; "coral-path"
-  // sounded like a route/Set, "reef-walker" describes the traveler).
+  // The Reef-Walker — Caribbean basin.
   reefWalker: [
     'CUB','JAM','HTI','DOM','BHS','BRB','TTO',
     'ATG','DMA','GRD','KNA','LCA','VCT','BLZ',
   ],
 
-  // The Dust-Road — the Sahel proper
+  // The Sahel-Walker (id 'dust-road') — the Sahel proper. Renamed:
+  // "Dust-Road" read as a route/Set name (parallel to the Silk Road,
+  // which IS a Set in this app).
   dustRoad: [
     'SEN','GMB','MRT','MLI','BFA','NER','TCD','SDN','SSD','ERI',
   ],
 
-  // The Rift-Walker — East African Rift Valley (renamed from coffeeBelt;
-  // "coffee-belt" sounded like a set of countries to collect, "rift-walker"
-  // describes the traveler of the Great Rift Valley geography).
+  // The Rift-Walker — East African Rift Valley
   riftWalker: [
     'KEN','TZA','UGA','RWA','BDI','ETH',
   ],
@@ -165,17 +172,11 @@ export const REGIONS = {
   ],
 
   // The Cape-Light — Southern + south-central Africa.
-  // Expanded to include Angola and Zambia (geographically south-central but
-  // culturally aligned with the Cape rather than the Sahel/Coffee-Belt zones)
-  // and Madagascar/Mauritius which sit in the same southern-Indian-Ocean
-  // weather system.
   capeLight: [
     'ZAF','NAM','BWA','ZWE','LSO','SWZ','MOZ','AGO','ZMB','MWI','MDG',
   ],
 
-  // The Monsoon-Walker — Indian Ocean rim (renamed from saffronRoad;
-  // "saffron-road" sounded like a route to traverse, "monsoon-walker"
-  // describes the traveler who follows the trade winds).
+  // The Monsoon-Walker — Indian Ocean rim
   monsoonWalker: [
     'IND','PAK','LKA','BGD','MMR','THA','MYS','SGP','IDN',
     'MDV','KEN','TZA','MOZ','MDG','MUS','SYC','COM','YEM','OMN',
@@ -191,7 +192,8 @@ export const REGIONS = {
     'VNM','LAO','KHM','THA','MMR',
   ],
 
-  // The Dragon-Coast — E + SE Asia Pacific
+  // The Pacific-Walker (id 'dragon-coast') — E + SE Asia Pacific. Renamed:
+  // "Dragon-Coast" read as a route/Set name; -Walker family is consistent.
   dragonCoast: [
     'JPN','KOR','PRK','TWN','CHN','MNG',
     'VNM','LAO','KHM','THA','MMR','MYS','SGP','BRN','IDN','PHL','TLS',
@@ -245,7 +247,11 @@ export const REGIONS = {
     'AGO','ZMB','MOZ','MWI','MDG',
   ],
 
-  // The Aurora-Bound — polar reach (Arctic-bordering or near)
+  // The Aurora-Bound — polar reach (Arctic-bordering or near).
+  // The Aurora-Bound test in titles.js *also* enforces a Nordic-spread
+  // requirement (≥ 2 of ISL/NOR/SWE/FIN) so that a USA+CAN+RUS+EST atlas
+  // doesn't fire the title without any actual Nordic visit — the name is
+  // aurora-coded, not just polar-coded.
   polarReach: [
     'ISL','NOR','SWE','FIN','DNK','EST','LVA','RUS','CAN','USA',
   ],
@@ -283,7 +289,9 @@ export function requireSpreadPacific(inRegion) {
   return buckets.filter(Boolean).length >= 2;
 }
 
-// Antipodal-pair detection (powers The Antipodean).
+// Antipodal-pair detection (kept for the future Badges layer — the
+// Antipodean title was retired in v5.6 because visiting an antipodal pair
+// is a one-shot fact, not a kind of traveler).
 // Two countries are antipodal if their centroids' lats sum to ~0 (within 13°)
 // AND their lngs differ by ~180° (within 13°). About 1500 km tolerance.
 export function isAntipodal(a, b) {
@@ -307,26 +315,34 @@ export function hasAntipodalPair(visited, COUNTRIES) {
 }
 
 // Title-nesting map: { specificId: [generalIds] }. Used by computeTitle's
-// resolution logic to suppress redundant pairs (the more-specific title beats
-// its general parent when both fire).
+// resolution logic to suppress redundant pairs (the more-specific title
+// beats its general parent when both fire).
 //
-// Empire-renames: old-empire → romanesque, frontier → conquistador. Plus
-// long-horizon ⊂ mongol (Stans were inside the Mongol Empire's Chagatai
-// khanate). New Hanseatic and Pioneer don't have nested specifics.
+// v5.7 fixes:
+//   • long-horizon now nests under BOTH mongol AND caravaneer (the seven
+//     long-horizon countries are 6/7 inside the caravaneer drylands, so
+//     a perfect Stans atlas was previously firing both at score 100 and
+//     tie-breaking alphabetically into Caravaneer — wrong).
+//   • reef-walker no longer nests under conquistador. Of the 14 countries
+//     in reefWalker, only CUB and DOM are in conquistador — the British /
+//     French / Dutch Caribbean is the *majority*. The old nesting was
+//     wrong as data and was suppressing Conquistador in cases where it
+//     genuinely fit the user's atlas better.
+//   • horn-light no longer nests under rift-walker. Horn (ETH, ERI, SOM,
+//     DJI) and Rift (KEN, TZA, UGA, RWA, BDI, ETH) overlap on Ethiopia
+//     only — they're adjacent regions, not nested.
 export const NESTED = {
   'olive-branch':         ['romanesque'],
   'caravaneer':           [],   // crosses Romanesque/Mongol footprints — not cleanly nested
   'crossroads':           [],   // Caucasus/Iran straddle Mongol but pre-date it
-  'long-horizon':         ['mongol'],
+  'long-horizon':         ['mongol', 'caravaneer'],
   'cordillera':           ['conquistador'],
   'pampas-light':         ['conquistador'],
-  'river-drum':           ['conquistador'],   // Brazil = Lusophone Iberia
-  'reef-walker':          ['conquistador'],   // Cuba/DR Spanish; British Caribbean is the minority
+  'river-drum':           ['conquistador'],   // Brazil = Lusophone Iberia, the others are Hispanic
   'subcontinent-walker':  ['monsoon-walker','anglosphere'],
   'mekong-walker':        ['dragon-coast'],
-  'horn-light':           ['rift-walker'],
   'songhai':              [],   // West Africa — own identity, no nested parent
-  'dust-road':            ['caravaneer'],  // Sahel ⊂ Caravaneer drylands
+  'dust-road':            ['caravaneer'],     // Sahel ⊂ Caravaneer drylands
 };
 
 export function isNested(a, b) {
