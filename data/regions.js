@@ -95,11 +95,12 @@ export const REGIONS = {
     'PHL',
   ],
 
-  // The Pioneer — Anglosphere / British colonial reach. Pink-on-the-map.
-  // Inclusive: settler colonies, the subcontinent, Anglo-Africa, Anglo-Caribbean.
-  pioneer: [
+  // The Anglosphere — countries linked by English language and the long
+  // tide of British migration / law / culture. Renamed from "Pioneer" to
+  // avoid valorizing colonial expansion; this is geographic/linguistic.
+  anglosphere: [
     'GBR','IRL','USA','CAN','AUS','NZL',
-    // South Asia
+    // South Asia (English co-official, common-law inheritance)
     'IND','PAK','BGD','LKA','MMR',
     // Anglo-Africa
     'ZAF','KEN','UGA','NGA','GHA','EGY','ZWE','ZMB','MWI','BWA','NAM','LSO','SWZ',
@@ -107,6 +108,21 @@ export const REGIONS = {
     'JAM','BHS','BRB','TTO','BLZ','ATG','DMA','GRD','KNA','LCA','VCT',
     // Anglo-SE Asia
     'SGP','MYS','BRN',
+  ],
+
+  // The Songhai — West Africa. Named for the medieval Songhai Empire
+  // (1430–1591), one of the largest African empires, alongside Mali and
+  // Ghana — the trans-Saharan trade kingdoms whose centers lay along the
+  // Niger River bend. Covers Senegal to Cameroon plus the inland Sahel
+  // bend. Parallel to Mongol/Hanseatic/Romanesque in naming (a historical
+  // civilizational identity, not a colonizer's identity).
+  songhai: [
+    // Atlantic coast (Gulf of Guinea + the Senegambia)
+    'SEN','GMB','GIN','GNB','SLE','LBR','CIV','GHA','TGO','BEN','NGA','CMR',
+    // Inland Sahel west (the Niger Bend kingdoms)
+    'MLI','BFA','NER',
+    // Cape Verde (offshore extension)
+    'CPV',
   ],
 
   // The Cordillera — Andean spine
@@ -124,8 +140,9 @@ export const REGIONS = {
     'BRA','PER','COL','ECU','BOL','VEN','GUY','SUR',
   ],
 
-  // The Coral-Path — Caribbean basin
-  coralPath: [
+  // The Reef-Walker — Caribbean basin (renamed from coralPath; "coral-path"
+  // sounded like a route/Set, "reef-walker" describes the traveler).
+  reefWalker: [
     'CUB','JAM','HTI','DOM','BHS','BRB','TTO',
     'ATG','DMA','GRD','KNA','LCA','VCT','BLZ',
   ],
@@ -135,8 +152,10 @@ export const REGIONS = {
     'SEN','GMB','MRT','MLI','BFA','NER','TCD','SDN','SSD','ERI',
   ],
 
-  // The Coffee-Belt — East African highlands
-  coffeeBelt: [
+  // The Rift-Walker — East African Rift Valley (renamed from coffeeBelt;
+  // "coffee-belt" sounded like a set of countries to collect, "rift-walker"
+  // describes the traveler of the Great Rift Valley geography).
+  riftWalker: [
     'KEN','TZA','UGA','RWA','BDI','ETH',
   ],
 
@@ -154,8 +173,10 @@ export const REGIONS = {
     'ZAF','NAM','BWA','ZWE','LSO','SWZ','MOZ','AGO','ZMB','MWI','MDG',
   ],
 
-  // The Saffron-Road — Indian Ocean rim
-  saffronRoad: [
+  // The Monsoon-Walker — Indian Ocean rim (renamed from saffronRoad;
+  // "saffron-road" sounded like a route to traverse, "monsoon-walker"
+  // describes the traveler who follows the trade winds).
+  monsoonWalker: [
     'IND','PAK','LKA','BGD','MMR','THA','MYS','SGP','IDN',
     'MDV','KEN','TZA','MOZ','MDG','MUS','SYC','COM','YEM','OMN',
   ],
@@ -300,10 +321,12 @@ export const NESTED = {
   'cordillera':           ['conquistador'],
   'pampas-light':         ['conquistador'],
   'river-drum':           ['conquistador'],   // Brazil = Lusophone Iberia
-  'coral-path':           ['conquistador'],   // Cuba/DR Spanish; British Caribbean is the minority
-  'subcontinent-walker':  ['saffron-road','pioneer'],
+  'reef-walker':          ['conquistador'],   // Cuba/DR Spanish; British Caribbean is the minority
+  'subcontinent-walker':  ['monsoon-walker','anglosphere'],
   'mekong-walker':        ['dragon-coast'],
-  'horn-light':           ['coffee-belt'],
+  'horn-light':           ['rift-walker'],
+  'songhai':              [],   // West Africa — own identity, no nested parent
+  'dust-road':            ['caravaneer'],  // Sahel ⊂ Caravaneer drylands
 };
 
 export function isNested(a, b) {

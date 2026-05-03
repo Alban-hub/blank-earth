@@ -160,18 +160,27 @@ export const TITLES = [
     test: (ctx) => regionalScore(ctx, REGIONS.conquistador, { minCount: 8, weight: 0.85 }),
   },
   {
-    id: 'pioneer', name: 'The Pioneer', family: 'regional',
-    description: 'Yours is the pink-on-the-map atlas — England, the settler colonies, the subcontinent, Anglo-Africa. The common law, the cricket pitch, English fields exported to four climates and a thousand soils.',
-    test: (ctx) => regionalScore(ctx, REGIONS.pioneer, { minCount: 7, weight: 0.90 }),
+    id: 'anglosphere', name: 'The Anglosphere', family: 'regional',
+    description: 'Your atlas spans the English-speaking world — Britain, the antipodes, North America, the subcontinent, Anglo-Africa. A geography linked by language, common law, and the long tide of migration.',
+    // Renamed from "Pioneer" — that name and its description celebrated
+    // British imperial expansion, which lands badly for users from
+    // formerly colonized places. Anglosphere is descriptive (the
+    // linguistic/legal commonality) without valorizing the empire.
+    test: (ctx) => regionalScore(ctx, REGIONS.anglosphere, { minCount: 7, weight: 0.90 }),
+  },
+  {
+    id: 'songhai', name: 'The Songhai', family: 'regional',
+    description: 'Your atlas spans the long bend of West Africa — Senegal to Cameroon, the Gulf of Guinea coast meeting the inland Sahel. The geography of Mali, Songhai, and Ghana, the trans-Saharan trade kingdoms that built medieval empires before Europe knew their names.',
+    test: (ctx) => regionalScore(ctx, REGIONS.songhai, { minCount: 4, weight: 1.15 }),
   },
   {
     id: 'cordillera', name: 'The Cordillera', family: 'regional',
-    description: 'You travel where the mountains run the show. The Andean spine — altitude, altiplano, the bus that takes a day to cross what looks short on the map. Yours is an atlas read at four thousand metres.',
+    description: 'Your atlas runs along the Andean spine — altitude, altiplano, the long mountain backbone of South America from the Caribbean to Patagonia. A geography read at four thousand metres.',
     test: (ctx) => regionalScore(ctx, REGIONS.cordillera, { minCount: 4, weight: 1.10 }),
   },
   {
     id: 'pampas-light', name: 'The Pampas-Light', family: 'regional',
-    description: 'You belong to the temperate south of the New World — the grasslands, the Patagonian wind, the long nights at high latitude on the wrong side of the equator. An atlas where summer comes in January.',
+    description: 'You belong to the temperate south of the New World — the grasslands, the Patagonian wind, the long nights at high southern latitudes. An atlas where summer comes in January.',
     test: (ctx) => regionalScore(ctx, REGIONS.pampasLight, { minCount: 3, weight: 1.15 }),
   },
   {
@@ -180,9 +189,11 @@ export const TITLES = [
     test: (ctx) => regionalScore(ctx, REGIONS.riverDrum, { minCount: 4, weight: 1.10 }),
   },
   {
-    id: 'coral-path', name: 'The Coral-Path', family: 'regional',
-    description: 'You travel the islands of the inland sea. Cuba to Trinidad, the chain the trade winds threaded — sugar, salt, reef, the long shadow of empire turned into Carnival and conch.',
-    test: (ctx) => regionalScore(ctx, REGIONS.coralPath, { minCount: 4, weight: 1.05 }),
+    id: 'reef-walker', name: 'The Reef-Walker', family: 'regional',
+    description: 'You travel the Antilles arc — Cuba to Trinidad, the chain the trade winds threaded. A geography of coral, palm, sugar, salt, and the long shadow of empire turned into Carnival and conch.',
+    // Renamed from "The Coral-Path" — that name sounded like a route/Set
+    // to be completed; "Reef-Walker" describes the traveler.
+    test: (ctx) => regionalScore(ctx, REGIONS.reefWalker, { minCount: 4, weight: 1.05 }),
   },
   {
     id: 'dust-road', name: 'The Dust-Road', family: 'regional',
@@ -190,9 +201,12 @@ export const TITLES = [
     test: (ctx) => regionalScore(ctx, REGIONS.dustRoad, { minCount: 3, weight: 1.20 }),
   },
   {
-    id: 'coffee-belt', name: 'The Coffee-Belt', family: 'regional',
-    description: 'You travel the East African highlands — the rift valley, the green at altitude, the cradle of modernity’s first cup. Kenya, Ethiopia, the small countries that share the equator and the lakes.',
-    test: (ctx) => regionalScore(ctx, REGIONS.coffeeBelt, { minCount: 3, weight: 1.15 }),
+    id: 'rift-walker', name: 'The Rift-Walker', family: 'regional',
+    description: 'You travel the East African Rift — Kenya, Tanzania, Uganda, Rwanda, Ethiopia. A geography of high plateau and ancient lake, where the continent is splitting open and the equator runs through the green at altitude.',
+    // Renamed from "The Coffee-Belt" — that name sounded like a set of
+    // countries to collect; "Rift-Walker" describes the traveler of the
+    // Great Rift Valley.
+    test: (ctx) => regionalScore(ctx, REGIONS.riftWalker, { minCount: 3, weight: 1.15 }),
   },
   {
     id: 'horn-light', name: 'The Horn-Light', family: 'regional',
@@ -205,9 +219,11 @@ export const TITLES = [
     test: (ctx) => regionalScore(ctx, REGIONS.capeLight, { minCount: 3, weight: 1.15 }),
   },
   {
-    id: 'saffron-road', name: 'The Saffron-Road', family: 'regional',
-    description: 'You travel the Indian Ocean rim — the route the monsoon sailed two thousand years before Europe found it. India to East Africa, Madagascar to the Maldives. An atlas of bazaars, dhows, spice on the wind.',
-    test: (ctx) => regionalScore(ctx, REGIONS.saffronRoad, { minCount: 5, weight: 1.05 }),
+    id: 'monsoon-walker', name: 'The Monsoon-Walker', family: 'regional',
+    description: 'You travel where the trade winds blow east-west — the Indian Ocean rim from Mombasa to Madagascar, India to the Maldives. A geography of dhow harbours and bazaars, the route the monsoon sailed two thousand years before Europe found it.',
+    // Renamed from "The Saffron-Road" — that name sounded like a route
+    // to traverse; "Monsoon-Walker" describes the traveler.
+    test: (ctx) => regionalScore(ctx, REGIONS.monsoonWalker, { minCount: 5, weight: 1.05 }),
   },
   {
     id: 'subcontinent-walker', name: 'The Subcontinent-Walker', family: 'regional',
@@ -226,7 +242,7 @@ export const TITLES = [
   },
   {
     id: 'trade-winds', name: 'The Trade-Winds', family: 'regional',
-    description: 'You travel where three continents look across the world’s largest ocean. Asia to the Americas via Oceania — the volcanoes, the date line, the long flights, the ring of fire.',
+    description: 'Your atlas spans three continents looking across the world’s largest ocean. Asia to the Americas via Oceania — the volcanoes, the date line, the ring of fire.',
     test: (ctx) => regionalScore(ctx, REGIONS.tradeWinds, {
       minCount: 6, weight: 0.95, requireSpread: requireSpreadPacific,
     }),
@@ -240,7 +256,7 @@ export const TITLES = [
   },
   {
     id: 'southern-cross', name: 'The Southern-Cross', family: 'regional',
-    description: 'You travel the southern Pacific — Australia, New Zealand, the coral microstates. An atlas under a different night sky, where the longest distances in the world are routine and the islands are most of the country.',
+    description: 'Your atlas sits under a different night sky — Australia, New Zealand, the coral microstates of the southern Pacific. A geography of the long-water world, where the islands are most of the country.',
     test: (ctx) => regionalScore(ctx, REGIONS.southernCross, { minCount: 3, weight: 1.10 }),
   },
 
@@ -249,11 +265,9 @@ export const TITLES = [
   {
     id: 'sphere-walker', name: 'The Sphere-Walker', family: 'pattern',
     description: 'You travel as if the planet were the unit of measurement — meaningful presence in all four hemispheres, north and south of the equator, east and west of the meridian. An atlas that closes the full sphere.',
-    // Strict per-hemisphere requirement: at least 3 distinct countries in
-    // EACH of N, S, E, W. The previous version (just "any 4 hemispheres
-    // touched") fired for focused African or Pacific atlases that grazed
-    // multiple hemispheres via single equator/meridian-straddling countries.
-    // Plus count ≥ 18 (was 12) so this remains a "really earned" pattern.
+    // Strict per-hemisphere requirement: ≥3 distinct countries in EACH
+    // of N, S, E, W. count ≥ 18. Score lowered 78→75 so that Family C tier
+    // titles (Globetrotter at 75+) can compete from their threshold.
     test: (ctx) => {
       if (ctx.count < 18) return 0;
       let n = 0, s = 0, e = 0, w = 0;
@@ -264,71 +278,57 @@ export const TITLES = [
         if (lng >= 0) e++; else w++;
       }
       if (n < 3 || s < 3 || e < 3 || w < 3) return 0;
-      return 78;
+      return 75;
     },
   },
-  {
-    id: 'five-skies', name: 'The Five-Skies', family: 'pattern',
-    description: 'You travel through every kind of weather — tropical, subtropical, temperate, subarctic, polar. Yours is an atlas where the seasons of one country are foreign to the seasons of another.',
-    // Only fires for genuine 5-climate atlases. The previous "4 climates ≥
-    // 60" fallback was firing as primary for broad European travelers who
-    // happened to span subarctic Latvia and tropical Yemen — an over-easy
-    // achievement-style match. Five-Skies is now a high bar: requires
-    // hitting Polar, which means visiting Iceland, Nordics, Russia north,
-    // or Canada/USA Alaska.
-    test: (ctx) => {
-      if (ctx.count < 15) return 0;
-      return ctx.climates.size === 5 ? 82 : 0;
-    },
-  },
+  // Five-Skies removed in v5.5. Reason: it was a "check" rather than a
+  // title — count of climate bands hit, with USA/CAN/RUS each contributing
+  // multiple bands via the polar-territory override. Easy to trigger
+  // through 3 specific countries rather than meaningful climate diversity,
+  // and it duplicates the Climatologist Line (which already shows 1–5 band
+  // tier progression). The Line keeps the concept; the title slot is gone.
+
   {
     id: 'mariner', name: 'The Mariner', family: 'pattern',
-    description: 'You travel where the sea is the constant — almost every country in your atlas touches blue. Yours is the harbour view, the ferry timetable, the salt-air arrival.',
-    // The world is 78% coastal, so a 75% threshold means "below the global
-    // average" — which fires Mariner for any user with broad popular travel.
-    // 90% means *deliberately* sea-focused (sailors, beach travelers, island
-    // hoppers). minCount 15 (was 12) keeps low-count users from triggering.
-    // Score range 65/80 (was 70/85) so Mariner doesn't beat Five-Skies (82)
-    // or strong regional titles for users whose 90%+ coastal is an artifact
-    // of broad popular travel rather than deliberate coast-focus.
+    description: 'Your atlas leans toward the sea — almost every country in it touches blue. Yours is a geography of coasts, harbours, and the salt edge of every continent.',
+    // Lowered to 60/72 — coast-focused traveler is still recognized but
+    // doesn't crowd out Globetrotter at 75 countries.
     test: (ctx) => {
       if (ctx.count < 15) return 0;
       const ratio = ctx.coastalCount / ctx.count;
-      if (ratio >= 0.95) return 80;
-      if (ratio >= 0.90) return 65;
+      if (ratio >= 0.95) return 72;
+      if (ratio >= 0.90) return 60;
       return 0;
     },
   },
   {
     id: 'inlander', name: 'The Inlander', family: 'pattern',
     description: 'You travel away from the ports. Half or more of your countries are landlocked — the Stans, the Alps, the African interior. Yours is the long-view atlas, no horizon of water.',
-    // The world is only 22% landlocked. 50% landlocked is genuinely
-    // inland-focused; below that is just normal travel that includes a
-    // few inland countries. (Was 35%, which fires for too many casual
-    // mixed-itinerary users.)
     test: (ctx) => {
       if (ctx.count < 12) return 0;
       const ratio = ctx.landlockedCount / ctx.count;
-      if (ratio >= 0.60) return 82;
-      if (ratio >= 0.50) return 68;
+      if (ratio >= 0.60) return 72;
+      if (ratio >= 0.50) return 60;
       return 0;
     },
   },
-  {
-    id: 'antipodean', name: 'The Antipodean', family: 'pattern',
-    description: 'You’ve stood on opposite sides of the planet — two countries that line up through the centre of the earth. A geographic rhyme: the atlas at its full possible reach.',
-    test: (ctx) => {
-      if (ctx.count < 20) return 0;
-      return hasAntipodalPair(ctx.visited, COUNTRIES) ? 75 : 0;
-    },
-  },
+  // The Antipodean was removed in v5.6 — visiting an antipodal pair is a
+  // one-shot fact (a "stamp"), not a kind of traveler. It belongs in a
+  // future Badges layer, not as a primary identity. The hasAntipodalPair()
+  // detection function stays in regions.js for that future use.
+
   {
     id: 'megapolitan', name: 'The Megapolitan', family: 'pattern',
-    description: 'You travel where most of humanity actually lives — China, India, the United States, Indonesia, the great populated countries. Yours is the crowded atlas, the megacity skyline, the queue at the gate.',
+    description: 'Your atlas centers on the world’s most populated countries — China, India, the United States, Indonesia, Brazil. Half of humanity lives in these places. Yours is the geography of the great populations.',
+    // Description scrubbed of "queue at the gate / megacity skyline"
+    // assessment of *how* the user travels — they might be visiting any
+    // of these countries for rural, cultural, or off-the-path reasons.
+    // The title only claims they've been to the populated places, not
+    // that they did the urban airport thing.
     test: (ctx) => {
       const hits = ctx.visited.filter(c => TOP_POPULOUS.has(c)).length;
-      if (hits >= 6) return 85;
-      if (hits >= 4) return 70;
+      if (hits >= 6) return 80;
+      if (hits >= 4) return 65;
       return 0;
     },
   },
@@ -350,29 +350,40 @@ export const TITLES = [
 
   // ============= Family C — Tier (4 — Cosmographer is short-circuited) =============
 
+  // Tier titles — weight 1.0, scores aligned so each tier's score AT its
+  // threshold matches Five-Skies (75) and beats it via tier-priority tie-
+  // break. This ensures the user's title VISIBLY shifts at each milestone:
+  //
+  //   • count 40 → Long-March 75 (matches Five-Skies, tier wins ties)
+  //   • count 75 → Globetrotter 87 (clearly wins)
+  //   • count 150 → Completist 92 (clearly wins)
+  //   • count 185 → Universalist 95+
+  //   • count 195 → Cosmographer (short-circuit)
+  //
+  // No more "stuck on Five-Skies for 40 countries" problem.
   {
     id: 'universalist', name: 'The Universalist', family: 'tier',
     description: 'You travel as if completion were the point — within ten countries of the full set. Yours is the atlas almost finished, the politics of the impossible passport, the last few being the hardest of all.',
     test: (ctx) =>
-      tierScore(ctx.count, c => c >= 185 && c < 195 ? 92 + (c - 185) : 0, 0.95),
+      tierScore(ctx.count, c => c >= 185 && c < 195 ? 95 + (c - 185) * 0.4 : 0, 1.00, 99),
   },
   {
     id: 'completist', name: 'The Completist', family: 'tier',
     description: 'You travel for the depth of breadth — a hundred and fifty countries and still going. Yours is the long, serious project: most of the world walked, most of the visas earned, most of the maps known by hand.',
     test: (ctx) =>
-      tierScore(ctx.count, c => c >= 150 ? 75 + (c - 150) * 0.4 : 0, 0.90, 88),
+      tierScore(ctx.count, c => c >= 150 ? 92 + (c - 150) * 0.1 : 0, 1.00, 94),
   },
   {
     id: 'globetrotter', name: 'The Globetrotter', family: 'tier',
-    description: 'You travel widely as a matter of habit — seventy-five countries and rising. Yours is the broad, unhurried atlas: airline statuses unbothered, time zones in the bones, no surprise left at any departure board.',
+    description: 'Your atlas is wide as a matter of habit — seventy-five countries and rising. The broad-spread map: most regions visited, most continents touched, the world less unfamiliar than not.',
     test: (ctx) =>
-      tierScore(ctx.count, c => c >= 75 ? 55 + (c - 75) * 0.2 : 0, 0.85, 70),
+      tierScore(ctx.count, c => c >= 75 ? 87 + (c - 75) * 0.05 : 0, 1.00, 91),
   },
   {
     id: 'long-march', name: 'The Long-March', family: 'tier',
-    description: 'You travel past tourism, into geography — forty countries, the threshold where the atlas starts to feel like a real piece of the world. The long walk has properly begun.',
+    description: 'Your atlas has crossed into geography — forty countries marked, the threshold where the map starts to feel like a real piece of the world.',
     test: (ctx) =>
-      tierScore(ctx.count, c => c >= 40 ? 45 + (c - 40) * 0.3 : 0, 0.75, 60),
+      tierScore(ctx.count, c => c >= 40 ? 75 + (c - 40) * 0.2 : 0, 1.00, 86),
   },
 ];
 
@@ -470,7 +481,15 @@ export function computeTitle(visited) {
     .sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       // Tie-break: family priority then alphabetical id.
-      const famOrder = { regional: 0, pattern: 1, tier: 2 };
+      // Order: regional > tier > pattern. Reasoning:
+      //   • A regional concentration (Olive-Branch, Caravaneer, etc.) is
+      //     the most identity-defining signal — keeps top priority.
+      //   • A tier achievement (Globetrotter at 75, Completist at 150) is
+      //     a real milestone that should claim its score over a pattern
+      //     that happened to fire incidentally (Five-Skies).
+      //   • Patterns last: they fire for any user whose atlas has the
+      //     right shape, but they shouldn't override a count milestone.
+      const famOrder = { regional: 0, tier: 1, pattern: 2 };
       const af = famOrder[a.title.family], bf = famOrder[b.title.family];
       if (af !== bf) return af - bf;
       return a.title.id.localeCompare(b.title.id);
@@ -541,13 +560,29 @@ export function computeTitle(visited) {
 }
 
 // Honest fallback when nothing scores ≥ 30. Replaces the v4-era "default to
-// Wanderer" mislabel. Wanderer is now an *earned* title that requires real
-// breadth (20+ countries, 4+ continents).
+// Wanderer" mislabel. Four flavors of fallback now, all honest, each
+// distinguishing a different stage / shape:
+//
+//   • Sketcher    — small + focused (5–9 countries, single continent)
+//   • Traveller   — small or mid + mixed (5–19, no clear pattern, < 4 conts)
+//   • Wayfarer    — early breadth (10–19, 4+ continents, no concentration)
+//   • Wanderer    — earned breadth (20+, 4+ continents, no concentration)
+//
+// The Wayfarer is new — it captures the user with 12 countries spread
+// across 4 continents, who has a real pattern (broad early travel) but
+// doesn't yet meet Wanderer's 20-country threshold.
 export function honestFallback(ctx) {
   if (ctx.count < 10 && ctx.continents.size === 1) {
     return {
       id: 'sketcher', name: 'The Sketcher',
       description: 'You travel deep before you travel wide — a small atlas, focused close. One continent so far, a region you’ve started to know well. The first chapter of something.',
+      family: 'fallback',
+    };
+  }
+  if (ctx.count < 20 && ctx.continents.size >= 4) {
+    return {
+      id: 'wayfarer', name: 'The Wayfarer',
+      description: 'You travel broadly already — four continents in just over a dozen visits. The pattern hasn’t settled yet, but the reach is there. Your atlas is becoming the world.',
       family: 'fallback',
     };
   }
