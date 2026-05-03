@@ -318,11 +318,25 @@ export function hasAntipodalPair(visited, COUNTRIES) {
 // resolution logic to suppress redundant pairs (the more-specific title
 // beats its general parent when both fire).
 //
+// Note on "nesting": entries here are *specificity orderings*, not strict
+// geographic subsets. Some pairs are full subsets (pampas-light ⊂
+// conquistador, dust-road ⊂ caravaneer), others are partial overlaps
+// where the specific name is the better identity when both fire (river-
+// drum/conquistador ~75% overlap; mongol/caravaneer ~44% overlap on the
+// steppe-dryland zone of Eurasia). The rule is the same in both cases:
+// when both score above threshold, the specific wins.
+//
 // v5.7 fixes:
 //   • long-horizon now nests under BOTH mongol AND caravaneer (the seven
 //     long-horizon countries are 6/7 inside the caravaneer drylands, so
 //     a perfect Stans atlas was previously firing both at score 100 and
 //     tie-breaking alphabetically into Caravaneer — wrong).
+//   • mongol now nests under caravaneer. The Mongol Empire's heartland
+//     (steppe + Stans + Persia) overlaps the Caravaneer drylands on
+//     ~7 countries; when an atlas fires both — e.g. 8 visits across
+//     MNG/CHN/RUS/KAZ/UZB/TKM/IRN/AFG — both pegged 100 and the
+//     alphabetical tie-break gave "caravaneer" wrongly. The Mongol
+//     Empire is the more specific identity for that atlas shape.
 //   • reef-walker no longer nests under conquistador. Of the 14 countries
 //     in reefWalker, only CUB and DOM are in conquistador — the British /
 //     French / Dutch Caribbean is the *majority*. The old nesting was
@@ -333,9 +347,10 @@ export function hasAntipodalPair(visited, COUNTRIES) {
 //     only — they're adjacent regions, not nested.
 export const NESTED = {
   'olive-branch':         ['romanesque'],
-  'caravaneer':           [],   // crosses Romanesque/Mongol footprints — not cleanly nested
+  'caravaneer':           [],   // crosses Romanesque/Mongol footprints — not cleanly nested upward
   'crossroads':           [],   // Caucasus/Iran straddle Mongol but pre-date it
   'long-horizon':         ['mongol', 'caravaneer'],
+  'mongol':               ['caravaneer'],     // steppe heartland is dryland; Mongol is the specific name
   'cordillera':           ['conquistador'],
   'pampas-light':         ['conquistador'],
   'river-drum':           ['conquistador'],   // Brazil = Lusophone Iberia, the others are Hispanic
