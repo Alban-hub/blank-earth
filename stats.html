@@ -726,6 +726,18 @@
     letter-spacing: 0.005em;
   }
 
+  /* Secondary tag — "also: The Caravaneer". Sits between the primary name
+     and the description. Italic, smaller, dimmer — never competes with the
+     primary, but acknowledges genuinely dual patterns. */
+  .atlas-title-also {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--muted);
+    margin: -10px 0 14px;
+    letter-spacing: 0.01em;
+  }
+
   /* === SETS (Layer 3) — curated collections. Each card: hero artwork
      + name + "X of Y" progress + teaser. Click to expand into a chip
      list of countries (✓ for visited, plain for not-yet). */
@@ -1493,12 +1505,17 @@ function paint() {
   // italic version; reads like a stamp on the page rather than a caption.
   const titleEl = document.getElementById('atlas-title');
   if (titleEl) {
-    const title = computeTitle(known);
-    if (title.empty) {
+    const result = computeTitle(known);
+    const primary = result.primary;
+    const secondary = result.secondary;
+    if (primary.empty) {
       titleEl.classList.add('is-empty');
-      titleEl.innerHTML = `<p class="atlas-title-empty">Your atlas is just beginning.</p>`;
+      titleEl.innerHTML = `<p class="atlas-title-empty">${primary.text || 'Your atlas is just beginning.'}</p>`;
     } else {
       titleEl.classList.remove('is-empty');
+      const secondaryHtml = secondary
+        ? `<p class="atlas-title-also">also: ${secondary.name}</p>`
+        : '';
       titleEl.innerHTML = `
         <div class="atlas-divider" aria-hidden="true">
           <span class="atlas-rule"><span></span><span></span></span>
@@ -1508,8 +1525,9 @@ function paint() {
           <span class="atlas-rule"><span></span><span></span></span>
         </div>
         <div class="atlas-title-lab">A Traveller&rsquo;s Title</div>
-        <h2 class="atlas-title-name">${title.name}</h2>
-        ${title.description ? `<p class="atlas-title-desc">${title.description}</p>` : ''}
+        <h2 class="atlas-title-name">${primary.name}</h2>
+        ${secondaryHtml}
+        ${primary.description ? `<p class="atlas-title-desc">${primary.description}</p>` : ''}
       `;
     }
   }
