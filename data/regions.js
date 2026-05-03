@@ -39,15 +39,16 @@ export const REGIONS = {
   ],
 
   // The Romanesque — Roman Empire at greatest extent (Trajan, ~117 CE).
-  // Tighter than the v1 "Old-Empire" catch-all: only countries with serious
-  // Roman occupation. Excludes the Stans, Saudi/Gulf, Russia/Eastern Slavs,
-  // Caucasus interior — those belong to Mongol, Caravaneer, or Crossroads.
+  // Tightened: removed CZE/SVK (Bohemia & Slovakia were never Roman), kept
+  // ROU (Dacia, briefly Roman) and HUN (Pannonia). The audit's complaint:
+  // a user with central/eastern European focus shouldn't pick up Romanesque
+  // hits from countries that lie north of the Limes Germanicus.
   romanesque: [
     // Western Empire
     'ITA','ESP','PRT','FRA','GBR','MLT',
     // Central Europe (south of Rhine/Danube limes — modern borders are imperfect)
     'BEL','NLD','DEU','CHE','AUT','HUN','HRV','SVN','BIH','SRB','MNE','MKD',
-    'ALB','ROU','BGR','SVK','CZE',
+    'ALB','ROU','BGR',
     // Eastern Mediterranean + Anatolia
     'GRC','CYP','TUR',
     // Levant
@@ -144,9 +145,13 @@ export const REGIONS = {
     'ETH','ERI','SOM','DJI',
   ],
 
-  // The Cape-Light — Southern Africa
+  // The Cape-Light — Southern + south-central Africa.
+  // Expanded to include Angola and Zambia (geographically south-central but
+  // culturally aligned with the Cape rather than the Sahel/Coffee-Belt zones)
+  // and Madagascar/Mauritius which sit in the same southern-Indian-Ocean
+  // weather system.
   capeLight: [
-    'ZAF','NAM','BWA','ZWE','LSO','SWZ','MOZ',
+    'ZAF','NAM','BWA','ZWE','LSO','SWZ','MOZ','AGO','ZMB','MWI','MDG',
   ],
 
   // The Saffron-Road — Indian Ocean rim

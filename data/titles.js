@@ -248,20 +248,37 @@ export const TITLES = [
 
   {
     id: 'sphere-walker', name: 'The Sphere-Walker', family: 'pattern',
-    description: 'You travel as if the planet were the unit of measurement — north and south of the equator, east and west of the meridian, all four hemispheres set foot in. An atlas that closes the full sphere.',
+    description: 'You travel as if the planet were the unit of measurement — meaningful presence in all four hemispheres, north and south of the equator, east and west of the meridian. An atlas that closes the full sphere.',
+    // Strict per-hemisphere requirement: at least 3 distinct countries in
+    // EACH of N, S, E, W. The previous version (just "any 4 hemispheres
+    // touched") fired for focused African or Pacific atlases that grazed
+    // multiple hemispheres via single equator/meridian-straddling countries.
+    // Plus count ≥ 18 (was 12) so this remains a "really earned" pattern.
     test: (ctx) => {
-      if (ctx.count < 12) return 0;
-      return ctx.hemispheres.size === 4 ? 78 : 0;
+      if (ctx.count < 18) return 0;
+      let n = 0, s = 0, e = 0, w = 0;
+      for (const iso of ctx.visited) {
+        const c = COUNTRIES[iso]; if (!c) continue;
+        const lat = c[4], lng = c[5];
+        if (lat >= 0) n++; else s++;
+        if (lng >= 0) e++; else w++;
+      }
+      if (n < 3 || s < 3 || e < 3 || w < 3) return 0;
+      return 78;
     },
   },
   {
     id: 'five-skies', name: 'The Five-Skies', family: 'pattern',
-    description: 'You travel through every kind of weather. Tropical to polar, subtropical to subarctic — yours is an atlas where the seasons of one country are foreign to the seasons of another.',
+    description: 'You travel through every kind of weather — tropical, subtropical, temperate, subarctic, polar. Yours is an atlas where the seasons of one country are foreign to the seasons of another.',
+    // Only fires for genuine 5-climate atlases. The previous "4 climates ≥
+    // 60" fallback was firing as primary for broad European travelers who
+    // happened to span subarctic Latvia and tropical Yemen — an over-easy
+    // achievement-style match. Five-Skies is now a high bar: requires
+    // hitting Polar, which means visiting Iceland, Nordics, Russia north,
+    // or Canada/USA Alaska.
     test: (ctx) => {
       if (ctx.count < 15) return 0;
-      if (ctx.climates.size === 5) return 82;
-      if (ctx.climates.size === 4) return 60;
-      return 0;
+      return ctx.climates.size === 5 ? 82 : 0;
     },
   },
   {
