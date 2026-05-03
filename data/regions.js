@@ -38,18 +38,39 @@ export const REGIONS = {
     'KAZ','UZB','TKM','TJK','KGZ','MNG','AFG',
   ],
 
-  // The Old-Empire — EU + Western Asia + N. Africa heartland
-  oldEmpire: [
-    // Europe
-    'ALB','AND','AUT','BEL','BIH','BGR','HRV','CYP','CZE','DNK','EST','FIN',
-    'FRA','DEU','GRC','HUN','ISL','IRL','ITA','XKX','LVA','LIE','LTU','LUX',
-    'MLT','MDA','MCO','MNE','NLD','MKD','NOR','POL','PRT','ROU','SMR','SRB',
-    'SVK','SVN','ESP','SWE','CHE','UKR','GBR','VAT','BLR','RUS',
-    // W. Asia / Middle East
-    'TUR','GEO','ARM','AZE','SYR','LBN','ISR','PSE','JOR','IRQ','IRN',
-    'KWT','SAU','BHR','QAT','ARE','OMN','YEM',
-    // N. Africa
+  // The Romanesque — Roman Empire at greatest extent (Trajan, ~117 CE).
+  // Tighter than the v1 "Old-Empire" catch-all: only countries with serious
+  // Roman occupation. Excludes the Stans, Saudi/Gulf, Russia/Eastern Slavs,
+  // Caucasus interior — those belong to Mongol, Caravaneer, or Crossroads.
+  romanesque: [
+    // Western Empire
+    'ITA','ESP','PRT','FRA','GBR','MLT',
+    // Central Europe (south of Rhine/Danube limes — modern borders are imperfect)
+    'BEL','NLD','DEU','CHE','AUT','HUN','HRV','SVN','BIH','SRB','MNE','MKD',
+    'ALB','ROU','BGR','SVK','CZE',
+    // Eastern Mediterranean + Anatolia
+    'GRC','CYP','TUR',
+    // Levant
+    'SYR','LBN','ISR','PSE','JOR',
+    // North Africa
     'EGY','LBY','TUN','DZA','MAR',
+  ],
+
+  // The Hanseatic — Hanseatic League + broader Northern European maritime
+  // world. The cold-water trading rim, plus its inland counterparts.
+  hanseatic: [
+    'DEU','NLD','BEL','DNK','NOR','SWE','FIN','EST','LVA','LTU','POL',
+    'ISL','IRL','GBR',
+  ],
+
+  // The Mongol — Mongol Empire at peak (~late 13th century, all four khanates).
+  // Mongolia, China (Yuan), Russia + Eastern Slavs (Golden Horde), Central
+  // Asia (Chagatai), Persia/Caucasus (Ilkhanate).
+  mongol: [
+    'MNG','CHN',
+    'RUS','UKR','BLR',
+    'KAZ','UZB','TKM','KGZ','TJK',
+    'IRN','IRQ','AFG','AZE','ARM','GEO',
   ],
 
   // The Crossroads — Caucasus + Anatolian + Iranian plateau
@@ -57,13 +78,34 @@ export const REGIONS = {
     'ARM','AZE','GEO','TUR','IRN',
   ],
 
-  // The Frontier — the Americas
-  frontier: [
-    // North America + Caribbean + Central America
-    'CAN','USA','MEX','GTM','BLZ','HND','SLV','NIC','CRI','PAN',
-    'CUB','JAM','HTI','DOM','BHS','BRB','TTO','LCA','VCT','GRD','ATG','KNA','DMA',
-    // South America
-    'COL','VEN','GUY','SUR','ECU','PER','BOL','BRA','CHL','ARG','URY','PRY',
+  // The Conquistador — Spanish + Portuguese colonial reach. Iberia +
+  // Hispanic Latin America + Lusophone Brazil + Spanish Philippines.
+  // Replaces the v1 "Frontier" catch-all (which was just "the Americas").
+  conquistador: [
+    'ESP','PRT',
+    // Hispanic North/Central America + Caribbean
+    'MEX','GTM','HND','SLV','NIC','CRI','PAN',
+    'CUB','DOM','VEN',
+    // Hispanic South America
+    'COL','ECU','PER','BOL','CHL','ARG','PRY','URY',
+    // Lusophone
+    'BRA',
+    // Spanish Pacific
+    'PHL',
+  ],
+
+  // The Pioneer — Anglosphere / British colonial reach. Pink-on-the-map.
+  // Inclusive: settler colonies, the subcontinent, Anglo-Africa, Anglo-Caribbean.
+  pioneer: [
+    'GBR','IRL','USA','CAN','AUS','NZL',
+    // South Asia
+    'IND','PAK','BGD','LKA','MMR',
+    // Anglo-Africa
+    'ZAF','KEN','UGA','NGA','GHA','EGY','ZWE','ZMB','MWI','BWA','NAM','LSO','SWZ',
+    // Anglo-Caribbean
+    'JAM','BHS','BRB','TTO','BLZ','ATG','DMA','GRD','KNA','LCA','VCT',
+    // Anglo-SE Asia
+    'SGP','MYS','BRN',
   ],
 
   // The Cordillera — Andean spine
@@ -239,17 +281,22 @@ export function hasAntipodalPair(visited, COUNTRIES) {
 }
 
 // Title-nesting map: { specificId: [generalIds] }. Used by computeTitle's
-// secondary-tag logic to suppress redundant pairs like
-// "The Olive-Branch • The Old-Empire" (where Olive-Branch ⊂ Old-Empire).
+// resolution logic to suppress redundant pairs (the more-specific title beats
+// its general parent when both fire).
+//
+// Empire-renames: old-empire → romanesque, frontier → conquistador. Plus
+// long-horizon ⊂ mongol (Stans were inside the Mongol Empire's Chagatai
+// khanate). New Hanseatic and Pioneer don't have nested specifics.
 export const NESTED = {
-  'olive-branch':         ['old-empire'],
-  'caravaneer':           ['old-empire'],
-  'crossroads':           ['old-empire'],
-  'cordillera':           ['frontier'],
-  'pampas-light':         ['frontier'],
-  'river-drum':           ['frontier'],
-  'coral-path':           ['frontier'],
-  'subcontinent-walker':  ['saffron-road'],
+  'olive-branch':         ['romanesque'],
+  'caravaneer':           [],   // crosses Romanesque/Mongol footprints — not cleanly nested
+  'crossroads':           [],   // Caucasus/Iran straddle Mongol but pre-date it
+  'long-horizon':         ['mongol'],
+  'cordillera':           ['conquistador'],
+  'pampas-light':         ['conquistador'],
+  'river-drum':           ['conquistador'],   // Brazil = Lusophone Iberia
+  'coral-path':           ['conquistador'],   // Cuba/DR Spanish; British Caribbean is the minority
+  'subcontinent-walker':  ['saffron-road','pioneer'],
   'mekong-walker':        ['dragon-coast'],
   'horn-light':           ['coffee-belt'],
 };
