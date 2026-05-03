@@ -82,6 +82,14 @@ export const LINES = {
   // your most northern and most southern country. Distinct concept, evocative
   // ("Pole to Pole"), reuses the existing `sextant` icon (a celestial-
   // navigation tool — fits the name).
+  // v5.7 audit: re-tiered from 30/70/110/150 to 30/60/90/100. The metric
+  // is the centroid latRange (Math.max(lats) - Math.min(lats) in
+  // stats.html), not territorial extent. Centroid math caps at the
+  // Iceland (64.9°) → New Zealand (-40.9°) span = 105.8°, so the old top
+  // two tiers (110 and 150) were mathematically unreachable. New tier 4
+  // of 100° is achievable but rare: requires e.g. ISL/FIN/NOR paired
+  // with NZL/ARG/CHL. New tier 3 of 90° is reachable with any northern-
+  // Europe + southern-cone pair.
   voyager: {
     id: 'voyager',
     name: 'The Voyager',
@@ -90,9 +98,9 @@ export const LINES = {
     unit: '° of latitude',
     tiers: [
       { threshold: 30,  name: 'Local Range' },
-      { threshold: 70,  name: 'Continental Sweep' },
-      { threshold: 110, name: 'Hemispheric' },
-      { threshold: 150, name: 'Pole to Pole' },
+      { threshold: 60,  name: 'Continental Sweep' },
+      { threshold: 90,  name: 'Hemispheric' },
+      { threshold: 100, name: 'Pole to Pole' },
     ],
     description: 'The latitude span between your most northern and most southern visit.',
   },
@@ -111,6 +119,16 @@ export const LINES = {
     description: 'How many of the four hemispheres you\'ve set foot in.',
   },
 
+  // v5.7 audit note: a single visit to any of the 7 POLAR_TERRITORY
+  // countries (NOR/RUS/CAN/ISL/FIN/SWE/USA) credits BOTH that country's
+  // centroid climate AND 'Polar', because their territory genuinely
+  // reaches above the Arctic Circle (Svalbard, Alaska's North Slope,
+  // northern Canadian islands, Russia's Arctic coast, etc.). Result:
+  // a user who visits only NOR will hit Climatologist tier 2 ("Two
+  // Bands") from a single visit. This is intentional — the override
+  // exists *because* those countries cover two bands, and the line is
+  // about latitudinal-zone diversity, not country count. The same
+  // applies to the legacy `clim-polar` badge in badges.js.
   climatologist: {
     id: 'climatologist',
     name: 'The Climatologist',

@@ -89,6 +89,14 @@ export const REGIONS = {
   // Philippines. Renamed: "The Conquistador" labelled the user as an heir
   // of the conqueror identity (parallel to the Pioneer rename); the
   // geography is the same, the framing is now neutral.
+  //
+  // v5.7 audit: added GNQ. Equatorial Guinea is the only Spanish-speaking
+  // country in Africa (Spanish colony 1778–1968) — same outlier-but-real-
+  // Iberian-presence pattern that justifies including PHL. Lusophone
+  // Africa (AGO/MOZ/CPV/GNB/STP) is deliberately not added: those are
+  // already covered by capeLight / songhai / atlanticBridge and adding
+  // them would shift Iberoamerican from "the Americas + outliers" to "any
+  // Iberian colony anywhere", which is a different identity.
   conquistador: [
     'ESP','PRT',
     // Hispanic North/Central America + Caribbean
@@ -98,18 +106,32 @@ export const REGIONS = {
     'COL','ECU','PER','BOL','CHL','ARG','PRY','URY',
     // Lusophone
     'BRA',
-    // Spanish Pacific
-    'PHL',
+    // Spanish Pacific + Spanish Africa
+    'PHL','GNQ',
   ],
 
   // The Anglosphere — countries linked by English language and the long
   // tide of British migration / law / culture.
+  //
+  // v5.7 audit:
+  //   • Removed EGY. Egypt was a British protectorate (1882–1922) and
+  //     under heavy British influence until 1952, but its primary cultural
+  //     and linguistic identity is Arab/African — English is not co-
+  //     official and is not a primary marker of national identity. Same
+  //     reasoning would exclude SDN. The line for inclusion is "English
+  //     is a working language of public life", which EGY doesn't meet.
+  //   • Added TZA, SLE, GMB, LBR. All four have English as official or
+  //     co-official and are former British (LBR is Anglo-American by
+  //     founding, with English as its sole official language). They
+  //     parallel KEN/UGA/NGA/GHA in the Anglo-Africa cluster and should
+  //     fire the title for users with Anglo-African concentration.
   anglosphere: [
     'GBR','IRL','USA','CAN','AUS','NZL',
     // South Asia (English co-official, common-law inheritance)
     'IND','PAK','BGD','LKA','MMR',
     // Anglo-Africa
-    'ZAF','KEN','UGA','NGA','GHA','EGY','ZWE','ZMB','MWI','BWA','NAM','LSO','SWZ',
+    'ZAF','KEN','TZA','UGA','NGA','GHA','SLE','GMB','LBR',
+    'ZWE','ZMB','MWI','BWA','NAM','LSO','SWZ',
     // Anglo-Caribbean
     'JAM','BHS','BRB','TTO','BLZ','ATG','DMA','GRD','KNA','LCA','VCT',
     // Anglo-SE Asia
@@ -139,8 +161,16 @@ export const REGIONS = {
   ],
 
   // The Pampas-Light — Southern Cone
+  //
+  // v5.7 audit: removed BOL. The title's description is "the temperate
+  // south of the New World — the grasslands, the Patagonian wind, the
+  // long nights at high southern latitudes". Bolivia is tropical/sub-
+  // tropical altiplano; it doesn't fit the Pampas-Light identity. BOL
+  // is already in cordillera (Andean) which is the right home for it.
+  // Some sources include BOL in an extended Cono Sur (via Mercosur
+  // associate-membership), but the geographic identity excludes it.
   pampasLight: [
-    'ARG','CHL','URY','PRY','BOL',
+    'ARG','CHL','URY','PRY',
   ],
 
   // The River-Drum — Amazon basin
@@ -162,8 +192,15 @@ export const REGIONS = {
   ],
 
   // The Rift-Walker — East African Rift Valley
+  //
+  // v5.7 audit: added MWI. The Western Rift extends through Lake Malawi
+  // (the third-deepest lake in the world, formed by Rift tectonics), so
+  // MWI is squarely on the Rift system. MOZ is borderline (Shire River
+  // valley is technically on the southernmost Rift extension); not added
+  // because MOZ is more strongly identified with capeLight / monsoon-
+  // walker, and adding it would dilute the East-African-Rift identity.
   riftWalker: [
-    'KEN','TZA','UGA','RWA','BDI','ETH',
+    'KEN','TZA','UGA','RWA','BDI','ETH','MWI',
   ],
 
   // The Horn-Light — Horn of Africa
@@ -194,17 +231,31 @@ export const REGIONS = {
 
   // The Pacific-Walker (id 'dragon-coast') — E + SE Asia Pacific. Renamed:
   // "Dragon-Coast" read as a route/Set name; -Walker family is consistent.
+  //
+  // v5.7 audit: removed MNG. Mongolia is landlocked and steppe-cultural,
+  // not Pacific. The title's description is "the great Asian rim from the
+  // Pacific shore" — MNG fails the Pacific-shore test. MNG is already
+  // covered by caravaneer/longHorizon/mongol. LAO is kept (also land-
+  // locked) because it's part of the Indochinese cluster (mekong-walker
+  // nests under dragon-coast) and shares the SE-Asian cultural sphere
+  // in a way Mongolia does not.
   dragonCoast: [
-    'JPN','KOR','PRK','TWN','CHN','MNG',
+    'JPN','KOR','PRK','TWN','CHN',
     'VNM','LAO','KHM','THA','MMR','MYS','SGP','BRN','IDN','PHL','TLS',
   ],
 
   // The Trade-Winds — Pacific Rim (with spread requirement)
+  //
+  // v5.7 audit: added the five remaining Pacific microstates (NRU, MHL,
+  // FSM, PLW, TUV) for consistency with KIR/TON/WSM/FJI/SLB/VUT which
+  // were already in. The previous list was inconsistent — having KIR but
+  // not TUV, etc. Pacific microstates are unambiguously in the Pacific.
   tradeWinds: [
     // Asian Pacific
     'JPN','KOR','PRK','CHN','TWN','PHL','IDN','MYS','BRN','VNM',
     // Oceania
-    'AUS','NZL','PNG','FJI','TON','WSM','SLB','VUT','KIR',
+    'AUS','NZL','PNG','FJI','TON','WSM','SLB','VUT',
+    'KIR','TUV','PLW','MHL','FSM','NRU',
     // American Pacific
     'USA','CAN','MEX','GTM','SLV','NIC','CRI','PAN',
     'COL','ECU','PER','CHL',
@@ -213,12 +264,21 @@ export const REGIONS = {
   ],
 
   // The Atlantic-Bridge — both Atlantic shores (with spread requirement)
+  //
+  // v5.7 audit: added CPV (Cabo Verde). It's an Atlantic-only island
+  // nation (~570 km off the West African coast) and was the previous
+  // most-glaring omission — its identity is fully Atlantic. Caribbean
+  // micro-arc states (ATG/DMA/GRD/KNA/LCA/VCT/BRB) are deliberately
+  // NOT added: they're more strongly identified with reefWalker, and
+  // adding them would make the spread-requirement near-trivial.
   atlanticBridge: [
     // Western European Atlantic
     'ISL','GBR','IRL','PRT','ESP','FRA',
     // West African Atlantic
     'MAR','MRT','SEN','GMB','GIN','SLE','LBR','CIV','GHA',
     'TGO','BEN','NGA','CMR','GNQ','GAB','COG','COD','AGO','NAM','ZAF',
+    // Atlantic islands (West African offshore)
+    'CPV',
     // Eastern American Atlantic
     'CAN','USA','CUB','BHS','JAM','HTI','DOM',
     'COL','VEN','GUY','SUR','BRA','URY','ARG',
@@ -233,6 +293,21 @@ export const REGIONS = {
   // === Family B — latitude-band patterns ===
 
   // The Equator-Hand — equatorial reach (within ±15° OR territory touches it)
+  //
+  // v5.7 audit: kept as-is. Suspects considered and rejected:
+  //   • NPL — Nepal's southernmost point is ~26.4°N, north of the Tropic
+  //     of Cancer (23.5°N). No tropical territory.
+  //   • CHN — Hainan + southern Yunnan is tropical, but China's identity
+  //     is so dominantly non-tropical that adding it would dilute the
+  //     Equator-Hand region (the country is too big to be "reach").
+  //   • IRN — southern coast is at ~25°N, just north of the Tropic; no
+  //     tropical territory by climateZone definition.
+  //   • AUS — northern Queensland / Northern Territory is tropical,
+  //     but Australia's identity is southernCross / tradeWinds. Adding
+  //     would shift the title's center of mass.
+  // The current "reach" set (MEX/IND/BGD/MMR/THA + Central America +
+  // southern Africa) covers countries whose territory is *meaningfully*
+  // tropical, not "barely brushes the Tropic" cases.
   equatorialReach: [
     // Centroid within ±15°
     'COL','VEN','ECU','GUY','SUR','BRA','PER',
@@ -252,8 +327,16 @@ export const REGIONS = {
   // requirement (≥ 2 of ISL/NOR/SWE/FIN) so that a USA+CAN+RUS+EST atlas
   // doesn't fire the title without any actual Nordic visit — the name is
   // aurora-coded, not just polar-coded.
+  //
+  // v5.7 audit: removed EST and LVA. Estonia (centroid 59°N, north-most
+  // ~59.7°) and Latvia (57°N, north-most ~58°) are Baltic-temperate, not
+  // Arctic — they sit ~7° of latitude below the Arctic Circle (66.5°)
+  // and have no polar territory. They were a long-standing miscoding.
+  // DNK is kept: its sovereign territory includes Greenland, which
+  // reaches 83°N (this is the same reasoning the Arctic Council uses
+  // when including Denmark as one of its 8 member states).
   polarReach: [
-    'ISL','NOR','SWE','FIN','DNK','EST','LVA','RUS','CAN','USA',
+    'ISL','NOR','SWE','FIN','DNK','RUS','CAN','USA',
   ],
 };
 
@@ -264,18 +347,21 @@ export const TOP_POPULOUS = new Set([
 
 // Spread-requirement helper for The Atlantic-Bridge.
 // Must include at least one country from BOTH the Western shore (Americas)
-// AND the Eastern shore (Europe + W. Africa) to qualify.
+// AND the Eastern shore (Europe + W. Africa + Atlantic islands) to qualify.
 export function requireSpreadAtlantic(inRegion) {
   const W = ['CAN','USA','MEX','BRA','ARG','COL','VEN','BHS','CUB','HTI','DOM',
              'JAM','GUY','SUR','URY'];
   const E = ['GBR','PRT','ESP','MAR','SEN','GMB','GIN','SLE','LBR','CIV','GHA',
              'TGO','BEN','NGA','CMR','GNQ','GAB','COG','COD','AGO','NAM','ZAF',
-             'ISL','IRL','FRA','MRT'];
+             'ISL','IRL','FRA','MRT','CPV'];
   return inRegion.some(c => W.includes(c)) && inRegion.some(c => E.includes(c));
 }
 
 // Spread-requirement helper for The Trade-Winds.
 // Must touch at least 2 of: Asian Pacific, American Pacific, Oceania.
+// Already included all 14 Oceania entries; v5.7 audit kept the buckets
+// in sync with the tradeWinds region (which now includes all 14 Pacific
+// microstates) so the helper remains exhaustive.
 export function requireSpreadPacific(inRegion) {
   const asianPac = ['JPN','KOR','PRK','TWN','PHL','VNM','IDN','MYS','BRN','CHN'];
   const amPac    = ['USA','CAN','MEX','GTM','SLV','NIC','CRI','PAN','COL','ECU','PER','CHL'];

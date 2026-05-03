@@ -9,6 +9,18 @@
 // For now the wall still renders from this list — the staged refactor lets us
 // replace sections incrementally without breaking what works.
 //
+// v5.7 audit notes (data correctness only — no schema or behaviour changes):
+//   • The geo-equator badge fires from GEO_SETS.equator in countries.js,
+//     which had SOM listed wrongly (Somalia does not cross the equator).
+//     Fixed at the source.
+//   • The clim-polar badge inherits the same single-visit-fires-from-
+//     POLAR_TERRITORY behaviour documented on the Climatologist Line.
+//     This is intentional, not a bug.
+//   • Recommendation (out of scope for this audit): the cont-* and h-*
+//     badges fire trivially on any visit and should be retired when the
+//     wall is unwound — they're just noise. The Lines layer already
+//     renders Continentalist and Hemispherist as proper tiered cards.
+//
 // Schema:
 //   id      stable identifier, also used as the localStorage key for "seen" state
 //   group   visual grouping in the wall ("Countries", "Land", "Continents", ...)

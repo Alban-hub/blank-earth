@@ -46,9 +46,20 @@ export const SETS = {
   },
 
   cradlesOfCiv: {
+    // v5.7 audit: replaced GRC with PAK. The historiographical consensus
+    // on "primary cradles" — places where complex urban civilization
+    // arose *independently* — is six: Mesopotamia (IRQ), Egypt (EGY),
+    // Indus Valley (largely modern PAK with Mohenjo-daro, Harappa; IND
+    // also has sites like Lothal and Dholavira), Yellow River China
+    // (CHN), Norte Chico/Caral (PER), and Mesoamerica/Olmec (MEX).
+    // Greece is excluded because Aegean civilization (Minoan/Mycenaean)
+    // emerged in contact with Egypt and Mesopotamia — it's a successor
+    // culture, not an independent cradle. PAK is added because the two
+    // largest Indus Valley cities (Mohenjo-daro, Harappa) are in modern
+    // Pakistan, so completing the cradle requires both IND and PAK.
     id: 'cradlesOfCiv',
     name: 'Cradles of Civilisation',
-    countries: ['EGY','IRQ','IND','CHN','MEX','PER','GRC'],
+    countries: ['EGY','IRQ','IND','PAK','CHN','MEX','PER'],
     palette: 'bone',
     art: 'ziggurat',
     teaser: 'Where humans independently invented cities and writing.',
@@ -64,9 +75,15 @@ export const SETS = {
   },
 
   maghreb: {
+    // v5.7 audit: removed EGY, added MRT. The Maghreb proper (Arab Maghreb
+    // Union, in use since 1989) is exactly MAR/DZA/TUN/LBY/MRT. Egypt is
+    // Mashriq (the Arab East), not Maghreb (the Arab West) — including
+    // EGY in "the Maghreb" is the same kind of cultural-geography error
+    // as putting Italy in Iberia. Mauritania is the south-western
+    // bookend of the Maghreb and was the previously-missing piece.
     id: 'maghreb',
     name: 'The Maghreb',
-    countries: ['MAR','DZA','TUN','LBY','EGY'],
+    countries: ['MAR','DZA','TUN','LBY','MRT'],
     palette: 'butter',
     art: 'arch-crescent',
     teaser: 'North Africa’s western reach.',
@@ -82,27 +99,53 @@ export const SETS = {
   },
 
   ringOfFire: {
+    // v5.7 audit: added GTM, SLV, NIC, CRI, PNG, TWN. The Ring is a
+    // subduction-volcano ring around the Pacific basin — Central America
+    // (Cocos plate subducting under Caribbean plate, producing Fuego,
+    // San Salvador, Concepción, Arenal, etc.), Papua New Guinea (Bismarck
+    // arc, Rabaul), and Taiwan (Eurasian/Philippine plate boundary,
+    // Tatun group) all belong unambiguously. CAN was considered (the
+    // Garibaldi belt is technically Ring of Fire) but its volcanic
+    // identity is too marginal to include — keeping the bar at "active
+    // subduction volcanism is a defining geological fact of this place".
     id: 'ringOfFire',
     name: 'The Ring of Fire',
-    countries: ['JPN','PHL','IDN','NZL','CHL','PER','ECU','COL','MEX','USA','RUS'],
+    countries: ['JPN','PHL','IDN','TWN','PNG','NZL','CHL','PER','ECU','COL',
+                'CRI','NIC','SLV','GTM','MEX','USA','RUS'],
     palette: 'terracotta',
     art: 'volcano-smoke',
     teaser: 'Forty thousand kilometres of subduction zones.',
   },
 
   caribbeanArc: {
+    // v5.7 audit: completed the arc with the six Lesser Antilles micro-
+    // states (ATG, DMA, GRD, KNA, LCA, VCT). The previous 7-country
+    // version was the Greater Antilles + a partial Lesser Antilles —
+    // calling that "the island chain" was misleading. Sovereign Caribbean
+    // island states in COUNTRIES total 13 and the set now matches that.
+    // Non-sovereign Caribbean territories (Puerto Rico, Cayman, Aruba,
+    // Curaçao, etc.) are deliberately not included — they're territories,
+    // not countries. The territories layer (per follow-up scope) would
+    // be the right home if/when added.
     id: 'caribbeanArc',
     name: 'The Caribbean Arc',
-    countries: ['CUB','JAM','HTI','DOM','TTO','BHS','BRB'],
+    countries: ['CUB','JAM','HTI','DOM','BHS','KNA','ATG','DMA','LCA','VCT',
+                'BRB','GRD','TTO'],
     palette: 'sky',
     art: 'island-arc',
     teaser: 'The island chain bracketing the inland sea.',
   },
 
   roofOfWorld: {
+    // v5.7 audit: added TJK. The teaser names "four mountain systems";
+    // those are conventionally Himalaya, Karakoram, Hindu Kush, and Pamir.
+    // Tajikistan IS the Pamir country (more than half the country is
+    // above 3000m), so omitting it from "Roof of the World" was a real
+    // gap. KGZ (Tien Shan) was considered and skipped — it's a separate
+    // range north of the Pamir, not one of the four named systems.
     id: 'roofOfWorld',
     name: 'The Roof of the World',
-    countries: ['NPL','BTN','IND','CHN','PAK','AFG'],
+    countries: ['NPL','BTN','IND','CHN','PAK','AFG','TJK'],
     palette: 'plum',
     art: 'prayer-flags',
     teaser: 'Where four mountain systems collide.',
@@ -118,9 +161,20 @@ export const SETS = {
   },
 
   mediterraneanRing: {
+    // v5.7 audit: extended from 12 to 21 — the previous list was "the
+    // major Med coastal states" but the set's name says *ring* and the
+    // teaser says *around the inland sea*, so it should mean every
+    // sovereign country with a Mediterranean coastline. Now matches the
+    // oliveBranch region in regions.js (the title classifier and the set
+    // see the same Mediterranean). Additions: MLT, CYP (Med-island
+    // nations), HRV, SVN, BIH, MNE, ALB (Adriatic), SYR (Levant), MCO
+    // (Riviera microstate). PSE has a tiny Gaza coast and is skipped
+    // here for product reasons (statehood is contested), but it's in
+    // oliveBranch — flagged as an open question.
     id: 'mediterraneanRing',
     name: 'The Mediterranean Ring',
-    countries: ['ESP','FRA','ITA','GRC','TUR','LBN','ISR','EGY','LBY','TUN','DZA','MAR'],
+    countries: ['ESP','FRA','MCO','ITA','MLT','SVN','HRV','BIH','MNE','ALB',
+                'GRC','CYP','TUR','SYR','LBN','ISR','EGY','LBY','TUN','DZA','MAR'],
     palette: 'butter',
     art: 'olive-wave',
     teaser: 'Around the inland sea.',
