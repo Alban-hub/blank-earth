@@ -179,10 +179,92 @@ export const SETS = {
     art: 'olive-wave',
     teaser: 'Around the inland sea.',
   },
+
+  // ── Season 2 sets (added 2026-06-03) — recognisable blocs & river routes,
+  // every member a sovereign country present in COUNTRIES + the globe topojson.
+  nordics: {
+    id: 'nordics',
+    name: 'The Nordics',
+    countries: ['ISL','NOR','SWE','FIN','DNK'],
+    palette: 'sky',
+    art: 'pine-row',
+    teaser: 'The five countries of the European north.',
+  },
+
+  gccGulf: {
+    id: 'gccGulf',
+    name: 'The Gulf States',
+    countries: ['SAU','KWT','BHR','QAT','ARE','OMN'],
+    palette: 'butter',
+    art: 'dunes-sun',
+    teaser: 'The six monarchies of the Persian Gulf.',
+  },
+
+  asean: {
+    id: 'asean',
+    name: 'ASEAN',
+    countries: ['BRN','KHM','IDN','LAO','MYS','MMR','PHL','SGP','THA','VNM'],
+    palette: 'sage',
+    art: 'palm-circle',
+    teaser: 'The ten nations of Southeast Asia.',
+  },
+
+  danube: {
+    id: 'danube',
+    name: 'The Danube',
+    countries: ['DEU','AUT','SVK','HUN','HRV','SRB','ROU','BGR','MDA','UKR'],
+    palette: 'sky',
+    art: 'wave-trio',
+    teaser: 'Ten countries strung along one river.',
+  },
+
+  fiveEyes: {
+    id: 'fiveEyes',
+    name: 'The Five Eyes',
+    countries: ['USA','GBR','CAN','AUS','NZL'],
+    palette: 'plum',
+    art: 'compass',
+    teaser: 'Five nations bound by a common tongue.',
+  },
+
+  nileBasin: {
+    id: 'nileBasin',
+    name: 'The Nile Basin',
+    countries: ['EGY','SDN','SSD','ETH','UGA','KEN','TZA','RWA','BDI','COD'],
+    palette: 'terracotta',
+    art: 'olive-wave',
+    teaser: 'Where the world’s longest river gathers.',
+  },
+
+  // ── Pacing sets (added 2026-06-03 after the progression review) — every set
+  // until now completed only in the final fifth of a journey (each gated by one
+  // rare micro-member). These two are reachable *early/mid* for ordinary travel,
+  // so the first "complete" moment can land in the opening chapter rather than
+  // at country ~170. The Grand Tour (3 of the most-visited countries on Earth)
+  // is the deliberate starter; the Seven Wonders spread the reward across
+  // continents so it isn't a Europe-only early game.
+  grandTour: {
+    id: 'grandTour',
+    name: 'The Grand Tour',
+    countries: ['FRA','ITA','CHE'],
+    palette: 'rose',
+    art: 'compass',
+    teaser: 'The road every Grand Tourist once took.',
+  },
+
+  sevenWonders: {
+    id: 'sevenWonders',
+    name: 'The Seven Wonders',
+    countries: ['ITA','JOR','IND','CHN','PER','MEX','BRA'],
+    palette: 'bone',
+    art: 'world',
+    teaser: 'Seven modern wonders, seven countries.',
+  },
 };
 
 // Display order on the cabinet. New sets append; reordering is explicit.
 export const SET_ORDER = [
+  'grandTour',
   'silkRoad',
   'cradlesOfCiv',
   'polarCrown',
@@ -195,6 +277,13 @@ export const SET_ORDER = [
   'continentSpanners',
   'ringOfFire',
   'caribbeanArc',
+  'nordics',
+  'gccGulf',
+  'asean',
+  'danube',
+  'fiveEyes',
+  'nileBasin',
+  'sevenWonders',
 ];
 
 // Compute progress for a given set against a list of visited country codes.

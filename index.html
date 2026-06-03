@@ -7,7 +7,7 @@
 <style>
 :root {
   --paper:#FCFCFA; --ink:#1c1838; --line:#D8D5CC; --hair:#ECEAE2;
-  --muted:#6b6985; --warm:#FAF6E8; --accent:#4488E0; --space:#0F1530;
+  --muted:#6b6985; --warm:#FAF6E8; --accent:#3D7BC9; --space:#0F1530;
   --serif:"Iowan Old Style","Palatino","Cambria","Times New Roman",serif;
   --sans:-apple-system,BlinkMacSystemFont,"Inter","Helvetica Neue",system-ui,sans-serif;
 }
@@ -26,7 +26,7 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .brand small{display:block;font-style:italic;font-size:12px;color:rgba(252,252,250,0.55);margin-top:4px;font-weight:400}
 .stats{font-family:var(--serif);font-size:13px;color:rgba(252,252,250,0.6);text-align:right;line-height:1.5;text-shadow:0 1px 3px rgba(0,0,0,0.35)}
 .stats .num{font-size:24px;color:rgba(252,252,250,0.96);font-weight:500;display:block;line-height:1}
-.panel{position:fixed;left:28px;bottom:28px;z-index:5;background:rgba(252,252,250,0.92);backdrop-filter:blur(6px);border:0.5px solid var(--hair);padding:14px 16px;width:280px;font-size:13px}
+.panel{position:fixed;left:28px;bottom:28px;z-index:5;background:rgba(252,252,250,0.92);backdrop-filter:blur(6px);border:0.5px solid var(--hair);padding:14px 16px;width:280px;font-size:13px;box-shadow:0 8px 30px rgba(28,24,56,0.16)}
 .panel .label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .search-row{display:flex;gap:6px}
 .search-row input{flex:1;border:0;border-bottom:0.5px solid var(--ink);background:transparent;padding:6px 2px;font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);outline:none}
@@ -79,6 +79,8 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
   .panel > .atlas-link{display:none}
   .panel:not(.expanded) .visited-list{display:none}
   .panel:not(.expanded) .actions{display:none}
+  /* keep the collapsed mobile sheet minimal — discovery lives in the expanded panel */
+  .panel:not(.expanded) .discover-btn{display:none}
   .visited-list{margin-top:10px;max-height:38vh}
   .actions{margin-top:8px}
 }
@@ -92,6 +94,17 @@ html.embed-mode #scene{pointer-events:none}
 #toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:10px 16px;font-family:var(--serif);font-size:13px;font-style:italic;border:0.5px solid var(--hair);max-width:min(420px,90vw);text-align:center;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,0.25);animation:toast-in 0.18s ease-out}
 @keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 
+/* Set-completion moment — a brief, quiet acknowledgement when the last country
+   of a set is marked. Literary, not gamified: a slow fade, no bounce, no sound. */
+#set-complete{position:fixed;left:50%;top:21%;transform:translate(-50%,-6px);z-index:9;pointer-events:none;display:flex;flex-direction:column;align-items:center;background:rgba(252,252,250,0.94);backdrop-filter:blur(8px);border:0.5px solid var(--hair);padding:15px 32px;box-shadow:0 14px 46px rgba(28,24,56,0.20);opacity:0;transition:opacity 0.55s cubic-bezier(.16,1,.3,1),transform 0.6s cubic-bezier(.16,1,.3,1);text-align:center}
+#set-complete[hidden]{display:none}
+#set-complete.show{opacity:1;transform:translate(-50%,0)}
+/* don't stack the completion banner over an open discovery card */
+body.discovering #set-complete{display:none}
+#set-complete .sc-orn{font-size:14px;color:#C28A2B;margin-bottom:5px}
+#set-complete .sc-name{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--ink);line-height:1.12}
+#set-complete .sc-sub{font-family:var(--sans);font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
 /* Boot-error fallback — only shown if the engine fails to initialise.
    The `[hidden]` UA rule has lower specificity than `#boot-error`, so we must
    re-assert display:none with matching specificity, or the overlay covers the globe on every load. */
@@ -103,6 +116,73 @@ html.embed-mode #scene{pointer-events:none}
 #boot-error details{font-family:var(--sans);font-size:11px;color:rgba(252,252,250,0.45);max-width:460px;width:100%}
 #boot-error summary{cursor:pointer;letter-spacing:0.06em;text-transform:uppercase}
 #boot-error pre{text-align:left;margin-top:8px;padding:8px;background:rgba(0,0,0,0.3);overflow:auto;max-height:200px;font-size:11px;white-space:pre-wrap;word-break:break-word}
+
+/* ── Discover sets — browse the curated country groupings and preview them on
+   the globe (members glow gold). DOM-layer; the only globe touch is a
+   reversible material recolour. ── */
+.discover-btn{display:flex;width:100%;align-items:center;gap:8px;margin-top:10px;background:transparent;border:0.5px solid rgba(194,138,43,0.55);color:#7a5414;padding:9px 12px;border-radius:999px;font-family:var(--serif);font-style:italic;font-size:13px;cursor:pointer;letter-spacing:0.01em;transition:background 180ms,color 180ms;min-height:38px}
+.discover-btn:hover,.discover-btn:active{background:#C28A2B;color:#FCFCFA;border-color:#C28A2B}
+.discover-btn .dc-spark{font-style:normal}
+
+.discover-card{position:fixed;right:28px;bottom:28px;z-index:8;width:330px;max-height:min(72vh,640px);display:flex;flex-direction:column;background:rgba(252,252,250,0.96);backdrop-filter:blur(8px);border:0.5px solid var(--hair);border-radius:14px;box-shadow:0 12px 40px rgba(28,24,56,0.22)}
+.discover-card[hidden]{display:none}
+.dc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 16px 10px;border-bottom:0.5px solid var(--hair)}
+.dc-eyebrow{font-family:var(--sans);font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:#946A18;display:block;margin-bottom:2px}
+.dc-title{font-family:var(--serif);font-size:17px;color:var(--ink);line-height:1.15}
+.dc-x{flex:0 0 auto;background:transparent;border:0;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 2px;align-self:flex-start}
+.dc-x:hover{color:var(--ink)}
+.dc-body{overflow-y:auto;padding:6px 8px;flex:1}
+
+/* List mode — one row per set */
+.dc-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;font-family:inherit;transition:background 140ms}
+.dc-row:hover{background:rgba(194,138,43,0.10)}
+.dc-row .dc-row-name{font-family:var(--serif);font-size:14px;color:var(--ink)}
+.dc-row .dc-row-count{font-family:var(--sans);font-size:11px;color:var(--muted);justify-self:end}
+.dc-row.done .dc-row-count{color:#7a5414;font-weight:600}
+.dc-row .dc-row-bar{grid-column:1 / -1;height:3px;background:var(--hair);border-radius:2px;overflow:hidden;margin-top:5px}
+.dc-row .dc-row-fill{height:100%;background:#C28A2B;border-radius:2px}
+
+/* Detail mode */
+.dc-teaser{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);line-height:1.45;padding:10px 10px 4px}
+.dc-rule{display:flex;gap:8px;margin:8px 10px;padding:9px 11px;background:rgba(194,138,43,0.09);border-left:2px solid #C28A2B;font-family:var(--sans);font-size:12px;color:#5e4413;line-height:1.45}
+.dc-rule b{font-weight:600}
+.dc-prog{font-family:var(--sans);font-size:12px;color:var(--muted);padding:2px 10px 8px}
+.dc-prog b{color:var(--ink);font-weight:600}
+.dc-chips{display:flex;flex-wrap:wrap;gap:5px;padding:4px 10px 12px}
+.dc-chip{font-family:var(--sans);font-size:11px;padding:3px 9px;border-radius:999px;border:0.5px solid var(--line);color:var(--muted);background:transparent}
+.dc-chip.on{background:#3D7BC9;border-color:#3D7BC9;color:#FCFCFA}
+.dc-chip.on::before{content:'✓ '}
+.dc-chip.tt.on{background:#9B6BC2;border-color:#9B6BC2}
+
+/* Sets / titles tabs inside the discover card */
+.dc-tabs{display:flex;gap:6px;padding:4px 6px 8px}
+.dc-tab{flex:1;background:transparent;border:0.5px solid var(--line);color:var(--muted);font-family:var(--serif);font-style:italic;font-size:13px;padding:6px 10px;border-radius:999px;cursor:pointer}
+.dc-tab.active{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.dc-rule.tt{background:rgba(155,107,194,0.10);border-left-color:#9B6BC2;color:#4a2c63}
+
+.dc-foot{display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:0.5px solid var(--hair)}
+.dc-foot .btn{flex:0 0 auto}
+.dc-foot .dc-spacer{flex:1}
+.dc-mini{background:transparent;border:0;color:var(--muted);font-family:var(--serif);font-style:italic;font-size:13px;cursor:pointer;padding:4px 2px}
+.dc-mini:hover{color:var(--ink)}
+.dc-dice{background:#C28A2B;border:0.5px solid #C28A2B;color:#FCFCFA;border-radius:999px;padding:8px 14px;font-family:var(--serif);font-style:italic;font-size:13px;cursor:pointer}
+.dc-dice:hover{background:#a9761f}
+
+/* Territories card — reuses .discover-card / .dc-* styling, teal accent */
+.discover-btn.terr{background:transparent;border-color:rgba(43,140,132,0.55);color:#155c55}
+.discover-btn.terr:hover,.discover-btn.terr:active{background:#2B8C84;color:#FCFCFA;border-color:#2B8C84}
+.tc-group{font-family:var(--sans);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);padding:11px 10px 4px;display:flex;justify-content:space-between;align-items:baseline}
+.tc-group .tc-grp-count{color:#155c55;font-weight:600}
+.dc-row .dc-row-tag{font-family:var(--sans);font-size:10px;color:var(--muted);justify-self:end;letter-spacing:0.03em}
+.dc-row.terr-on{background:rgba(43,140,132,0.12)}
+.dc-row.terr-on .dc-row-name{color:#155c55;font-weight:600}
+.dc-row.terr-on .dc-row-name::before{content:'✓ '}
+.dc-row .dc-row-name .dc-pin{color:#b07b1e;font-style:normal}
+
+@media (max-width:640px){
+  .discover-card{left:12px;right:12px;bottom:12px;width:auto;max-height:74vh}
+  body.discovering .panel,body.discovering .tip{display:none}
+}
 </style>
 <meta name="theme-color" content="#0F1530">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -138,6 +218,12 @@ html.embed-mode #scene{pointer-events:none}
     <datalist id="countries"></datalist>
     <button class="btn" id="add">add</button>
   </div>
+  <button class="discover-btn" id="open-discover" type="button" hidden>
+    <span class="dc-spark">✦</span><span>discover sets &amp; titles — what's out there</span>
+  </button>
+  <button class="discover-btn terr" id="open-territories" type="button" hidden>
+    <span class="dc-spark">✦</span><span>territories — places beyond the 195</span>
+  </button>
   <!-- Foot row (mobile only) — the visited pill expands the list inline,
        the atlas-link-pill is the persistent "go deeper" affordance. Both
        always visible so users see at a glance there's more than just the
@@ -164,6 +250,35 @@ html.embed-mode #scene{pointer-events:none}
 
 <!-- Non-blocking, screen-reader-friendly status messages (storage warnings, etc.) -->
 <div id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- Sober set-completion moment (the last country of a set was just marked). -->
+<div id="set-complete" role="status" aria-live="polite" hidden></div>
+
+<!-- Discover-sets card. Populated and toggled by the engine once sets.js loads. -->
+<div class="discover-card" id="discover-card" role="dialog" aria-label="Discover sets" hidden>
+  <div class="dc-head">
+    <div>
+      <span class="dc-eyebrow" id="dc-eyebrow">collections</span>
+      <span class="dc-title" id="dc-title">discover sets</span>
+    </div>
+    <button class="dc-x" id="dc-close" type="button" aria-label="close">×</button>
+  </div>
+  <div class="dc-body" id="dc-body"></div>
+  <div class="dc-foot" id="dc-foot"></div>
+</div>
+
+<!-- Territories card. Reuses .discover-card / .dc-* styling; teal accent. -->
+<div class="discover-card" id="territories-card" role="dialog" aria-label="Territories" hidden>
+  <div class="dc-head">
+    <div>
+      <span class="dc-eyebrow" id="tc-eyebrow" style="color:#2B8C84">dependent territories</span>
+      <span class="dc-title" id="tc-title">territories</span>
+    </div>
+    <button class="dc-x" id="tc-close" type="button" aria-label="close">×</button>
+  </div>
+  <div class="dc-body" id="tc-body"></div>
+  <div class="dc-foot" id="tc-foot"></div>
+</div>
 
 <!-- Shown only if the engine fails to start (Three.js missing, init throws, etc.) -->
 <div id="boot-error" hidden role="alertdialog" aria-labelledby="boot-error-title">
@@ -642,6 +757,24 @@ window.NiceEarth = {
   const STORAGE_KEY = 'blank-earth/v1/visits';
   const STORAGE_SCHEMA = 'blank-earth/v1';
 
+  // Dependent territories — visited & stored SEPARATELY from countries so the
+  // atlas's country totals (count / land / pop) never see them. A territory
+  // credits geography (continent / climate / hemisphere) but not its parent
+  // sovereign (see data/territories.js + the atlas). 36 of these 46 codes are
+  // also clickable topojson features; the other 10 are markable only via the
+  // territories card. Inlined here (stable list) so tap-routing + migration are
+  // synchronous; the richer TERRITORIES data is lazy-imported for the card.
+  const TERRITORY_KEY = 'blank-earth/v1/territories';
+  const TERR_CODES = new Set([
+    'GLP','MTQ','GUF','REU','MYT','NCL','PYF','WLF','SPM','BLM','MAF', // French
+    'AIA','BMU','VGB','CYM','FLK','GIB','MSR','PCN','SHN','TCA','IMN','JEY','GGY', // British
+    'ABW','CUW','SXM','BES',                       // Dutch
+    'PRI','GUM','ASM','MNP','VIR',                 // US
+    'GRL','FRO','SJM',                             // Danish + Norwegian
+    'CCK','CXR','NFK','COK','NIU','TKL',           // Australian + NZ
+    'HKG','MAC','ALA','ESH',                       // Chinese SARs, Åland, W. Sahara
+  ]);
+
   function loadVisited() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -685,6 +818,31 @@ window.NiceEarth = {
     }
     updateUI();
   }
+
+  // ── Territory store (separate key) ──
+  function loadTerr() {
+    try {
+      const raw = localStorage.getItem(TERRITORY_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return new Set((Array.isArray(parsed) ? parsed : []).filter(c => TERR_CODES.has(c)));
+    } catch (err) { console.warn('[NiceEarth] territory read failed:', err); return new Set(); }
+  }
+  let visitedTerr = loadTerr();
+  function persistTerr() {
+    try { localStorage.setItem(TERRITORY_KEY, JSON.stringify([...visitedTerr])); }
+    catch (err) { showToast('Could not save your territory visits.'); }
+  }
+  // One-time migration: earlier builds let you click the 36 territory-coded
+  // features straight into the COUNTRY store, where the atlas silently dropped
+  // them. Move any such codes into the territory store so they finally count.
+  (function migrateTerritories() {
+    let movedCountry = false, movedTerr = false;
+    for (const id of [...visited]) {
+      if (TERR_CODES.has(id)) { visited.delete(id); visitedTerr.add(id); movedCountry = true; movedTerr = true; }
+    }
+    if (movedCountry) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited])); } catch {} }
+    if (movedTerr) persistTerr();
+  })();
 
   // ---------------------------------------------------------------------------
   //  PROCEDURAL HEIGHTMAP — algorithmic terrain via fractal value noise
@@ -1612,6 +1770,64 @@ window.NiceEarth = {
   function setCountryVisited(id)   { rebuildCountryGeom(id); }
   function setCountryUnvisited(id) { rebuildCountryGeom(id); }
 
+  // ── Territories: a visited territory tints its flat tile teal (distinct from
+  // country cobalt). Reversible material recolour on the existing tile — no new
+  // geometry; clearing rebuilds the tile back to its unvisited pastel. Only the
+  // 36 territory codes that are topojson features render here; the other 10 are
+  // atlas-only (tracked in visitedTerr, shown in the territories card). ──
+  const TERR_COLOR = 0x2B8C84, TERR_EMISSIVE = 0x06211f, TERR_EMISSIVE_INT = 0.42;
+  let refreshTerrCard = null;   // set by the territories-card module when open
+  let TERR_DATA = null;         // TERRITORIES map, lazy-loaded by the card module
+  function territoryTint(id, on) {
+    if (!countryMeshes.has(id)) return;          // non-clickable territory — nothing on the globe
+    if (!on) { rebuildCountryGeom(id); lastInteract = performance.now(); return; }
+    for (const m of [countryMeshes.get(id), countryWallMeshes.get(id)]) {
+      if (!m || !m.material) continue;
+      m.material.color.setHex(TERR_COLOR);
+      if (m.material.emissive) { m.material.emissive.setHex(TERR_EMISSIVE); m.material.emissiveIntensity = TERR_EMISSIVE_INT; }
+    }
+    lastInteract = performance.now();
+  }
+  function toggleTerritory(id) {
+    const nm = (byId.get(id) && byId.get(id).name) || (TERR_DATA && TERR_DATA[id] && TERR_DATA[id][2]) || id;
+    // When the territories card is open the row itself flips to ✓ — a toast
+    // would only collide with the card. Reserve the toast for globe taps.
+    const tc = document.getElementById('territories-card');
+    const quiet = tc && !tc.hidden;
+    if (visitedTerr.has(id)) { visitedTerr.delete(id); territoryTint(id, false); if (!quiet) showToast(nm + ' · removed', 1400); }
+    else { visitedTerr.add(id); territoryTint(id, true); if (!quiet) showToast('✓ ' + nm + ' · territory', 1600); }
+    persistTerr();
+    if (refreshTerrCard) refreshTerrCard();
+    NiceEarthEvents.emit('territory.toggle', { id, on: visitedTerr.has(id) });
+  }
+
+  // ── Sober set-completion moment ──
+  // When the last country of a set is marked, acknowledge it once — quietly.
+  // `booting` suppresses this during the boot-restore + import-restore loops so
+  // we don't fire a banner for every already-complete set on load.
+  let COMPLETION_SETS = null, COMPLETION_ORDER = null, booting = true;
+  import('./data/sets.js?v=v4')
+    .then(m => { COMPLETION_SETS = m.SETS; COMPLETION_ORDER = m.SET_ORDER; })
+    .catch(() => {});
+  function checkSetCompletion(addedId) {
+    if (booting || !COMPLETION_SETS) return false;
+    for (const id of COMPLETION_ORDER) {
+      const set = COMPLETION_SETS[id];
+      if (!set || !set.countries.includes(addedId)) continue;
+      if (set.countries.every(c => visited.has(c))) { showSetComplete(set); return true; }
+    }
+    return false;
+  }
+  function showSetComplete(set) {
+    const el = document.getElementById('set-complete');
+    if (!el) return;
+    el.innerHTML = `<span class="sc-orn" aria-hidden="true">✦</span><span class="sc-name">${set.name}</span><span class="sc-sub">complete</span>`;
+    el.hidden = false;
+    el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    clearTimeout(showSetComplete._t);
+    showSetComplete._t = setTimeout(() => { el.classList.remove('show'); }, 4000);
+  }
+
   function addCountry(f) {
     if (visitedMeshes.has(f.id)) return;
     const polys = countryRings.get(f.id);
@@ -1672,6 +1888,11 @@ window.NiceEarth = {
     visited.add(f.id);
     persist();
     centerOn(f);
+    // Name feedback — essential on touch, which has no hover label. Without
+    // this a tap marks a country with zero confirmation of *which* one.
+    // A set completing is its own (quieter) acknowledgement — don't also toast.
+    // `booting` is true during boot-restore + import-restore: stay silent then.
+    if (!booting && !checkSetCompletion(f.id)) showToast('✓ ' + f.name + ' · added', 1500);
     NiceEarthEvents.emit('country.visit', { feature: f, isFirstVisit });
   }
 
@@ -1689,6 +1910,7 @@ window.NiceEarth = {
     setCountryUnvisited(id);
     persist();
     scheduleBorderRebuild();   // defer ~16ms — click feels instant
+    if (f && !booting) showToast(f.name + ' · removed', 1400);
     if (f) NiceEarthEvents.emit('country.unvisit', { feature: f });
   }
 
@@ -1782,9 +2004,14 @@ window.NiceEarth = {
       const hit = pickCountry(e.clientX, e.clientY);
       if (hit) {
         const f = byId.get(hit.id);
-        if (f) NiceEarthEvents.emit('country.click', { feature: f });
-        if (visited.has(hit.id)) removeCountry(hit.id);
-        else if (f) addCountry(f);
+        if (TERR_CODES.has(hit.id)) {
+          // Dependent territory — routes to its own store, never the country one.
+          toggleTerritory(hit.id);
+        } else {
+          if (f) NiceEarthEvents.emit('country.click', { feature: f });
+          if (visited.has(hit.id)) removeCountry(hit.id);
+          else if (f) addCountry(f);
+        }
       }
     }
     activePointers.delete(e.pointerId);
@@ -1861,7 +2088,9 @@ window.NiceEarth = {
     if (!e) return;
     const hit = pickCountry(e.clientX, e.clientY);
     if (hit) {
-      hoverLabel.textContent = hit.name + (visited.has(hit.id) ? ' · click to remove' : ' · click to add');
+      hoverLabel.textContent = TERR_CODES.has(hit.id)
+        ? hit.name + (visitedTerr.has(hit.id) ? ' · territory · click to remove' : ' · territory · click to add')
+        : hit.name + (visited.has(hit.id) ? ' · click to remove' : ' · click to add');
       hoverLabel.style.left = e.clientX + 'px';
       hoverLabel.style.top = e.clientY + 'px';
       hoverLabel.classList.add('show');
@@ -2002,11 +2231,14 @@ window.NiceEarth = {
     });
   }
 
+  // Static elements cached once (updateUI runs on every visit change + N× at boot).
+  const _countEl = document.getElementById('count');
+  const _inlineCountEl = document.getElementById('visited-count-inline');
+  const _listEl = document.getElementById('list');
   function updateUI() {
-    document.getElementById('count').textContent = visited.size;
-    const inline = document.getElementById('visited-count-inline');
-    if (inline) inline.textContent = visited.size;
-    const list = document.getElementById('list');
+    _countEl.textContent = visited.size;
+    if (_inlineCountEl) _inlineCountEl.textContent = visited.size;
+    const list = _listEl;
     list.innerHTML = '';
     if (!visited.size) {
       const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'no countries summoned yet.';
@@ -2031,6 +2263,9 @@ window.NiceEarth = {
     try { addCountry(f); }
     catch (err) { console.warn('failed to restore visit:', id, err); visited.delete(id); }
   }
+  // Restore territory tints (the 36 that are topojson features; the rest are atlas-only).
+  for (const id of [...visitedTerr]) { if (countryMeshes.has(id)) territoryTint(id, true); }
+  booting = false;   // boot-restore done — completion moments may fire from here on
   recomputeArcMaxElev();
   rebuildBordersMerged();
   updateUI();
@@ -2072,7 +2307,7 @@ window.NiceEarth = {
   });
 
   document.getElementById('export').onclick = () => {
-    const blob = new Blob([JSON.stringify({schema:'blank-earth/v1', visited:[...visited], at:new Date().toISOString()}, null, 2)], { type:'application/json' });
+    const blob = new Blob([JSON.stringify({schema:'blank-earth/v1', visited:[...visited], territories:[...visitedTerr], at:new Date().toISOString()}, null, 2)], { type:'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'blank-earth-visits.json'; a.click();
   };
   document.getElementById('import').onclick = () => document.getElementById('file').click();
@@ -2082,8 +2317,14 @@ window.NiceEarth = {
       try {
         const d = JSON.parse(ev.target.result);
         const ids = Array.isArray(d) ? d : (d.visited || []);
+        booting = true;   // suppress completion banners while bulk-restoring
         for (const id of [...visited]) removeCountry(id);
         for (const id of ids) { const ff = byId.get(id); if (ff) addCountry(ff); }
+        booting = false;
+        // Territories (separate store). Tolerates files that predate the layer.
+        for (const id of [...visitedTerr]) { visitedTerr.delete(id); territoryTint(id, false); }
+        for (const id of (d.territories || [])) { if (TERR_CODES.has(id)) { visitedTerr.add(id); territoryTint(id, true); } }
+        persistTerr(); if (refreshTerrCard) refreshTerrCard();
       } catch (err) { alert('Could not read that file.'); }
     };
     r.readAsText(f);
@@ -2091,7 +2332,360 @@ window.NiceEarth = {
   document.getElementById('reset').onclick = () => {
     if (!confirm('Reset all visits?')) return;
     for (const id of [...visited]) removeCountry(id);
+    for (const id of [...visitedTerr]) { visitedTerr.delete(id); territoryTint(id, false); }
+    persistTerr(); if (refreshTerrCard) refreshTerrCard();
   };
+
+  // ---------------------------------------------------------------------------
+  //  DISCOVER SETS — browse the curated country groupings (data/sets.js) and
+  //  preview them on the globe. Members glow gold; a DOM card explains the
+  //  rule and progress. The ONLY scene mutation is a reversible per-tile
+  //  material recolour (no new geometry, no shaders); clearPreview() restores
+  //  each member by rebuilding its tile + resetting its extrusion colour.
+  // ---------------------------------------------------------------------------
+  (function setupDiscover(){
+    const btn      = document.getElementById('open-discover');
+    const card     = document.getElementById('discover-card');
+    const body     = document.getElementById('dc-body');
+    const foot     = document.getElementById('dc-foot');
+    const titleEl  = document.getElementById('dc-title');
+    const eyebrowEl= document.getElementById('dc-eyebrow');
+    const closeBtn = document.getElementById('dc-close');
+    if (!btn || !card) return;
+
+    const SET_COLORS   = { c:0xF2A93B, e:0x4a2c00, i:0.55 };  // gold — sets
+    const TITLE_COLORS = { c:0x9B6BC2, e:0x2a1340, i:0.50 };  // violet — titles
+    let activeColors = SET_COLORS;
+
+    let SETS = null, SET_ORDER = null, COUNTRIES = null;
+    let TITLES = null, REGIONS = null, TITLE_IDS = null;  // regional titles only
+    let mode = 'sets';           // 'sets' | 'titles'
+    let preview = null;          // { members:[iso] } currently highlighted
+    let currentDetail = null;    // { type:'set'|'title', id } or null
+
+    let loading = null;
+    function ensureData(){
+      if (SETS) return Promise.resolve(true);
+      if (loading) return loading;
+      loading = Promise.all([
+        import('./data/sets.js?v=v4'),
+        import('./data/countries.js?v=v4'),
+      ]).then(([s, c]) => {
+        SETS = s.SETS; SET_ORDER = s.SET_ORDER; COUNTRIES = c.COUNTRIES;
+        return true;
+      }).catch(err => {
+        console.error('[NiceEarth] discover: data load failed', err);
+        showToast('Could not load the sets data.'); loading = null; return false;
+      });
+      return loading;
+    }
+    // Titles data is heavier (titles.js ~38KB) — load only when the titles tab
+    // is first used. Keep just the 25 *regional* titles (the ones with a country
+    // region to highlight); map each id → camelCase region key in REGIONS.
+    let tloading = null;
+    function ensureTitleData(){
+      if (TITLES) return Promise.resolve(true);
+      if (tloading) return tloading;
+      tloading = Promise.all([
+        import('./data/titles.js?v=v4'),
+        import('./data/regions.js?v=v4'),
+      ]).then(([t, r]) => {
+        REGIONS = r.REGIONS;
+        const camel = s => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        TITLES = {}; TITLE_IDS = [];
+        for (const t0 of t.TITLES) {
+          if (t0.family !== 'regional') continue;
+          const key = camel(t0.id);
+          if (!REGIONS[key]) continue;
+          TITLES[t0.id] = { id:t0.id, name:t0.name, description:t0.description, region:REGIONS[key] };
+          TITLE_IDS.push(t0.id);
+        }
+        return true;
+      }).catch(err => {
+        console.error('[NiceEarth] discover: titles load failed', err);
+        showToast('Could not load the titles data.'); tloading = null; return false;
+      });
+      return tloading;
+    }
+    function nameOf(iso){
+      return (COUNTRIES && COUNTRIES[iso] && COUNTRIES[iso][2])
+          || (byId.get(iso) && byId.get(iso).name) || iso;
+    }
+
+    // ---- globe highlight (reversible) — colour comes from activeColors ----
+    function recolorTile(iso){
+      const k = activeColors;
+      const mesh = countryMeshes.get(iso), wall = countryWallMeshes.get(iso);
+      for (const m of [mesh, wall]) {
+        if (!m || !m.material) continue;
+        m.material.color.setHex(k.c);
+        if (m.material.emissive) { m.material.emissive.setHex(k.e); m.material.emissiveIntensity = k.i; }
+      }
+      const ext = visitedMeshes.get(iso);     // visited members: tint the tower too
+      if (ext) for (const c of ext.extr.children) {
+        if (!c.material) continue;
+        c.material.color.setHex(k.c);
+        if (c.material.emissive) { c.material.emissive.setHex(k.e); c.material.emissiveIntensity = k.i; }
+      }
+    }
+    function clearPreview(){
+      if (!preview) return;
+      for (const iso of preview.members) {
+        rebuildCountryGeom(iso);              // restores flat-tile material
+        const ext = visitedMeshes.get(iso);
+        if (ext) for (const c of ext.extr.children) {
+          if (!c.material) continue;
+          c.material.color.setHex(STYLE.visitedColor);
+          if (c.material.emissive) { c.material.emissive.setHex(STYLE.visitedEmissive); c.material.emissiveIntensity = STYLE.visitedEmissiveIntensity; }
+        }
+      }
+      preview = null;
+      lastInteract = performance.now();
+    }
+    function applyHighlight(countryList, doFrame){
+      clearPreview();
+      const members = countryList.filter(iso => countryMeshes.has(iso));
+      for (const iso of members) recolorTile(iso);
+      preview = { members };
+      if (doFrame) frameSet(members);
+      lastInteract = performance.now();
+    }
+
+    // ---- frame the set: circular-mean centroid + spread-aware zoom ----
+    function frameSet(members){
+      if (!members.length) return;
+      const pts = [];
+      for (const iso of members){
+        const f = byId.get(iso);
+        if (f){ const c = countryCenter(f); pts.push([c[0], c[1]]); }
+        else if (COUNTRIES[iso]) pts.push([COUNTRIES[iso][5], COUNTRIES[iso][4]]);
+      }
+      if (!pts.length) return;
+      let sx=0, sy=0, slat=0;
+      for (const [lon,lat] of pts){ const r=lon*Math.PI/180; sx+=Math.cos(r); sy+=Math.sin(r); slat+=lat; }
+      const meanLon = Math.atan2(sy, sx)*180/Math.PI, meanLat = slat/pts.length;
+      let maxAng=0;
+      for (const [lon,lat] of pts){ let dl=Math.abs(lon-meanLon); if(dl>180)dl=360-dl; maxAng=Math.max(maxAng, Math.abs(lat-meanLat), dl); }
+      targetRotY = -meanLon*Math.PI/180;
+      targetRotX = Math.max(-tiltLimit, Math.min(tiltLimit, meanLat*Math.PI/180));
+      targetCamDist = R * (maxAng>70 ? 3.1 : maxAng>40 ? 2.6 : maxAng>20 ? 2.15 : 1.85);
+      lastInteract = performance.now()+800;
+    }
+
+    // ---- card open / close ----
+    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'sets'}); document.body.classList.add('discovering'); card.hidden=false; showList(); closeBtn.focus(); }
+    function close(){ const wasOpen=!card.hidden; card.hidden=true; document.body.classList.remove('discovering'); currentDetail=null; clearPreview(); if(wasOpen) btn.focus(); }
+
+    // ---- tabs (sets | titles) ----
+    function tabsHtml(){
+      return `<div class="dc-tabs">
+        <button class="dc-tab${mode==='sets'?' active':''}" data-mode="sets" type="button">sets</button>
+        <button class="dc-tab${mode==='titles'?' active':''}" data-mode="titles" type="button">titles</button>
+      </div>`;
+    }
+    function switchMode(m){
+      if (m === mode) return;
+      if (m === 'titles') ensureTitleData().then(ok => { if (ok) { mode = 'titles'; showList(); } });
+      else { mode = 'sets'; showList(); }
+    }
+
+    // ---- list mode ----
+    function showList(){
+      clearPreview(); currentDetail = null;
+      eyebrowEl.textContent = 'collections & titles';
+      titleEl.textContent = mode === 'sets' ? 'discover sets' : 'discover titles';
+      let html = tabsHtml();
+      if (mode === 'sets') {
+        for (const id of SET_ORDER){
+          const set=SETS[id]; if(!set) continue;
+          const have=set.countries.filter(c=>visited.has(c)).length, total=set.countries.length;
+          const done=have===total, pct=Math.round(have/total*100);
+          html+=`<button class="dc-row${done?' done':''}" data-set="${id}">
+            <span class="dc-row-name">${set.name}</span>
+            <span class="dc-row-count">${done?'✓ '+total+'/'+total:have+' / '+total}</span>
+            <span class="dc-row-bar"><span class="dc-row-fill" style="width:${pct}%"></span></span>
+          </button>`;
+        }
+      } else {
+        for (const id of TITLE_IDS){
+          const t=TITLES[id];
+          const inR=t.region.filter(c=>visited.has(c)).length, sz=t.region.length, pct=Math.round(inR/sz*100);
+          html+=`<button class="dc-row" data-title="${id}">
+            <span class="dc-row-name">${t.name}</span>
+            <span class="dc-row-count">${inR} / ${sz}</span>
+            <span class="dc-row-bar"><span class="dc-row-fill" style="width:${pct}%;background:#9B6BC2"></span></span>
+          </button>`;
+        }
+      }
+      body.innerHTML = html;
+      body.querySelectorAll('.dc-tab').forEach(t=>t.addEventListener('click',()=>switchMode(t.dataset.mode)));
+      body.querySelectorAll('.dc-row[data-set]').forEach(r=>r.addEventListener('click',()=>showDetail(r.dataset.set, true)));
+      body.querySelectorAll('.dc-row[data-title]').forEach(r=>r.addEventListener('click',()=>showTitleDetail(r.dataset.title, true)));
+      foot.innerHTML=`<button class="dc-dice" id="dc-random" type="button">show me one</button><span class="dc-spacer"></span><button class="dc-mini" id="dc-done" type="button">close</button>`;
+      foot.querySelector('#dc-random').addEventListener('click',showRandom);
+      foot.querySelector('#dc-done').addEventListener('click',close);
+    }
+
+    // ---- set detail ----
+    function showDetail(id, doFrame){
+      const set=SETS[id]; if(!set) return;
+      currentDetail = { type:'set', id };
+      activeColors = SET_COLORS;
+      const have=set.countries.filter(c=>visited.has(c)), total=set.countries.length, done=have.length===total;
+      eyebrowEl.textContent= done ? 'collection · complete' : 'collection';
+      titleEl.textContent=set.name;
+      const chips=set.countries.map(iso=>`<span class="dc-chip${visited.has(iso)?' on':''}">${nameOf(iso)}</span>`).join('');
+      body.innerHTML=`
+        <p class="dc-teaser">${set.teaser}</p>
+        <div class="dc-rule"><span>✦</span><span><b>all ${total}</b>, glowing gold on the globe.</span></div>
+        <div class="dc-prog"><b>${have.length}</b> of ${total} visited${done?' · ✓ completed':''}</div>
+        <div class="dc-chips">${chips}</div>`;
+      foot.innerHTML=`<button class="dc-mini" id="dc-back" type="button">← all sets</button><span class="dc-spacer"></span><button class="dc-dice" id="dc-next" type="button">another</button>`;
+      foot.querySelector('#dc-back').addEventListener('click',showList);
+      foot.querySelector('#dc-next').addEventListener('click',showRandom);
+      applyHighlight(set.countries, doFrame);
+    }
+
+    // ---- title detail (regional titles only) — explains the concentration rule ----
+    function showTitleDetail(id, doFrame){
+      const t=TITLES[id]; if(!t) return;
+      currentDetail = { type:'title', id };
+      activeColors = TITLE_COLORS;
+      const inRegion=t.region.filter(c=>visited.has(c)), total=visited.size;
+      const density = total ? Math.round(inRegion.length/total*100) : 0;
+      const strong = total>0 && density>=50 && inRegion.length>=3;
+      eyebrowEl.textContent = 'a traveller’s title';
+      titleEl.textContent = t.name;
+      const chips=t.region.map(iso=>`<span class="dc-chip tt${visited.has(iso)?' on':''}">${nameOf(iso)}</span>`).join('');
+      body.innerHTML=`
+        <p class="dc-teaser">${t.description}</p>
+        <div class="dc-rule tt"><span>✦</span><span>a region you keep returning to — <b>half</b> your countries here, or more. glowing violet.</span></div>
+        <div class="dc-prog">yours here: <b>${inRegion.length}</b> of <b>${total}</b> ${total===1?'country':'countries'} = <b>${density}%</b> · needs ≥ 50%${strong?' · ✓ strong':''}</div>
+        <div class="dc-chips">${chips}</div>`;
+      foot.innerHTML=`<button class="dc-mini" id="dc-back" type="button">← all titles</button><span class="dc-spacer"></span><button class="dc-dice" id="dc-next" type="button">another</button>`;
+      foot.querySelector('#dc-back').addEventListener('click',showList);
+      foot.querySelector('#dc-next').addEventListener('click',showRandom);
+      applyHighlight(t.region, doFrame);
+    }
+
+    function showRandom(){
+      if (mode === 'sets') showDetail(SET_ORDER[Math.floor(Math.random()*SET_ORDER.length)], true);
+      else if (TITLE_IDS && TITLE_IDS.length) showTitleDetail(TITLE_IDS[Math.floor(Math.random()*TITLE_IDS.length)], true);
+    }
+
+    // ---- wiring ----
+    btn.hidden=false;
+    btn.addEventListener('click',()=>{ ensureData().then(ok=>{ if(ok) open(); }); });
+    closeBtn.addEventListener('click',close);
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!card.hidden) close(); });
+    // Toggling a visit while a set is previewed: refresh the open detail so chips
+    // + progress + gold stay in sync (without re-framing the camera each time).
+    function onVisitChange(){
+      if (card.hidden || !currentDetail) return;
+      if (currentDetail.type === 'set') showDetail(currentDetail.id, false);
+      else showTitleDetail(currentDetail.id, false);
+    }
+    NiceEarthEvents.on('country.visit', onVisitChange);
+    NiceEarthEvents.on('country.unvisit', onVisitChange);
+    NiceEarthEvents.on('ui.openCard', d => { if (d.id !== 'sets' && !card.hidden) close(); });
+    // Keep Tab inside the open dialog (focus-in on open + restore on close are
+    // handled in open()/close(); this completes the trap).
+    card.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const list = [...card.querySelectorAll('button,[href],input,[tabindex]:not([tabindex="-1"])')]
+        .filter(el => !el.disabled && el.offsetParent !== null);
+      if (!list.length) return;
+      const first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  })();
+
+  // ---------------------------------------------------------------------------
+  //  TERRITORIES CARD — browse the 46 dependent territories (data/territories.js),
+  //  grouped by parent sovereign, and mark them. Marking writes to the separate
+  //  territory store (toggleTerritory); the 36 that are topojson features also
+  //  tint teal on the globe. Reuses the .discover-card / .dc-* styling.
+  // ---------------------------------------------------------------------------
+  (function setupTerritories(){
+    const btn      = document.getElementById('open-territories');
+    const card     = document.getElementById('territories-card');
+    const body     = document.getElementById('tc-body');
+    const foot     = document.getElementById('tc-foot');
+    const titleEl  = document.getElementById('tc-title');
+    const closeBtn = document.getElementById('tc-close');
+    if (!btn || !card) return;
+
+    const PARENT_LABEL = {
+      FRA:'French overseas', GBR:'British overseas & Crown', NLD:'Dutch Caribbean',
+      USA:'US territories', DNK:'Danish Realm', NOR:'Norwegian', AUS:'Australian external',
+      NZL:'New Zealand realm', CHN:'Chinese SARs', FIN:'Åland (Finland)', MAR:'Western Sahara',
+    };
+    const PARENT_ORDER = ['FRA','GBR','NLD','USA','DNK','NOR','AUS','NZL','CHN','FIN','MAR'];
+    const CONT = { EU:'Europe', AS:'Asia', AF:'Africa', NA:'N. America', SA:'S. America', OC:'Oceania' };
+
+    let byParent = null;     // { parentISO: [iso,...] }
+    let loading = null;
+    function ensureData(){
+      if (TERR_DATA) return Promise.resolve(true);
+      if (loading) return loading;
+      loading = import('./data/territories.js?v=v4').then(m => {
+        TERR_DATA = m.TERRITORIES;
+        byParent = m.TERRITORIES_BY_PARENT || (() => {
+          const g={}; for (const [iso,t] of Object.entries(TERR_DATA)) (g[t[6]] ||= []).push(iso); return g;
+        })();
+        return true;
+      }).catch(err => { console.error('[NiceEarth] territories load failed', err); showToast('Could not load territories data.'); loading=null; return false; });
+      return loading;
+    }
+
+    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'territories'}); document.body.classList.add('discovering'); card.hidden=false; render(); closeBtn.focus(); }
+    function close(){ const wasOpen=!card.hidden; card.hidden=true; document.body.classList.remove('discovering'); if(wasOpen) btn.focus(); }
+
+    function render(){
+      const total = Object.keys(TERR_DATA).length;
+      const have = [...visitedTerr].filter(c => TERR_DATA[c]).length;
+      titleEl.textContent = `territories · ${have} / ${total}`;
+      let html = '';
+      for (const p of PARENT_ORDER){
+        const list = (byParent[p] || []).slice().sort((a,b)=>TERR_DATA[a][2].localeCompare(TERR_DATA[b][2]));
+        if (!list.length) continue;
+        const got = list.filter(c=>visitedTerr.has(c)).length;
+        html += `<div class="tc-group"><span>${PARENT_LABEL[p]||p}</span><span class="tc-grp-count">${got}/${list.length}</span></div>`;
+        for (const iso of list){
+          const t = TERR_DATA[iso];
+          const on = visitedTerr.has(iso);
+          const clickable = !!countryMeshes.has(iso);
+          html += `<button class="dc-row${on?' terr-on':''}" data-terr="${iso}">
+            <span class="dc-row-name">${t[2]}${clickable?'':' <span class="dc-pin">•</span>'}</span>
+            <span class="dc-row-tag">${CONT[t[0]]||t[0]}</span>
+          </button>`;
+        }
+      }
+      body.innerHTML = html;
+      body.querySelectorAll('.dc-row').forEach(r => r.addEventListener('click', () => { toggleTerritory(r.dataset.terr); }));
+      foot.innerHTML = `<span class="dc-mini" style="cursor:default">• = atlas-only (not on the globe)</span><span class="dc-spacer"></span><button class="dc-mini" id="tc-done" type="button">close</button>`;
+      foot.querySelector('#tc-done').addEventListener('click', close);
+    }
+
+    // wiring
+    btn.hidden=false;
+    btn.addEventListener('click', () => { ensureData().then(ok => { if(ok) open(); }); });
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', e => { if(e.key==='Escape' && !card.hidden) close(); });
+    NiceEarthEvents.on('ui.openCard', d => { if (d.id !== 'territories' && !card.hidden) close(); });
+    card.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const list = [...card.querySelectorAll('button,[href],input,[tabindex]:not([tabindex="-1"])')]
+        .filter(el => !el.disabled && el.offsetParent !== null);
+      if (!list.length) return;
+      const first = list[0], last = list[list.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    // keep the open card in sync when a territory is toggled from the globe
+    refreshTerrCard = () => { if (!card.hidden && TERR_DATA) render(); };
+  })();
 
   // ---------------------------------------------------------------------------
   //  PLUG-IN API — what plug-ins receive in their init({...}) call.

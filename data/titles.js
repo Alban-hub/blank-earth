@@ -476,6 +476,17 @@ export const TITLES = [
       tierScore(ctx.count, c => c >= 75 ? 87 + (c - 75) * 0.05 : 0, 1.00, 91),
   },
   {
+    // Added 2026-06-03 to break the long Globetrotter plateau: before this, the
+    // tier title did not change for 75 consecutive countries (75 → 149). The
+    // Far-Travelled now holds 110–149, scoring just above Globetrotter (peaks
+    // 91, stays below Completist's 92 at 150) so the user's identity shifts once
+    // more in the long middle without any fanfare — purely a milestone rename.
+    id: 'far-travelled', name: 'The Far-Travelled', family: 'tier',
+    description: 'Past a hundred countries — the atlas has become a way of life. Out beyond the easy wins, into the long tail: the visas that take planning, the routes with no tourists, the border posts where no one queues.',
+    test: (ctx) =>
+      tierScore(ctx.count, c => c >= 110 ? 90 + (c - 110) * 0.025 : 0, 1.00, 91),
+  },
+  {
     // id 'long-march' kept for state stability; display renamed in v5.7
     // because "The Long March" is a specific 1934-35 event in Chinese
     // Communist history and reading it as a generic 40-country tier was

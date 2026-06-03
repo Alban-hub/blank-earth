@@ -286,7 +286,7 @@
     font-size: 96px; line-height: 0.85;
     font-weight: 500;
     letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: oldstyle-nums tabular-nums;
   }
   .hero-num .of {
     font-family: var(--serif);
@@ -1003,6 +1003,24 @@
     .extremes { grid-template-columns: 1fr; gap: 14px; }
     .extremes .col + .col { border-left: 0; border-top: 1px solid rgba(60,31,56,0.18); padding-left: 0; padding-top: 14px; }
   }
+/* Social share card — a compact, designed image (count + title + a line of
+   stats), distinct from the full-sheet PNG export. Lives offscreen; html2canvas
+   snapshots it on demand. Calm/literary, in the app's own type. */
+.share-card{position:fixed;left:-99999px;top:0;width:680px;height:680px;box-sizing:border-box;
+  background:radial-gradient(125% 125% at 28% 12%, #FCFCFA 0%, #F2EEE2 100%);
+  color:var(--ink);padding:58px 56px;display:flex;flex-direction:column;justify-content:space-between;
+  border:1px solid #E6E2D6;overflow:hidden;font-family:var(--serif)}
+.share-card .sc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.share-card .sc-eyebrow{font-family:var(--sans);font-size:14px;letter-spacing:.28em;text-transform:uppercase;color:#857A52}
+.share-card .sc-orn{font-size:20px;color:#C28A2B}
+.share-card .sc-shape{position:absolute;right:-70px;top:96px;width:440px;height:440px;opacity:.09;color:#1c1838;z-index:0}
+.share-card .sc-mid{position:relative;z-index:1}
+.share-card .sc-count{font-size:170px;line-height:.86;font-weight:600;letter-spacing:-0.03em;font-variant-numeric:oldstyle-nums tabular-nums}
+.share-card .sc-count .sc-of{font-size:46px;color:#bdb6a3;font-style:italic;letter-spacing:0}
+.share-card .sc-marked{font-family:var(--sans);font-size:15px;letter-spacing:.22em;text-transform:uppercase;color:#9a8f6a;margin-top:8px}
+.share-card .sc-title{font-style:italic;font-size:52px;line-height:1.04;margin-top:34px;max-width:80%}
+.share-card .sc-stats{font-family:var(--sans);font-size:18px;color:#5b5673;margin-top:14px;line-height:1.5}
+.share-card .sc-foot{font-family:var(--sans);font-size:14px;letter-spacing:.1em;color:#857A52;display:flex;justify-content:space-between;position:relative;z-index:1}
 </style>
 </head>
 <body>
@@ -1010,11 +1028,15 @@
 <iframe class="globe-bg" src="/?embed=1" title="Globe background" aria-hidden="true"></iframe>
 <div class="scroll-fade" aria-hidden="true"></div>
 
+<!-- Social share card — filled + snapshotted on demand, lives offscreen. -->
+<div id="share-card" class="share-card" aria-hidden="true"></div>
+
 <div class="topbar">
   <div class="topbar-inner">
     <a href="/" class="iconbtn" aria-label="Back to globe">×</a>
     <div class="topbar-title">Your Atlas</div>
     <div class="topbar-actions">
+      <button class="iconbtn iconbtn-text" aria-label="Share a card" id="top-card" title="Share a card">CARD</button>
       <button class="iconbtn iconbtn-text" aria-label="Save the atlas as PDF" id="top-pdf" title="Save as PDF">PDF</button>
       <button class="iconbtn" aria-label="Save atlas as image" id="top-share" title="Save atlas as image">↑</button>
     </div>
@@ -1038,7 +1060,7 @@
         <div class="hero-text">
           <div class="card-lab" style="opacity:.66">Countries marked</div>
           <div class="hero-num"><span data-count="0" id="hero-num">0</span><span class="of" id="hero-of"> / 195</span></div>
-          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <span id="hero-cap-cont-line"><strong>0</strong> continents</span></div>
+          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <span id="hero-cap-cont-line"><strong>0</strong> continents</span><span id="hero-cap-terr"></span></div>
         </div>
         <div class="hero-shape">
           <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -1142,14 +1164,30 @@ import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v4';
 import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v4';
 import { computeTitle } from './data/titles.js?v=v4';
 import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v4';
+// Dependent territories (Layer: places beyond the 195). Stored under a separate
+// key by the globe; they credit GEOGRAPHY (continent / climate / hemisphere /
+// latitude span) but NOT country totals (count / land / pop) or the parent.
+import { TERRITORIES } from './data/territories.js?v=v4';
 
 function readVisits() {
   try {
     const raw = localStorage.getItem('blank-earth/v1/visits');
     if (raw === null) return null;
     const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.filter(s => typeof s === 'string') : null;
+    if (!Array.isArray(arr)) return null;
+    // 'KOS' is the globe's feature id for Kosovo; COUNTRIES keys it as 'XKX'.
+    // Remap on read so Kosovo finally credits the atlas.
+    return arr.filter(s => typeof s === 'string').map(s => s === 'KOS' ? 'XKX' : s);
   } catch { return null; }
+}
+// Visited territories (separate store). Filtered to known territory codes.
+function readTerritories() {
+  try {
+    const raw = localStorage.getItem('blank-earth/v1/territories');
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(s => typeof s === 'string' && TERRITORIES[s]) : [];
+  } catch { return []; }
 }
 function continentName(code) {
   const m = {EU:'Europe',AS:'Asia',AF:'Africa',NA:'N. America',SA:'S. America',OC:'Oceania'};
@@ -1332,6 +1370,9 @@ function paint() {
   else if (stored && stored.length === 0) known = [];
   else known = DEMO_VISITS.slice();
 
+  // Visited dependent territories (separate store). Credit geography only.
+  const knownTerr = readTerritories();
+
   const count = known.length;
   const visitedArea = known.reduce((s,c) => s + (COUNTRIES[c][1]||0), 0);
   const visitedPopM = known.reduce((s,c) => s + (COUNTRIES[c][3]||0), 0);
@@ -1346,18 +1387,41 @@ function paint() {
     if (lng >= 0) hemis.add('E'); else hemis.add('W');
   });
 
-  const climates = new Set();
-  known.forEach(iso => {
-    climates.add(climateZone(COUNTRIES[iso][4]));
-    if (POLAR_TERRITORY.has(iso)) climates.add('Polar');  // see POLAR_TERRITORY note
-  });
+  // Climate bands. Centroid bands (countries + territories) are the genuine
+  // "stood in this latitude zone" count. The polar-territory override
+  // (NOR/RUS/CAN/ISL/FIN/SWE/USA, whose territory reaches the Arctic) used to
+  // add 'Polar' from a single visit — so one Russia visit jumped the
+  // Climatologist line straight to tier 2. After the progression review it now
+  // only counts once you already hold ≥2 genuine centroid bands, so the polar
+  // override enriches tier 3+ but can't manufacture tier 2 on its own.
+  // (Territories like Greenland/Svalbard have a Polar *centroid* and so still
+  // count normally above.)
+  const centroidBands = new Set();
+  known.forEach(iso => centroidBands.add(climateZone(COUNTRIES[iso][4])));
+  for (const t of knownTerr) centroidBands.add(climateZone(TERRITORIES[t][4]));
+  const climates = new Set(centroidBands);
+  if (centroidBands.size >= 2 && known.some(iso => POLAR_TERRITORY.has(iso))) climates.add('Polar');
+
+  // ── Territories augment the three "shape" Sets (union axes per the spec in
+  //    data/countries.js): continent, hemisphere, climate band. They never
+  //    touch count / land / pop — those stay strictly country-scoped. ──
+  for (const t of knownTerr) {
+    const [cont, , , , tlat, tlng] = TERRITORIES[t];
+    continentsTouched.add(cont);
+    if (tlat >= 0) hemis.add('N'); else hemis.add('S');
+    if (tlng >= 0) hemis.add('E'); else hemis.add('W');
+    // (climate band already folded into centroidBands above)
+  }
 
   // Powers The Islander line — countries whose territory is one or more islands.
   const islandCount  = known.filter(iso => ISLAND_NATIONS.has(iso)).length;
   // Powers The Voyager line — degrees of latitude between your most northern
   // and most southern country. 0 with fewer than 2 visits.
   const lats = known.map(iso => COUNTRIES[iso] ? COUNTRIES[iso][4] : null).filter(v => v !== null);
-  const latRange = lats.length >= 2 ? Math.max(...lats) - Math.min(...lats) : 0;
+  // Voyager (latitude span) is a UNION axis — territories extend your reach
+  // (Greenland 72°N, the French Pacific deep south, Svalbard 78°N…).
+  const latsUnion = lats.concat(knownTerr.map(t => TERRITORIES[t][4]));
+  const latRange = latsUnion.length >= 2 ? Math.max(...latsUnion) - Math.min(...latsUnion) : 0;
 
   let most = null, least = null;
   known.forEach(iso => {
@@ -1380,6 +1444,10 @@ function paint() {
   const contN = continentsTouched.size;
   document.getElementById('hero-cap-cont-line').innerHTML =
     `<strong>${contN}</strong> ${contN === 1 ? 'continent' : 'continents'}`;
+  const terrEl = document.getElementById('hero-cap-terr');
+  if (terrEl) terrEl.innerHTML = knownTerr.length
+    ? ` · <strong>${knownTerr.length}</strong> ${knownTerr.length === 1 ? 'territory' : 'territories'}`
+    : '';
 
   /* people */
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
@@ -1901,6 +1969,75 @@ async function exportAtlasPDF() {
 
 document.getElementById('top-share').addEventListener('click', exportAtlas);
 document.getElementById('top-pdf').addEventListener('click', exportAtlasPDF);
+
+/* Social share card — a compact designed image (count · title · one line of
+   stats), distinct from the full-sheet PNG. Reuses the same html2canvas +
+   navigator.share path. Territories credit continents here too (union). */
+function buildShareCard() {
+  const stored = readVisits();
+  const known = (stored && stored.length > 0)
+    ? stored.filter((v, i) => COUNTRIES[v] && stored.indexOf(v) === i)
+    : (stored && stored.length === 0 ? [] : DEMO_VISITS.slice());
+  const terr = readTerritories();
+  const count = known.length;
+  const area = known.reduce((s, c) => s + (COUNTRIES[c][1] || 0), 0);
+  const pct = TOTAL_LAND ? (area / TOTAL_LAND) * 100 : 0;
+  const conts = new Set(known.map(c => COUNTRIES[c][0]));
+  for (const t of terr) conts.add(TERRITORIES[t][0]);
+  const title = computeTitle(known);
+  const tName = title.primary && !title.primary.empty
+    ? title.primary.name
+    : (count ? 'Your atlas, beginning' : 'A blank earth');
+  const stats = `${pct.toFixed(1)}% of inhabited land · ${conts.size} continent${conts.size === 1 ? '' : 's'}`
+    + (terr.length ? ` · ${terr.length} territor${terr.length === 1 ? 'y' : 'ies'}` : '');
+  const el = document.getElementById('share-card');
+  el.innerHTML = `
+    <div class="sc-top"><span class="sc-eyebrow">A blank earth</span><span class="sc-orn">✦</span></div>
+    <svg class="sc-shape" viewBox="0 0 200 200" aria-hidden="true"><path d="${TARGET_PATH}" fill="currentColor"/></svg>
+    <div class="sc-mid">
+      <div class="sc-count">${count}<span class="sc-of"> / 195</span></div>
+      <div class="sc-marked">countries marked</div>
+      <div class="sc-title">${tName}</div>
+      <div class="sc-stats">${stats}</div>
+    </div>
+    <div class="sc-foot"><span>niceearth.pages.dev</span><span>my personal atlas</span></div>`;
+}
+
+async function exportShareCard() {
+  const btn = document.getElementById('top-card');
+  if (btn.classList.contains('busy')) return;
+  btn.classList.add('busy');
+  try {
+    buildShareCard();
+    const html2canvas = await loadHtml2Canvas();
+    const el = document.getElementById('share-card');
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const canvas = await html2canvas(el, { backgroundColor: null, scale: 2, useCORS: true, logging: false });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    if (!blob) throw new Error('Could not encode image.');
+    const filename = defaultFilename('png').replace('your-atlas', 'my-atlas-card');
+    const file = new File([blob], filename, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'My atlas — Blank Earth' });
+        showToast('Shared');
+        return;
+      } catch (err) { if (err && err.name === 'AbortError') return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('Card saved to your downloads');
+  } catch (err) {
+    console.error('Share-card export failed:', err);
+    showToast('Card export failed — please try again', 2800);
+  } finally {
+    btn.classList.remove('busy');
+  }
+}
+document.getElementById('top-card').addEventListener('click', exportShareCard);
 
 paint();
 

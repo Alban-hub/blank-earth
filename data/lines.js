@@ -1,4 +1,4 @@
-// The 7 "lines" — single tiered cards that replace the threshold-stacked
+// The 8 "lines" — single tiered cards that replace the threshold-stacked
 // badges from the legacy system. Each line has 3 or 4 tiers; the visible
 // card represents the user's *current* tier, gilding from bronze → silver →
 // gold → indigo as they progress. Locked tiers are still rendered (in the
@@ -9,7 +9,7 @@
 //   name         editorial name, displayed on the card
 //   axis         which metric this line tracks. Mapped to a value by
 //                stats.html's lineValue() function. One of:
-//                  'count' | 'land' | 'pop' | 'coast'
+//                  'count' | 'land' | 'pop' | 'islands' | 'latRange'
 //                  | 'hemi' | 'climate' | 'cont'
 //   art          key into the art registry (renderArt)
 //   tiers        array of { threshold, name } — length 3 or 4
@@ -71,8 +71,8 @@ export const LINES = {
     tiers: [
       { threshold: 4,  name: 'First Atoll' },
       { threshold: 12, name: 'Reef-Hopper' },
-      { threshold: 25, name: 'Archipelago' },
-      { threshold: 40, name: 'Oceania' },
+      { threshold: 22, name: 'Archipelago' },
+      { threshold: 30, name: 'Oceania' },
     ],
     description: 'Pure island countries — Iceland, Japan, Madagascar, the Pacific archipelagos.',
   },

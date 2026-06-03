@@ -12,6 +12,25 @@
 // Adding longitude as a 6th field was a one-time migration done so that future
 // trophies (antipodal pair, distance-based hidden curiosities, hemisphere
 // rules) have what they need without a second pass through this table.
+//
+// === COUNTRIES vs TERRITORIES ===
+//
+// This table contains 197 entries: 193 UN member states + 2 UN observers
+// (VAT, PSE) + 2 de facto sovereign states (TWN, XKX). The Cosmographer
+// title checks against TOTAL_UN = 195 (the UN-recognized count).
+//
+// Dependent territories — French overseas (Guadeloupe, French Guiana,
+// Réunion, etc.), British overseas (Bermuda, Gibraltar, Cayman, etc.),
+// Dutch Caribbean, US territories (Puerto Rico, Guam), Greenland, Hong
+// Kong, Macau, etc. — live in data/territories.js. Visiting a territory
+// credits the territory's GEOGRAPHIC continent, climate band, hemisphere
+// and (for title-region tests) the regions it sits in, but does NOT
+// credit the parent sovereign. Visiting French Guiana ≠ visiting France.
+//
+// Tier-style lines that are "how much of the world have you covered"
+// (Cartographer, Surveyor, Demographer, Cosmographer) are scoped to
+// COUNTRIES only. Pattern lines that are "what shape is your atlas"
+// (Continentalist, Hemispherist, Climatologist, Voyager) read the union.
 
 export const COUNTRIES = {
   ALB:['EU',28748,'Albania',2.8,41,20],AND:['EU',468,'Andorra',0.08,42.5,1.5],AUT:['EU',83879,'Austria',9,47.5,14.5],BLR:['EU',207600,'Belarus',9.4,53.7,27.5],BEL:['EU',30528,'Belgium',11.7,50.5,4.5],BIH:['EU',51209,'Bosnia & Herzegovina',3.2,44,18],BGR:['EU',110879,'Bulgaria',6.7,43,25],HRV:['EU',56594,'Croatia',3.9,45.1,15.2],CYP:['EU',9251,'Cyprus',1.2,35,33],CZE:['EU',78867,'Czechia',10.7,49.8,15.5],DNK:['EU',43094,'Denmark',5.9,56,10],EST:['EU',45227,'Estonia',1.3,59,26],FIN:['EU',338424,'Finland',5.5,64,26],FRA:['EU',551695,'France',68,46.6,2.2],DEU:['EU',357114,'Germany',83.4,51.2,10.5],GRC:['EU',131957,'Greece',10.4,39,22],HUN:['EU',93028,'Hungary',9.6,47,19.5],ISL:['EU',103000,'Iceland',0.39,64.9,-19],IRL:['EU',70273,'Ireland',5.1,53.1,-7.7],ITA:['EU',301336,'Italy',58.8,42.8,12.8],XKX:['EU',10887,'Kosovo',1.8,42.6,20.9],LVA:['EU',64559,'Latvia',1.9,57,24.6],LIE:['EU',160,'Liechtenstein',0.04,47.2,9.5],LTU:['EU',65300,'Lithuania',2.8,55.2,23.9],LUX:['EU',2586,'Luxembourg',0.65,49.6,6.1],MLT:['EU',316,'Malta',0.55,35.9,14.4],MDA:['EU',33846,'Moldova',2.6,47.4,28.4],MCO:['EU',2,'Monaco',0.04,43.7,7.4],MNE:['EU',13812,'Montenegro',0.62,42.7,19.4],NLD:['EU',41850,'Netherlands',17.6,52.1,5.3],MKD:['EU',25713,'North Macedonia',1.83,41.6,21.7],NOR:['EU',323802,'Norway',5.5,62,10],POL:['EU',312696,'Poland',38,52,19],PRT:['EU',92090,'Portugal',10.4,39.4,-8.2],ROU:['EU',238397,'Romania',19,45.9,24.9],RUS:['EU',17098246,'Russia',144,61.5,105],SMR:['EU',61,'San Marino',0.034,43.9,12.4],SRB:['EU',77474,'Serbia',6.7,44,21],SVK:['EU',49035,'Slovakia',5.4,48.7,19.7],SVN:['EU',20273,'Slovenia',2.1,46.1,14.8],ESP:['EU',505992,'Spain',48.6,40.4,-3.7],SWE:['EU',450295,'Sweden',10.6,62,15],CHE:['EU',41285,'Switzerland',8.8,46.8,8.2],UKR:['EU',603628,'Ukraine',38,49,32],GBR:['EU',242495,'United Kingdom',67.7,55.4,-3.4],VAT:['EU',0.49,'Vatican City',0.001,41.9,12.5],
