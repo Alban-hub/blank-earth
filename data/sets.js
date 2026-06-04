@@ -71,7 +71,7 @@ export const SETS = {
     countries: ['VAT','MCO','SMR','LIE','AND'],
     palette: 'rose',
     art: 'microcrowns',
-    teaser: 'Five countries you can drive across in under an hour.',
+    teaser: 'Five countries, each crossed in under an hour.',
   },
 
   maghreb: {
@@ -218,13 +218,19 @@ export const SETS = {
     teaser: 'Ten countries strung along one river.',
   },
 
-  fiveEyes: {
-    id: 'fiveEyes',
-    name: 'The Five Eyes',
-    countries: ['USA','GBR','CAN','AUS','NZL'],
+  // v5.8 audit: renamed `fiveEyes` → `anglosphere`. Same five countries,
+  // but reframed from an intelligence pact (an alliance/identity framing,
+  // off-tone for a contemplative atlas) to the cultural-linguistic grouping
+  // it really is: the core English-speaking settler nations spread across
+  // five continents. The membership and teaser were already linguistic;
+  // only the name, art and id needed to follow.
+  anglosphere: {
+    id: 'anglosphere',
+    name: 'The Anglosphere',
+    countries: ['GBR','USA','CAN','AUS','NZL'],
     palette: 'plum',
-    art: 'compass',
-    teaser: 'Five nations bound by a common tongue.',
+    art: 'world',
+    teaser: 'One language carried to five continents.',
   },
 
   nileBasin: {
@@ -236,35 +242,46 @@ export const SETS = {
     teaser: 'Where the world’s longest river gathers.',
   },
 
-  // ── Pacing sets (added 2026-06-03 after the progression review) — every set
-  // until now completed only in the final fifth of a journey (each gated by one
-  // rare micro-member). These two are reachable *early/mid* for ordinary travel,
-  // so the first "complete" moment can land in the opening chapter rather than
-  // at country ~170. The Grand Tour (3 of the most-visited countries on Earth)
-  // is the deliberate starter; the Seven Wonders spread the reward across
-  // continents so it isn't a Europe-only early game.
-  grandTour: {
-    id: 'grandTour',
-    name: 'The Grand Tour',
-    countries: ['FRA','ITA','CHE'],
+  // ── Pacing sets — both reachable *early/mid* for ordinary travel, so the
+  // first "complete" moment can land in the opening chapter rather than at
+  // country ~170. (Every set above is gated by one rare micro-member and only
+  // closes in the final fifth of a journey.)
+  //
+  // v5.8 audit: removed `grandTour` (FRA/ITA/CHE) and `sevenWonders`. Both
+  // failed the set test — they grouped by *traveler identity / tourist
+  // checklist* ("the road every Grand Tourist took", "seven modern wonders")
+  // rather than by geography, culture, or physical fact. Their pacing roles
+  // are preserved by two real groupings: Iberia (a single peninsula, the
+  // common early-Europe starter — Spain and Portugal are among the most-
+  // visited countries on Earth) and the Andes (one continental mountain
+  // spine, the cross-continental mid-game reward so the opening isn't
+  // Europe-only). Iberia inherits the rose slot, the Andes the bone slot.
+  iberia: {
+    id: 'iberia',
+    name: 'The Iberian Peninsula',
+    countries: ['ESP','PRT','AND'],
     palette: 'rose',
-    art: 'compass',
-    teaser: 'The road every Grand Tourist once took.',
+    art: 'coast-map',
+    teaser: 'One peninsula, two seas, a mountain seam between.',
   },
 
-  sevenWonders: {
-    id: 'sevenWonders',
-    name: 'The Seven Wonders',
-    countries: ['ITA','JOR','IND','CHN','PER','MEX','BRA'],
+  andes: {
+    // The world's longest continental mountain range, ~7,000 km down the
+    // western edge of South America. Same seven countries as the legacy
+    // `andes` GEO_SET in countries.js, so the set and the geo-badge agree
+    // on what "Andean" means. VEN holds the range's northern Mérida spur.
+    id: 'andes',
+    name: 'The Andes',
+    countries: ['VEN','COL','ECU','PER','BOL','CHL','ARG'],
     palette: 'bone',
-    art: 'world',
-    teaser: 'Seven modern wonders, seven countries.',
+    art: 'ridge-line',
+    teaser: 'One stone spine down a continent’s western edge.',
   },
 };
 
 // Display order on the cabinet. New sets append; reordering is explicit.
 export const SET_ORDER = [
-  'grandTour',
+  'iberia',
   'silkRoad',
   'cradlesOfCiv',
   'polarCrown',
@@ -281,9 +298,9 @@ export const SET_ORDER = [
   'gccGulf',
   'asean',
   'danube',
-  'fiveEyes',
+  'anglosphere',
   'nileBasin',
-  'sevenWonders',
+  'andes',
 ];
 
 // Compute progress for a given set against a list of visited country codes.

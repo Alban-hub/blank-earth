@@ -37,13 +37,13 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .btn:hover{background:var(--ink);color:var(--paper)}
 .btn.subtle{border-color:var(--line);color:var(--muted)}
 .btn.subtle:hover{background:var(--hair);color:var(--ink)}
-.visited-toggle{display:none;flex:1;background:rgba(28,24,56,0.06);border:0;border-radius:999px;padding:9px 14px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;gap:8px;transition:background 200ms;min-height:38px}
+.visited-toggle{display:none;flex:1;background:rgba(28,24,56,0.06);border:0;border-radius:999px;padding:9px 14px;font-family:var(--serif);font-size:13px;color:var(--ink);cursor:pointer;align-items:center;justify-content:space-between;letter-spacing:0.01em;gap:8px;transition:background 200ms cubic-bezier(.16,1,.3,1);min-height:38px}
 .visited-toggle:hover,.visited-toggle:active{background:rgba(28,24,56,0.10)}
-.visited-toggle .chev{transition:transform 0.2s;color:var(--muted);font-size:13px;flex-shrink:0;line-height:1}
+.visited-toggle .chev{transition:transform 0.2s cubic-bezier(.16,1,.3,1);color:var(--muted);font-size:13px;flex-shrink:0;line-height:1}
 .panel.expanded .visited-toggle .chev{transform:rotate(180deg)}
 .visited-toggle .vt-count{font-weight:500;color:var(--ink)}
 .panel-foot{display:none;gap:8px;margin-top:10px;align-items:stretch}
-.panel-foot .atlas-link-pill{flex:0 0 auto;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;background:transparent;border:0.5px solid var(--ink);color:var(--ink);font-family:var(--serif);font-size:13px;text-decoration:none;letter-spacing:0.01em;white-space:nowrap;transition:background 200ms,color 200ms}
+.panel-foot .atlas-link-pill{flex:0 0 auto;display:inline-flex;align-items:center;padding:0 14px;border-radius:999px;background:transparent;border:0.5px solid var(--ink);color:var(--ink);font-family:var(--serif);font-size:13px;text-decoration:none;letter-spacing:0.01em;white-space:nowrap;transition:background 200ms cubic-bezier(.16,1,.3,1),color 200ms cubic-bezier(.16,1,.3,1)}
 .panel-foot .atlas-link-pill:hover,.panel-foot .atlas-link-pill:active{background:var(--ink);color:var(--paper)}
 .visited-list{margin-top:14px;max-height:32vh;overflow:auto;font-family:var(--serif);font-size:13px}
 .visited-list .row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px dashed var(--hair)}
@@ -57,7 +57,7 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
 .actions .btn{font-size:11px;padding:8px 13px}
 .tip{position:fixed;left:28px;top:80px;background:rgba(252,252,250,0.95);border:0.5px solid var(--hair);padding:8px 12px;font-family:var(--serif);font-style:italic;font-size:12px;color:var(--muted);max-width:280px;line-height:1.5;z-index:5}
 .tip strong{color:var(--ink);font-weight:500;font-style:normal;font-family:var(--sans);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;display:block;margin-bottom:4px}
-.hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s}
+.hover-label{position:fixed;pointer-events:none;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:5px 10px;font-family:var(--serif);font-style:italic;font-size:13px;z-index:6;transform:translate(-50%,calc(-100% - 14px));white-space:nowrap;opacity:0;transition:opacity 0.15s cubic-bezier(.16,1,.3,1)}
 .hover-label.show{opacity:1}
 @media (max-width:640px){
   /* Tighter panel — minimum footprint when collapsed: just search bar + the
@@ -79,8 +79,10 @@ body{background:var(--space);color:var(--ink);font-family:var(--sans);-webkit-fo
   .panel > .atlas-link{display:none}
   .panel:not(.expanded) .visited-list{display:none}
   .panel:not(.expanded) .actions{display:none}
-  /* keep the collapsed mobile sheet minimal — discovery lives in the expanded panel */
-  .panel:not(.expanded) .discover-btn{display:none}
+  /* Discovery must be obvious without digging: keep "discover sets" pinned even
+     when the sheet is collapsed. Territories is the secondary entry point, so it
+     tucks away until the panel is expanded (keeps the collapsed footprint calm). */
+  .panel:not(.expanded) .discover-btn.terr{display:none}
   .visited-list{margin-top:10px;max-height:38vh}
   .actions{margin-top:8px}
 }
@@ -91,7 +93,7 @@ html.embed-mode body{pointer-events:none}
 html.embed-mode #scene{pointer-events:none}
 
 /* Toast — non-blocking storage warnings, plug-in messages */
-#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:10px 16px;font-family:var(--serif);font-size:13px;font-style:italic;border:0.5px solid var(--hair);max-width:min(420px,90vw);text-align:center;line-height:1.4;box-shadow:0 6px 24px rgba(0,0,0,0.25);animation:toast-in 0.18s ease-out}
+#toast{position:fixed;left:50%;bottom:max(20px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:rgba(28,24,56,0.94);color:#FCFCFA;padding:10px 16px;font-family:var(--serif);font-size:13px;font-style:italic;border:0.5px solid var(--hair);max-width:min(420px,90vw);text-align:center;line-height:1.4;box-shadow:0 6px 24px rgba(28,24,56,0.25);animation:toast-in 0.18s ease-out}
 @keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 
 /* Set-completion moment — a brief, quiet acknowledgement when the last country
@@ -120,21 +122,33 @@ body.discovering #set-complete{display:none}
 /* ── Discover sets — browse the curated country groupings and preview them on
    the globe (members glow gold). DOM-layer; the only globe touch is a
    reversible material recolour. ── */
-.discover-btn{display:flex;width:100%;align-items:center;gap:8px;margin-top:10px;background:transparent;border:0.5px solid rgba(194,138,43,0.55);color:#7a5414;padding:9px 12px;border-radius:999px;font-family:var(--serif);font-style:italic;font-size:13px;cursor:pointer;letter-spacing:0.01em;transition:background 180ms,color 180ms;min-height:38px}
+.discover-btn{display:flex;width:100%;align-items:center;gap:8px;margin-top:10px;background:transparent;border:0.5px solid rgba(194,138,43,0.55);color:#7a5414;padding:9px 12px;border-radius:999px;font-family:var(--serif);font-style:italic;font-size:13px;cursor:pointer;letter-spacing:0.01em;transition:background 180ms cubic-bezier(.16,1,.3,1),color 180ms cubic-bezier(.16,1,.3,1);min-height:38px}
 .discover-btn:hover,.discover-btn:active{background:#C28A2B;color:#FCFCFA;border-color:#C28A2B}
 .discover-btn .dc-spark{font-style:normal}
 
 .discover-card{position:fixed;right:28px;bottom:28px;z-index:8;width:330px;max-height:min(72vh,640px);display:flex;flex-direction:column;background:rgba(252,252,250,0.96);backdrop-filter:blur(8px);border:0.5px solid var(--hair);border-radius:14px;box-shadow:0 12px 40px rgba(28,24,56,0.22)}
 .discover-card[hidden]{display:none}
-.dc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 16px 10px;border-bottom:0.5px solid var(--hair)}
+.dc-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 16px 10px;border-bottom:0.5px solid var(--hair);cursor:pointer}
+.dc-head .dc-head-text{flex:1;min-width:0}
+.dc-head-actions{flex:0 0 auto;display:flex;align-items:center;gap:6px;align-self:flex-start}
 .dc-eyebrow{font-family:var(--sans);font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:#946A18;display:block;margin-bottom:2px}
 .dc-title{font-family:var(--serif);font-size:17px;color:var(--ink);line-height:1.15}
-.dc-x{flex:0 0 auto;background:transparent;border:0;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:0 2px;align-self:flex-start}
-.dc-x:hover{color:var(--ink)}
+.dc-x,.dc-collapse{flex:0 0 auto;background:transparent;border:0;color:var(--muted);line-height:1;cursor:pointer;padding:0 2px}
+.dc-x{font-size:22px}
+.dc-x:hover,.dc-collapse:hover{color:var(--ink)}
+/* lower-the-card chevron — calm, lowercase sibling of the × close button.
+   ▾ points down when open (tap to lower); flips to ▴ when minimized. */
+.dc-collapse{font-size:16px;transition:transform 180ms cubic-bezier(.16,1,.3,1)}
+.discover-card.minimized .dc-collapse{transform:rotate(180deg)}
 .dc-body{overflow-y:auto;padding:6px 8px;flex:1}
+/* Minimized: drop to just the header bar, revealing the globe underneath. */
+.discover-card.minimized{max-height:none}
+.discover-card.minimized .dc-head{border-bottom:0}
+.discover-card.minimized .dc-body,
+.discover-card.minimized .dc-foot{display:none}
 
 /* List mode — one row per set */
-.dc-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;font-family:inherit;transition:background 140ms}
+.dc-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;font-family:inherit;transition:background 140ms cubic-bezier(.16,1,.3,1)}
 .dc-row:hover{background:rgba(194,138,43,0.10)}
 .dc-row .dc-row-name{font-family:var(--serif);font-size:14px;color:var(--ink)}
 .dc-row .dc-row-count{font-family:var(--sans);font-size:11px;color:var(--muted);justify-self:end}
@@ -144,7 +158,7 @@ body.discovering #set-complete{display:none}
 
 /* Detail mode */
 .dc-teaser{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);line-height:1.45;padding:10px 10px 4px}
-.dc-rule{display:flex;gap:8px;margin:8px 10px;padding:9px 11px;background:rgba(194,138,43,0.09);border-left:2px solid #C28A2B;font-family:var(--sans);font-size:12px;color:#5e4413;line-height:1.45}
+.dc-rule{display:flex;gap:8px;margin:8px 10px;padding:9px 11px;background:rgba(194,138,43,0.09);border-left:2px solid #C28A2B;font-family:var(--sans);font-size:12px;color:#7a5414;line-height:1.45}
 .dc-rule b{font-weight:600}
 .dc-prog{font-family:var(--sans);font-size:12px;color:var(--muted);padding:2px 10px 8px}
 .dc-prog b{color:var(--ink);font-weight:600}
@@ -256,12 +270,15 @@ body.discovering #set-complete{display:none}
 
 <!-- Discover-sets card. Populated and toggled by the engine once sets.js loads. -->
 <div class="discover-card" id="discover-card" role="dialog" aria-label="Discover sets" hidden>
-  <div class="dc-head">
-    <div>
+  <div class="dc-head" id="dc-head">
+    <div class="dc-head-text">
       <span class="dc-eyebrow" id="dc-eyebrow">collections</span>
       <span class="dc-title" id="dc-title">discover sets</span>
     </div>
-    <button class="dc-x" id="dc-close" type="button" aria-label="close">×</button>
+    <div class="dc-head-actions">
+      <button class="dc-collapse" id="dc-collapse" type="button" aria-label="minimize" aria-expanded="true">▾</button>
+      <button class="dc-x" id="dc-close" type="button" aria-label="close">×</button>
+    </div>
   </div>
   <div class="dc-body" id="dc-body"></div>
   <div class="dc-foot" id="dc-foot"></div>
@@ -269,12 +286,15 @@ body.discovering #set-complete{display:none}
 
 <!-- Territories card. Reuses .discover-card / .dc-* styling; teal accent. -->
 <div class="discover-card" id="territories-card" role="dialog" aria-label="Territories" hidden>
-  <div class="dc-head">
-    <div>
+  <div class="dc-head" id="tc-head">
+    <div class="dc-head-text">
       <span class="dc-eyebrow" id="tc-eyebrow" style="color:#2B8C84">dependent territories</span>
       <span class="dc-title" id="tc-title">territories</span>
     </div>
-    <button class="dc-x" id="tc-close" type="button" aria-label="close">×</button>
+    <div class="dc-head-actions">
+      <button class="dc-collapse" id="tc-collapse" type="button" aria-label="minimize" aria-expanded="true">▾</button>
+      <button class="dc-x" id="tc-close" type="button" aria-label="close">×</button>
+    </div>
   </div>
   <div class="dc-body" id="tc-body"></div>
   <div class="dc-foot" id="tc-foot"></div>
@@ -1806,7 +1826,7 @@ window.NiceEarth = {
   // `booting` suppresses this during the boot-restore + import-restore loops so
   // we don't fire a banner for every already-complete set on load.
   let COMPLETION_SETS = null, COMPLETION_ORDER = null, booting = true;
-  import('./data/sets.js?v=v4')
+  import('./data/sets.js?v=v5')
     .then(m => { COMPLETION_SETS = m.SETS; COMPLETION_ORDER = m.SET_ORDER; })
     .catch(() => {});
   function checkSetCompletion(addedId) {
@@ -2351,6 +2371,8 @@ window.NiceEarth = {
     const titleEl  = document.getElementById('dc-title');
     const eyebrowEl= document.getElementById('dc-eyebrow');
     const closeBtn = document.getElementById('dc-close');
+    const headEl   = document.getElementById('dc-head');
+    const collapseBtn = document.getElementById('dc-collapse');
     if (!btn || !card) return;
 
     const SET_COLORS   = { c:0xF2A93B, e:0x4a2c00, i:0.55 };  // gold — sets
@@ -2363,13 +2385,26 @@ window.NiceEarth = {
     let preview = null;          // { members:[iso] } currently highlighted
     let currentDetail = null;    // { type:'set'|'title', id } or null
 
+    // "show me one" / "another" walks a shuffled queue so it never repeats until
+    // every id has been seen. Rebuilt on each open() (so the order differs each
+    // time the card is reopened) and lazily per mode. One queue per mode.
+    const randQueue = { sets: [], titles: [] };
+    function fyShuffle(arr){
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+      return a;
+    }
+    function poolFor(m){ return m === 'titles' ? (TITLE_IDS || []) : (SET_ORDER || []); }
+    function shuffleQueue(m){ randQueue[m] = fyShuffle(poolFor(m)); }
+    function resetQueue(){ randQueue.sets = []; randQueue.titles = []; if (SET_ORDER) shuffleQueue('sets'); }
+
     let loading = null;
     function ensureData(){
       if (SETS) return Promise.resolve(true);
       if (loading) return loading;
       loading = Promise.all([
-        import('./data/sets.js?v=v4'),
-        import('./data/countries.js?v=v4'),
+        import('./data/sets.js?v=v5'),
+        import('./data/countries.js?v=v5'),
       ]).then(([s, c]) => {
         SETS = s.SETS; SET_ORDER = s.SET_ORDER; COUNTRIES = c.COUNTRIES;
         return true;
@@ -2387,8 +2422,8 @@ window.NiceEarth = {
       if (TITLES) return Promise.resolve(true);
       if (tloading) return tloading;
       tloading = Promise.all([
-        import('./data/titles.js?v=v4'),
-        import('./data/regions.js?v=v4'),
+        import('./data/titles.js?v=v5'),
+        import('./data/regions.js?v=v5'),
       ]).then(([t, r]) => {
         REGIONS = r.REGIONS;
         const camel = s => s.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
@@ -2472,9 +2507,19 @@ window.NiceEarth = {
       lastInteract = performance.now()+800;
     }
 
+    // ---- minimize (lower the card to its header bar, revealing the globe) ----
+    function setMin(min){
+      card.classList.toggle('minimized', min);
+      if (collapseBtn){
+        collapseBtn.setAttribute('aria-expanded', String(!min));
+        collapseBtn.setAttribute('aria-label', min ? 'expand' : 'minimize');
+      }
+    }
+    function toggleMin(){ setMin(!card.classList.contains('minimized')); }
+
     // ---- card open / close ----
-    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'sets'}); document.body.classList.add('discovering'); card.hidden=false; showList(); closeBtn.focus(); }
-    function close(){ const wasOpen=!card.hidden; card.hidden=true; document.body.classList.remove('discovering'); currentDetail=null; clearPreview(); if(wasOpen) btn.focus(); }
+    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'sets'}); document.body.classList.add('discovering'); setMin(false); resetQueue(); card.hidden=false; showList(); closeBtn.focus(); }
+    function close(){ const wasOpen=!card.hidden; card.hidden=true; setMin(false); document.body.classList.remove('discovering'); currentDetail=null; clearPreview(); if(wasOpen) btn.focus(); }
 
     // ---- tabs (sets | titles) ----
     function tabsHtml(){
@@ -2568,15 +2613,29 @@ window.NiceEarth = {
       applyHighlight(t.region, doFrame);
     }
 
+    // Pop the next id from the current mode's shuffled queue (no repeats);
+    // when the queue empties, reshuffle and continue.
+    function nextFromQueue(m){
+      const pool = poolFor(m);
+      if (!pool.length) return null;
+      let q = randQueue[m];
+      if (!q || !q.length){ shuffleQueue(m); q = randQueue[m]; }
+      return q.length ? q.shift() : null;
+    }
     function showRandom(){
-      if (mode === 'sets') showDetail(SET_ORDER[Math.floor(Math.random()*SET_ORDER.length)], true);
-      else if (TITLE_IDS && TITLE_IDS.length) showTitleDetail(TITLE_IDS[Math.floor(Math.random()*TITLE_IDS.length)], true);
+      if (mode === 'sets'){ const id = nextFromQueue('sets'); if (id) showDetail(id, true); }
+      else { const id = nextFromQueue('titles'); if (id) showTitleDetail(id, true); }
     }
 
     // ---- wiring ----
     btn.hidden=false;
     btn.addEventListener('click',()=>{ ensureData().then(ok=>{ if(ok) open(); }); });
     closeBtn.addEventListener('click',close);
+    // Minimize: explicit chevron, plus a tap anywhere on the header bar (nice on
+    // mobile). Ignore taps that land on the action buttons (they have their own
+    // handlers) so the header tap doesn't fight the × / chevron.
+    if (collapseBtn) collapseBtn.addEventListener('click', e => { e.stopPropagation(); toggleMin(); });
+    if (headEl) headEl.addEventListener('click', e => { if (e.target.closest('button')) return; toggleMin(); });
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!card.hidden) close(); });
     // Toggling a visit while a set is previewed: refresh the open detail so chips
     // + progress + gold stay in sync (without re-framing the camera each time).
@@ -2614,6 +2673,8 @@ window.NiceEarth = {
     const foot     = document.getElementById('tc-foot');
     const titleEl  = document.getElementById('tc-title');
     const closeBtn = document.getElementById('tc-close');
+    const headEl   = document.getElementById('tc-head');
+    const collapseBtn = document.getElementById('tc-collapse');
     if (!btn || !card) return;
 
     const PARENT_LABEL = {
@@ -2629,7 +2690,7 @@ window.NiceEarth = {
     function ensureData(){
       if (TERR_DATA) return Promise.resolve(true);
       if (loading) return loading;
-      loading = import('./data/territories.js?v=v4').then(m => {
+      loading = import('./data/territories.js?v=v5').then(m => {
         TERR_DATA = m.TERRITORIES;
         byParent = m.TERRITORIES_BY_PARENT || (() => {
           const g={}; for (const [iso,t] of Object.entries(TERR_DATA)) (g[t[6]] ||= []).push(iso); return g;
@@ -2639,8 +2700,18 @@ window.NiceEarth = {
       return loading;
     }
 
-    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'territories'}); document.body.classList.add('discovering'); card.hidden=false; render(); closeBtn.focus(); }
-    function close(){ const wasOpen=!card.hidden; card.hidden=true; document.body.classList.remove('discovering'); if(wasOpen) btn.focus(); }
+    // ---- minimize (lower the card to its header bar, revealing the globe) ----
+    function setMin(min){
+      card.classList.toggle('minimized', min);
+      if (collapseBtn){
+        collapseBtn.setAttribute('aria-expanded', String(!min));
+        collapseBtn.setAttribute('aria-label', min ? 'expand' : 'minimize');
+      }
+    }
+    function toggleMin(){ setMin(!card.classList.contains('minimized')); }
+
+    function open(){ NiceEarthEvents.emit('ui.openCard',{id:'territories'}); document.body.classList.add('discovering'); setMin(false); card.hidden=false; render(); closeBtn.focus(); }
+    function close(){ const wasOpen=!card.hidden; card.hidden=true; setMin(false); document.body.classList.remove('discovering'); if(wasOpen) btn.focus(); }
 
     function render(){
       const total = Object.keys(TERR_DATA).length;
@@ -2672,6 +2743,9 @@ window.NiceEarth = {
     btn.hidden=false;
     btn.addEventListener('click', () => { ensureData().then(ok => { if(ok) open(); }); });
     closeBtn.addEventListener('click', close);
+    // Minimize: chevron + tap-anywhere-on-header (ignoring the action buttons).
+    if (collapseBtn) collapseBtn.addEventListener('click', e => { e.stopPropagation(); toggleMin(); });
+    if (headEl) headEl.addEventListener('click', e => { if (e.target.closest('button')) return; toggleMin(); });
     document.addEventListener('keydown', e => { if(e.key==='Escape' && !card.hidden) close(); });
     NiceEarthEvents.on('ui.openCard', d => { if (d.id !== 'territories' && !card.hidden) close(); });
     card.addEventListener('keydown', e => {

@@ -124,7 +124,7 @@
     padding: 26px 22px 96px;
     color: var(--ink);
     min-height: 80vh;
-    box-shadow: 0 -20px 50px -10px rgba(0,0,0,0.45);
+    box-shadow: 0 -20px 50px -10px rgba(28,24,56,0.42);
   }
 
   /* Frontispiece — the page's title block. Two parts: a small tracked-out
@@ -270,7 +270,7 @@
     grid-column: span 2;
     background: var(--c-bone-bg);
     color: var(--c-bone-ink);
-    border-radius: 20px;
+    border-radius: 18px;
     padding: 22px;
     display: grid;
     grid-template-columns: 1fr 180px;
@@ -302,6 +302,43 @@
     max-width: 24ch;
   }
   .hero-cap strong { font-weight: 700; opacity: 1; }
+
+  /* Territories — the second figure. A hairline rule separates it from the
+     country count above so the two read as two distinct reckonings, not one
+     running tally. Oldstyle serif number, tracked sans label — same vocabulary
+     as the hero, a register quieter. */
+  .hero-terr {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(42,36,16,0.20);   /* bone-ink hairline */
+    display: flex; align-items: baseline; gap: 9px;
+    flex-wrap: wrap;
+  }
+  .hero-terr-num {
+    font-family: var(--serif);
+    font-size: 30px; line-height: 1; font-weight: 500;
+    letter-spacing: -0.02em;
+    font-variant-numeric: oldstyle-nums tabular-nums;
+  }
+  .hero-terr-num .of {
+    font-family: var(--serif);
+    font-size: 16px; opacity: 0.4; font-weight: 500;
+    margin-left: 1px; letter-spacing: -0.02em;
+  }
+  .hero-terr-lab {
+    font-family: var(--sans);
+    font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+    opacity: 0.62;
+  }
+  .hero-terr-note {
+    flex-basis: 100%;
+    font-family: var(--sans);
+    font-size: 11px; line-height: 1.4;
+    opacity: 0.62;
+    margin-top: 1px;
+    text-wrap: pretty;
+  }
 
   .hero-shape {
     aspect-ratio: 1 / 1;
@@ -432,13 +469,13 @@
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
     gap: 8px;
     position: relative; overflow: hidden;
-    transition: transform 200ms ease, background 300ms, box-shadow 200ms, border-color 300ms;
+    transition: transform 200ms cubic-bezier(.16,1,.3,1), background 300ms, box-shadow 200ms, border-color 300ms;
     cursor: pointer;
     border: 1px solid transparent;
   }
   .line:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px -8px rgba(0,0,0,0.20);
+    box-shadow: 0 4px 12px -8px rgba(28,24,56,0.20);
   }
   .line .line-art {
     width: 70%;                       /* was 100% — leaves more room for text below */
@@ -496,7 +533,7 @@
   .line[data-tier="max"] {
     background: var(--line-card-bg, var(--paper-2));
     border-color: var(--line-border, transparent);
-    box-shadow: 0 2px 8px -4px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px -4px rgba(28,24,56,0.08);
   }
   .line[data-tier="1"] .line-name,
   .line[data-tier="2"] .line-name,
@@ -526,7 +563,7 @@
     cursor: default;
     z-index: 5;
     overflow: visible;
-    box-shadow: 0 8px 22px -10px rgba(0,0,0,0.28), inset 0 0 0 1px rgba(0,0,0,0.06);
+    box-shadow: 0 8px 22px -10px rgba(28,24,56,0.28), inset 0 0 0 1px rgba(28,24,56,0.06);
     align-items: stretch;
     justify-content: flex-start;
     gap: 6px;
@@ -759,11 +796,11 @@
     position: relative;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: transform 200ms ease, box-shadow 200ms, border-color 200ms;
+    transition: transform 200ms cubic-bezier(.16,1,.3,1), box-shadow 200ms, border-color 200ms;
   }
   .set:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 14px -8px rgba(0,0,0,0.14);
+    box-shadow: 0 4px 14px -8px rgba(28,24,56,0.14);
   }
   .set-art {
     width: 64px; height: 64px;
@@ -849,6 +886,32 @@
     color: var(--ink);
   }
   .set-close:hover { background: rgba(0,0,0,0.12); }
+
+  /* "show all sets" affordance — sits below the grid. Quiet, centered, in the
+     same muted register as the ledger footnote. The button reads as a hairline
+     text link, not a chunky control, so it doesn't disturb the frontispiece. */
+  .set-more {
+    margin-top: 16px;
+    text-align: center;
+  }
+  .set-more-btn {
+    appearance: none;
+    border: 0; background: none;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-2);
+    cursor: pointer;
+    padding: 6px 2px;
+    border-bottom: 1px solid var(--hair);
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+  .set-more-btn:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink-2);
+  }
+  /* The leading count ("+ 14 more") is emphasised; the verb stays quiet. */
+  .set-more-btn .more-n { font-weight: 600; color: var(--ink); }
 
   /* RECENT VISITS */
   .ledger { margin-top: 28px; }
@@ -985,7 +1048,7 @@
 
   .reveal {
     opacity: 0; transform: translateY(14px);
-    transition: opacity 600ms ease, transform 600ms cubic-bezier(.2,.7,.2,1);
+    transition: opacity 600ms cubic-bezier(.16,1,.3,1), transform 600ms cubic-bezier(.2,.7,.2,1);
   }
   .reveal.in { opacity: 1; transform: translateY(0); }
   @media (prefers-reduced-motion: reduce) {
@@ -1058,9 +1121,16 @@
       <!-- HERO: country count + organic shape -->
       <div class="hero">
         <div class="hero-text">
-          <div class="card-lab" style="opacity:.66">Countries marked</div>
+          <div class="card-lab" style="opacity:.66">UN-recognized countries</div>
           <div class="hero-num"><span data-count="0" id="hero-num">0</span><span class="of" id="hero-of"> / 195</span></div>
-          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <span id="hero-cap-cont-line"><strong>0</strong> continents</span><span id="hero-cap-terr"></span></div>
+          <div class="hero-cap"><strong id="hero-cap-pct">0%</strong> of inhabited land · <span id="hero-cap-cont-line"><strong>0</strong> continents</span></div>
+          <!-- Territories: a second, clearly-separate figure. They credit the
+               geography below (continents, climate, hemispheres) but never the
+               country total above, which stays strictly UN-recognized. -->
+          <div class="hero-terr">
+            <span class="hero-terr-num"><span data-count="0" id="hero-terr-num">0</span><span class="of" id="hero-terr-of"> / 46</span></span>
+            <span class="hero-terr-lab">territories visited</span>
+          </div>
         </div>
         <div class="hero-shape">
           <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -1126,6 +1196,11 @@
         <span class="sub" id="sets-progress">— / —</span>
       </div>
       <div class="set-grid" id="set-grid"></div>
+      <!-- Quiet affordance: by default only started/completed sets show. This
+           toggles the untouched ones in and out. Text + count are set by paint(). -->
+      <div class="set-more" id="set-more" hidden>
+        <button type="button" class="set-more-btn" id="set-more-btn" aria-expanded="false"></button>
+      </div>
     </section>
 
     <!-- LEDGER -->
@@ -1155,19 +1230,19 @@
 import {
   COUNTRIES, TOTAL_LAND, TOTAL_POP, TOTAL_UN,
   LANDLOCKED, ISLAND_NATIONS, DEMO_VISITS,
-} from './data/countries.js?v=v4';
+} from './data/countries.js?v=v5';
 // SVG renderers — single import point pulls in the registry + every icon module.
-import { renderArt } from './art/index.js?v=v4';
+import { renderArt } from './art/index.js?v=v5';
 // v2 atlas: title (Layer 1), lines (Layer 2 progression), sets (Layer 3 collections).
 // Legacy badges are gone — superseded by these three layers.
-import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v4';
-import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v4';
-import { computeTitle } from './data/titles.js?v=v4';
-import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v4';
+import { LINES, LINE_ORDER, tierOf } from './data/lines.js?v=v5';
+import { TIER_INKS, TIER_TINTS, TIER_PILLS, TIER_BORDERS, TIER_NUMERAL, paletteKeyFor } from './art/tier-palette.js?v=v5';
+import { computeTitle } from './data/titles.js?v=v5';
+import { SETS, SET_ORDER, setProgress } from './data/sets.js?v=v5';
 // Dependent territories (Layer: places beyond the 195). Stored under a separate
 // key by the globe; they credit GEOGRAPHY (continent / climate / hemisphere /
 // latitude span) but NOT country totals (count / land / pop) or the parent.
-import { TERRITORIES } from './data/territories.js?v=v4';
+import { TERRITORIES } from './data/territories.js?v=v5';
 
 function readVisits() {
   try {
@@ -1444,10 +1519,28 @@ function paint() {
   const contN = continentsTouched.size;
   document.getElementById('hero-cap-cont-line').innerHTML =
     `<strong>${contN}</strong> ${contN === 1 ? 'continent' : 'continents'}`;
-  const terrEl = document.getElementById('hero-cap-terr');
-  if (terrEl) terrEl.innerHTML = knownTerr.length
-    ? ` · <strong>${knownTerr.length}</strong> ${knownTerr.length === 1 ? 'territory' : 'territories'}`
-    : '';
+
+  /* Territories — second figure (out of the full set, read dynamically). Counts
+     up like the others. A small note makes the relationship explicit: territories
+     enrich the geography below but never the UN-recognized country total above. */
+  const TOTAL_TERR = Object.keys(TERRITORIES).length;
+  const terrNumEl = document.getElementById('hero-terr-num');
+  const terrOfEl  = document.getElementById('hero-terr-of');
+  const terrWrap  = document.getElementById('hero-terr-num') &&
+                    document.getElementById('hero-terr-num').closest('.hero-terr');
+  if (terrOfEl) terrOfEl.textContent = ` / ${TOTAL_TERR}`;
+  if (terrNumEl) grid._anims.push(scheduleCount(terrNumEl, knownTerr.length));
+  if (terrWrap) {
+    let note = terrWrap.querySelector('.hero-terr-note');
+    if (!note) {
+      note = document.createElement('span');
+      note.className = 'hero-terr-note';
+      terrWrap.appendChild(note);
+    }
+    note.textContent = knownTerr.length
+      ? 'They credit the geography below, not the country count.'
+      : 'Beyond the 195 — they credit geography, not the country count.';
+  }
 
   /* people */
   grid._anims.push(scheduleCount(document.getElementById('stat-pop'), visitedPopM, 'pop'));
@@ -1601,20 +1694,29 @@ function paint() {
   }
 
   /* ── SETS (Layer 3) ── */
+  // Declutter: only sets the user has STARTED (count > 0) or COMPLETED show by
+  // default. Untouched ("not yet begun") sets are rendered but kept hidden until
+  // the "show all sets" toggle below is activated. SET_ORDER drives the loop, so
+  // the all-sets view always reflects the real, full list.
   const setGrid = document.getElementById('set-grid');
   setGrid.innerHTML = '';
   let completedSets = 0;
+  let startedSets = 0;     // started or completed (i.e. shown by default)
+  let hiddenSets = 0;      // untouched (hidden until "show all")
   for (const id of SET_ORDER) {
     const set = SETS[id];
     if (!set) continue;
     const prog = setProgress(set, known);
     if (prog.complete) completedSets++;
+    const started = prog.count > 0;   // any progress, including complete
+    if (started) startedSets++; else hiddenSets++;
     const pct = Math.round((prog.count / prog.total) * 100);
     // ink colour for the artwork — palette ink, falling back to neutral.
     const ink = prog.complete ? '#B58B33' : 'var(--ink-2)';
 
     const card = document.createElement('div');
-    card.className = 'set' + (prog.complete ? ' complete' : '');
+    card.className = 'set' + (prog.complete ? ' complete' : '') + (started ? '' : ' is-untouched');
+    if (!started) card.hidden = true;   // collapsed by default; toggle reveals
     card.dataset.id = id;
     // chip list rendered inline (visited first), used when the card expands.
     const chipsHtml = set.countries.map(iso => {
@@ -1639,6 +1741,46 @@ function paint() {
   }
   document.getElementById('sets-progress').textContent =
     `${completedSets} of ${SET_ORDER.length} completed`;
+
+  /* "show all sets" toggle — only meaningful when something is hidden. When no
+     set has been started yet, hiddenSets === total, so the affordance still
+     appears (the grid would otherwise be empty) and invites discovery. */
+  const moreWrap = document.getElementById('set-more');
+  const moreBtn  = document.getElementById('set-more-btn');
+  if (moreWrap && moreBtn) {
+    if (hiddenSets > 0) {
+      moreWrap.hidden = false;
+      // Re-bind cleanly each paint() so the closure sees the current counts.
+      const newBtn = moreBtn.cloneNode(false);
+      moreBtn.parentNode.replaceChild(newBtn, moreBtn);
+      const render = (expanded) => {
+        newBtn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        newBtn.innerHTML = expanded
+          ? 'Show fewer sets'
+          : `<span class="more-n">+ ${hiddenSets}</span> more set${hiddenSets === 1 ? '' : 's'} to discover`;
+      };
+      const apply = (expanded) => {
+        setGrid.querySelectorAll('.set.is-untouched').forEach(el => {
+          // Never un-hide a card that's mid-expansion edge case; untouched cards
+          // are collapsed, so a simple hidden toggle is safe.
+          el.hidden = !expanded;
+        });
+        render(expanded);
+      };
+      apply(false);
+      newBtn.addEventListener('click', () => {
+        const nowExpanded = newBtn.getAttribute('aria-expanded') !== 'true';
+        if (!nowExpanded) {
+          // collapsing — also close any expanded untouched set so it doesn't
+          // linger as a span-2 ghost when re-hidden.
+          setGrid.querySelectorAll('.set.is-untouched.expanded').forEach(el => collapseSet(el));
+        }
+        apply(nowExpanded);
+      });
+    } else {
+      moreWrap.hidden = true;
+    }
+  }
 
   /* RECENT VISITS — newest first; each row shows the country's true ordinal
      in the user's atlas (so the most recent of 25 reads "25", not "01"). */

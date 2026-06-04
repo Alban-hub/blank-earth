@@ -10,7 +10,7 @@
 //    - Bump CACHE_VERSION when shipping a release to invalidate old caches.
 // =============================================================================
 
-const CACHE_VERSION = 'blank-earth-v11';  // mobile panel: compact foot row with discoverable "tap to manage" pill + atlas pill
+const CACHE_VERSION = 'blank-earth-v12';  // release: discovery (sets+titles), territories, completion moment, share card, progression rebalance, polish
 const PRECACHE = [
   './',
   './index.html',
